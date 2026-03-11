@@ -3,13 +3,13 @@
   import { filtersStore } from '@shared/stores/filters.store';
   import { generateICalContent, downloadICalFile } from '@shared/utils';
   import Button from '@shared/components/Button.svelte';
-  import type { EventWithType } from '@types';
+  import type { EventWithDetails } from '@types';
 
   let showMenu = false;
 
   $: filteredEvents = getFilteredEvents($eventsStore.events, $filtersStore);
 
-  function getFilteredEvents(events: EventWithType[], filters: any): EventWithType[] {
+  function getFilteredEvents(events: EventWithDetails[], filters: any): EventWithDetails[] {
     return events.filter(event => {
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();

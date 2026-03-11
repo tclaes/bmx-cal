@@ -11,15 +11,21 @@ export class ImportService {
     const errors: Array<{ row: number; error: string }> = [];
     const validEvents: CreateEventInput[] = [];
 
-    const eventTypes = await EventsService.getEventTypes();
+    const [eventTypes, locations] = await Promise.all([
+      EventsService.getEventTypes(),
+      EventsService.getLocations(),
+    ]);
+
     const eventTypeMap = new Map(eventTypes.map(et => [et.name.toLowerCase(), et.id]));
+    const locationMap = new Map(locations.map(loc => [loc.name.toLowerCase().trim(), loc.id]));
 
     console.log('Event types:', eventTypes);
+    console.log('Locations:', locations);
     console.log('Validating events:', events);
 
     events.forEach((event, index) => {
       try {
-        const validatedEvent = this.validateEvent(event, eventTypeMap);
+        const validatedEvent = this.validateEvent(event, eventTypeMap, locationMap);
         console.log(`Validated event ${index + 1}:`, validatedEvent);
         validEvents.push(validatedEvent);
       } catch (error) {
@@ -118,7 +124,8 @@ export class ImportService {
 
   private static validateEvent(
     event: ParsedEvent,
-    eventTypeMap: Map<string, string>
+    eventTypeMap: Map<string, string>,
+    locationMap: Map<string, string>
   ): CreateEventInput {
     if (!event.title || event.title.trim() === '') {
       throw new Error('Title is required');
@@ -159,13 +166,30 @@ export class ImportService {
       console.log(`Matched event type "${event.event_type}" to ID:`, eventTypeId);
     }
 
+    let locationId: string | undefined;
+    const locationText = event.location?.trim() || 'TBD';
+    const locationLower = locationText.toLowerCase();
+
+    locationId = locationMap.get(locationLower);
+
+    if (!locationId) {
+      for (const [locName, locId] of locationMap.entries()) {
+        if (locationLower.includes(locName) || locName.includes(locationLower)) {
+          locationId = locId;
+          console.log(`Fuzzy matched location "${locationText}" to "${locName}"`);
+          break;
+        }
+      }
+    }
+
     return {
       title: event.title.trim(),
       description: event.description?.trim() || '',
       date: event.date,
       start_time: event.start_time || null,
       end_time: event.end_time || null,
-      location: event.location?.trim() || 'TBD',
+      location: locationText,
+      location_id: locationId,
       event_type_id: eventTypeId,
       status: 'upcoming',
     };

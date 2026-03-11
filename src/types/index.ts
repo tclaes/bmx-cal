@@ -2,6 +2,8 @@ export type {
   Event,
   EventType,
   EventWithType,
+  EventWithDetails,
+  Location,
   ImportLog,
   AdminUser,
   CreateEventInput,

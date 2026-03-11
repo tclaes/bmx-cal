@@ -5,6 +5,18 @@ export interface EventType {
   created_at: string;
 }
 
+export interface Location {
+  id: string;
+  name: string;
+  address: string | null;
+  city: string | null;
+  postal_code: string | null;
+  country: string | null;
+  maps_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Event {
   id: string;
   title: string;
@@ -13,7 +25,7 @@ export interface Event {
   start_time: string | null;
   end_time: string | null;
   location: string;
-  maps_url: string | null;
+  location_id: string | null;
   event_type_id: string | null;
   status: 'upcoming' | 'completed' | 'cancelled';
   created_at: string;
@@ -22,6 +34,11 @@ export interface Event {
 
 export interface EventWithType extends Event {
   event_type: EventType | null;
+}
+
+export interface EventWithDetails extends Event {
+  event_type: EventType | null;
+  location_details: Location | null;
 }
 
 export interface ImportLog {
@@ -48,6 +65,7 @@ export interface CreateEventInput {
   start_time?: string;
   end_time?: string;
   location: string;
+  location_id?: string;
   event_type_id?: string;
   status?: 'upcoming' | 'completed' | 'cancelled';
 }

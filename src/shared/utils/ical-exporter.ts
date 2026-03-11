@@ -1,6 +1,6 @@
-import type { EventWithType } from '@types';
+import type { EventWithDetails } from '@types';
 
-export function generateICalContent(events: EventWithType[]): string {
+export function generateICalContent(events: EventWithDetails[]): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -76,7 +76,7 @@ export function downloadICalFile(content: string, filename: string = 'bmx-events
   URL.revokeObjectURL(url);
 }
 
-export function getGoogleCalendarUrl(events: EventWithType[]): string {
+export function getGoogleCalendarUrl(events: EventWithDetails[]): string {
   if (events.length === 0) return '';
 
   const event = events[0];

@@ -1,50 +1,53 @@
 import { supabase } from '@data/supabase';
-import type { Event, EventWithType, CreateEventInput, UpdateEventInput, EventType } from '@types';
+import type { Event, EventWithDetails, CreateEventInput, UpdateEventInput, EventType, Location } from '@types';
 
 export class EventsService {
-  static async getUpcomingEvents(): Promise<EventWithType[]> {
+  static async getUpcomingEvents(): Promise<EventWithDetails[]> {
     const today = new Date().toISOString().split('T')[0];
 
     const { data, error } = await supabase
       .from('events')
       .select(`
         *,
-        event_type:event_types(*)
+        event_type:event_types(*),
+        location_details:locations(*)
       `)
       .gte('date', today)
       .order('date', { ascending: true });
 
     if (error) throw error;
-    return data as EventWithType[];
+    return data as EventWithDetails[];
   }
 
-  static async getEventsByDateRange(startDate: string, endDate: string): Promise<EventWithType[]> {
+  static async getEventsByDateRange(startDate: string, endDate: string): Promise<EventWithDetails[]> {
     const { data, error } = await supabase
       .from('events')
       .select(`
         *,
-        event_type:event_types(*)
+        event_type:event_types(*),
+        location_details:locations(*)
       `)
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: true });
 
     if (error) throw error;
-    return data as EventWithType[];
+    return data as EventWithDetails[];
   }
 
-  static async getEventById(id: string): Promise<EventWithType | null> {
+  static async getEventById(id: string): Promise<EventWithDetails | null> {
     const { data, error } = await supabase
       .from('events')
       .select(`
         *,
-        event_type:event_types(*)
+        event_type:event_types(*),
+        location_details:locations(*)
       `)
       .eq('id', id)
       .maybeSingle();
 
     if (error) throw error;
-    return data as EventWithType | null;
+    return data as EventWithDetails | null;
   }
 
   static async createEvent(event: CreateEventInput): Promise<Event> {
@@ -103,6 +106,16 @@ export class EventsService {
   static async getEventTypes(): Promise<EventType[]> {
     const { data, error } = await supabase
       .from('event_types')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async getLocations(): Promise<Location[]> {
+    const { data, error } = await supabase
+      .from('locations')
       .select('*')
       .order('name', { ascending: true });
 

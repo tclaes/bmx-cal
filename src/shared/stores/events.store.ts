@@ -1,9 +1,10 @@
 import { writable, derived } from 'svelte/store';
-import type { EventWithType, EventType } from '@types';
+import type { EventWithDetails, EventType, Location } from '@types';
 
 export interface EventsState {
-  events: EventWithType[];
+  events: EventWithDetails[];
   eventTypes: EventType[];
+  locations: Location[];
   loading: boolean;
   error: string | null;
 }
@@ -11,6 +12,7 @@ export interface EventsState {
 const initialState: EventsState = {
   events: [],
   eventTypes: [],
+  locations: [],
   loading: false,
   error: null,
 };
@@ -20,17 +22,19 @@ function createEventsStore() {
 
   return {
     subscribe,
-    setEvents: (events: EventWithType[]) =>
+    setEvents: (events: EventWithDetails[]) =>
       update(state => ({ ...state, events })),
     setEventTypes: (eventTypes: EventType[]) =>
       update(state => ({ ...state, eventTypes })),
+    setLocations: (locations: Location[]) =>
+      update(state => ({ ...state, locations })),
     setLoading: (loading: boolean) =>
       update(state => ({ ...state, loading })),
     setError: (error: string | null) =>
       update(state => ({ ...state, error })),
-    addEvent: (event: EventWithType) =>
+    addEvent: (event: EventWithDetails) =>
       update(state => ({ ...state, events: [...state.events, event] })),
-    updateEvent: (updatedEvent: EventWithType) =>
+    updateEvent: (updatedEvent: EventWithDetails) =>
       update(state => ({
         ...state,
         events: state.events.map(e => e.id === updatedEvent.id ? updatedEvent : e),

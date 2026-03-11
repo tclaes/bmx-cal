@@ -5,9 +5,9 @@
   import { LoadingSpinner, Alert } from '@shared/components';
   import { eventsStore, filtersStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
-  import type { EventWithType, Event } from '@types';
+  import type { EventWithDetails, Event } from '@types';
 
-  let filteredEvents: EventWithType[] = [];
+  let filteredEvents: EventWithDetails[] = [];
   let editingEvent: Event | null = null;
   let showEditor = false;
 
@@ -41,7 +41,7 @@
     });
   }
 
-  function handleEdit(event: CustomEvent<EventWithType>) {
+  function handleEdit(event: CustomEvent<EventWithDetails>) {
     console.log('Edit event received:', event.detail);
     editingEvent = event.detail;
     showEditor = true;
@@ -68,12 +68,14 @@
   onMount(async () => {
     try {
       eventsStore.setLoading(true);
-      const [events, eventTypes] = await Promise.all([
+      const [events, eventTypes, locations] = await Promise.all([
         EventsService.getUpcomingEvents(),
         EventsService.getEventTypes(),
+        EventsService.getLocations(),
       ]);
       eventsStore.setEvents(events);
       eventsStore.setEventTypes(eventTypes);
+      eventsStore.setLocations(locations);
     } catch (error) {
       eventsStore.setError(error instanceof Error ? error.message : 'Failed to load events');
     } finally {

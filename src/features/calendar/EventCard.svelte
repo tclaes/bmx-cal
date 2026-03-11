@@ -1,10 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Card, Badge, Button } from '@shared/components';
-  import type { EventWithType } from '@types';
+  import type { EventWithDetails } from '@types';
   import { authStore } from '@shared/stores';
 
-  export let event: EventWithType;
+  export let event: EventWithDetails;
 
   const dispatch = createEventDispatcher();
 
@@ -29,11 +29,11 @@
     dispatch('edit', event);
   }
 
-  function getGoogleMapsUrl(location: string, mapsUrl: string | null): string {
-    if (mapsUrl) {
-      return mapsUrl;
+  function getGoogleMapsUrl(): string {
+    if (event.location_details?.maps_url) {
+      return event.location_details.maps_url;
     }
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   }
 </script>
 
@@ -83,7 +83,7 @@
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
         <a
-          href={getGoogleMapsUrl(event.location, event.maps_url)}
+          href={getGoogleMapsUrl()}
           target="_blank"
           rel="noopener noreferrer"
           class="location-link"
