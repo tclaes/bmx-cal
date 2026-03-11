@@ -55,10 +55,13 @@
         status: formData.status
       };
 
+      console.log('Updating event:', event.id, updateData);
       await EventsService.updateEvent(event.id, updateData);
+      console.log('Event updated successfully');
       dispatch('saved');
       handleClose();
     } catch (e) {
+      console.error('Failed to update event:', e);
       error = e instanceof Error ? e.message : 'Failed to save event';
     } finally {
       saving = false;

@@ -42,8 +42,10 @@
   }
 
   function handleEdit(event: CustomEvent<EventWithType>) {
+    console.log('Edit event received:', event.detail);
     editingEvent = event.detail;
     showEditor = true;
+    console.log('Editor opened:', { editingEvent, showEditor });
   }
 
   async function handleSaved() {
