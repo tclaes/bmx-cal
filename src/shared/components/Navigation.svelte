@@ -60,7 +60,7 @@
   }
 
   .brand-icon img {
-    height: 5rem;
+    height: 6rem;
     width: auto;
   }
 
