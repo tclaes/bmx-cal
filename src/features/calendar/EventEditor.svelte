@@ -18,7 +18,10 @@
     location: '',
     description: '',
     event_type_id: '',
-    status: 'upcoming' as 'upcoming' | 'completed' | 'cancelled'
+    status: 'upcoming' as 'upcoming' | 'completed' | 'cancelled',
+    registration_url: '',
+    registration_deadline: '',
+    registration_status: ''
   };
 
   let saving = false;
@@ -34,7 +37,10 @@
       location: event.location || '',
       description: event.description || '',
       event_type_id: event.event_type_id || '',
-      status: event.status || 'upcoming'
+      status: event.status || 'upcoming',
+      registration_url: event.registration_url || '',
+      registration_deadline: event.registration_deadline || '',
+      registration_status: event.registration_status || ''
     };
     currentEventId = event.id;
     console.log('EventEditor opened with data:', formData);
@@ -60,7 +66,10 @@
         location: formData.location,
         description: formData.description,
         event_type_id: formData.event_type_id || null,
-        status: formData.status
+        status: formData.status,
+        registration_url: formData.registration_url || null,
+        registration_deadline: formData.registration_deadline || null,
+        registration_status: formData.registration_status || null
       };
 
       console.log('Updating event:', event.id, updateData);
@@ -155,6 +164,36 @@
         bind:value={formData.description}
         placeholder="Event description"
         rows="4"
+      />
+    </div>
+
+    <div class="form-group">
+      <Input
+        label="Registration URL"
+        bind:value={formData.registration_url}
+        placeholder="https://registration.jstiming.com/..."
+        type="url"
+      />
+    </div>
+
+    <div class="form-group">
+      <Input
+        label="Registration Deadline"
+        type="date"
+        bind:value={formData.registration_deadline}
+      />
+    </div>
+
+    <div class="form-group">
+      <Select
+        label="Registration Status"
+        bind:value={formData.registration_status}
+        options={[
+          { value: '', label: 'Not Set' },
+          { value: 'upcoming', label: 'Upcoming' },
+          { value: 'open', label: 'Open' },
+          { value: 'closed', label: 'Closed' }
+        ]}
       />
     </div>
 

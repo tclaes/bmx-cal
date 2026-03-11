@@ -28,6 +28,9 @@ export interface Event {
   location_id: string | null;
   event_type_id: string | null;
   status: 'upcoming' | 'completed' | 'cancelled';
+  registration_url: string | null;
+  registration_deadline: string | null;
+  registration_status: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -68,6 +71,9 @@ export interface CreateEventInput {
   location_id?: string;
   event_type_id?: string;
   status?: 'upcoming' | 'completed' | 'cancelled';
+  registration_url?: string;
+  registration_deadline?: string;
+  registration_status?: string;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {

@@ -35,6 +35,32 @@
     }
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   }
+
+  function getRegistrationStatus(): { label: string; color: string } | null {
+    if (!event.registration_url) return null;
+
+    if (event.registration_status === 'open') {
+      return { label: 'Registration Open', color: '#10b981' };
+    } else if (event.registration_status === 'closed') {
+      return { label: 'Registration Closed', color: '#6b7280' };
+    } else if (event.registration_status === 'upcoming') {
+      return { label: 'Registration Opens Soon', color: '#f59e0b' };
+    }
+
+    if (event.registration_deadline) {
+      const deadline = new Date(event.registration_deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (deadline < today) {
+        return { label: 'Registration Closed', color: '#6b7280' };
+      }
+    }
+
+    return { label: 'Register Now', color: '#3b82f6' };
+  }
+
+  $: registrationStatus = getRegistrationStatus();
 </script>
 
 <Card padding="md" shadow="sm">
@@ -96,6 +122,34 @@
 
     {#if event.description}
       <p class="event-description">{event.description}</p>
+    {/if}
+
+    {#if event.registration_url && registrationStatus}
+      <div class="registration-section">
+        {#if event.registration_deadline}
+          <div class="registration-deadline">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Registration deadline: {formatDate(event.registration_deadline)}</span>
+          </div>
+        {/if}
+        <a
+          href={event.registration_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="registration-btn"
+          style="background-color: {registrationStatus.color}"
+        >
+          {registrationStatus.label}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+        </a>
+      </div>
     {/if}
   </div>
 </Card>
@@ -188,5 +242,47 @@
 
   .location-link:active {
     color: var(--color-primary-dark, var(--color-primary));
+  }
+
+  .registration-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .registration-deadline {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
+
+  .registration-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    padding: 0.625rem 1rem;
+    border-radius: 6px;
+    color: white;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .registration-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .registration-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 </style>
