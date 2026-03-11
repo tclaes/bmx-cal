@@ -7,30 +7,83 @@
   export let disabled = false;
   export let required = false;
   export let id = '';
-
-  function handleInput(e: Event) {
-    const target = e.target as HTMLInputElement;
-    value = target.value;
-  }
 </script>
 
 <div class="input-wrapper">
   {#if label}
     <label for={id} class="label">{label}</label>
   {/if}
-  <input
-    type={type}
-    {id}
-    {placeholder}
-    {disabled}
-    {required}
-    class="input"
-    class:error={!!error}
-    {value}
-    on:input={handleInput}
-    on:change
-    on:blur
-  />
+  {#if type === 'text'}
+    <input
+      type="text"
+      {id}
+      {placeholder}
+      {disabled}
+      {required}
+      class="input"
+      class:error={!!error}
+      bind:value
+      on:input
+      on:change
+      on:blur
+    />
+  {:else if type === 'email'}
+    <input
+      type="email"
+      {id}
+      {placeholder}
+      {disabled}
+      {required}
+      class="input"
+      class:error={!!error}
+      bind:value
+      on:input
+      on:change
+      on:blur
+    />
+  {:else if type === 'password'}
+    <input
+      type="password"
+      {id}
+      {placeholder}
+      {disabled}
+      {required}
+      class="input"
+      class:error={!!error}
+      bind:value
+      on:input
+      on:change
+      on:blur
+    />
+  {:else if type === 'date'}
+    <input
+      type="date"
+      {id}
+      {placeholder}
+      {disabled}
+      {required}
+      class="input"
+      class:error={!!error}
+      bind:value
+      on:input
+      on:change
+      on:blur
+    />
+  {:else if type === 'time'}
+    <input
+      type="time"
+      {id}
+      {placeholder}
+      {disabled}
+      {required}
+      class="input"
+      class:error={!!error}
+      bind:value
+      on:input
+      on:change
+      on:blur
+    />
+  {/if}
   {#if error}
     <span class="error-message">{error}</span>
   {/if}
