@@ -1,16 +1,68 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Card, Button } from '@shared/components';
+  import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
-  import { AuthService } from '@shared/services';
+  import { AuthService, EventsService } from '@shared/services';
+  import type { EventWithType } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
 
-  let showUpload = true;
+  let events: EventWithType[] = [];
+  let loading = false;
+  let error = '';
+  let deleteError = '';
+  let deleteSuccess = '';
+  let deletingEventId: string | null = null;
 
   async function handleLogout() {
     await AuthService.logout();
     authStore.logout();
   }
+
+  async function loadEvents() {
+    loading = true;
+    error = '';
+    try {
+      events = await EventsService.getUpcomingEvents();
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Failed to load events';
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function handleDeleteEvent(eventId: string, eventTitle: string) {
+    if (!confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    deleteError = '';
+    deleteSuccess = '';
+    deletingEventId = eventId;
+
+    try {
+      await EventsService.deleteEvent(eventId);
+      deleteSuccess = `Event "${eventTitle}" has been deleted successfully.`;
+      await loadEvents();
+    } catch (err) {
+      deleteError = err instanceof Error ? err.message : 'Failed to delete event';
+    } finally {
+      deletingEventId = null;
+    }
+  }
+
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  onMount(() => {
+    loadEvents();
+  });
 </script>
 
 <div class="admin-dashboard">
@@ -29,6 +81,67 @@
   <div class="dashboard-content">
     <Card padding="lg" shadow="md">
       <DocumentUpload />
+    </Card>
+
+    <Card padding="lg" shadow="md">
+      <div class="events-section">
+        <h2 class="section-title">Event Management</h2>
+
+        {#if deleteSuccess}
+          <Alert type="success" message={deleteSuccess} />
+        {/if}
+
+        {#if deleteError}
+          <Alert type="error" message={deleteError} />
+        {/if}
+
+        {#if loading}
+          <div class="loading-container">
+            <LoadingSpinner size="lg" />
+          </div>
+        {:else if error}
+          <Alert type="error" message={error} />
+        {:else if events.length === 0}
+          <p class="no-events">No upcoming events found.</p>
+        {:else}
+          <div class="events-list">
+            {#each events as event (event.id)}
+              <div class="event-item">
+                <div class="event-info">
+                  <div class="event-header">
+                    <h3 class="event-title">{event.title}</h3>
+                    {#if event.event_type}
+                      <span
+                        class="event-badge"
+                        style="background-color: {event.event_type.color_code}20; color: {event.event_type.color_code}; border-color: {event.event_type.color_code}40;"
+                      >
+                        {event.event_type.name}
+                      </span>
+                    {/if}
+                  </div>
+                  <div class="event-details">
+                    <span class="event-date">{formatDate(event.date)}</span>
+                    <span class="event-location">{event.location}</span>
+                  </div>
+                  {#if event.description}
+                    <p class="event-description">{event.description}</p>
+                  {/if}
+                </div>
+                <div class="event-actions">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    disabled={deletingEventId === event.id}
+                    on:click={() => handleDeleteEvent(event.id, event.title)}
+                  >
+                    {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </Card>
   </div>
 </div>
@@ -75,6 +188,110 @@
     gap: var(--spacing-xl);
   }
 
+  .events-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .section-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-xl);
+  }
+
+  .no-events {
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xl);
+    margin: 0;
+  }
+
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .event-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    transition: border-color 0.2s ease;
+  }
+
+  .event-item:hover {
+    border-color: var(--color-border-hover);
+  }
+
+  .event-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .event-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .event-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .event-badge {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid;
+  }
+
+  .event-details {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .event-date,
+  .event-location {
+    display: flex;
+    align-items: center;
+  }
+
+  .event-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .event-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
   @media (max-width: 768px) {
     .dashboard-header {
       flex-direction: column;
@@ -83,6 +300,18 @@
 
     .dashboard-title {
       font-size: var(--font-size-3xl);
+    }
+
+    .event-item {
+      flex-direction: column;
+    }
+
+    .event-actions {
+      width: 100%;
+    }
+
+    .event-actions :global(button) {
+      width: 100%;
     }
   }
 </style>
