@@ -1,0 +1,26 @@
+{
+  "name": "BMX Events Calendar",
+  "short_name": "BMX Calendar",
+  "description": "View and manage BMX events, competitions, and shows",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/bmx-calendar.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/bmx-calendar.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
