@@ -55,18 +55,26 @@ async function analyzeTextWithAI(text: string): Promise<ExtractedEvent[]> {
     throw new Error('GEMINI_API_KEY not configured');
   }
 
-  const prompt = `You are an expert at extracting BMX racing event information from text.
-Analyze the following text and extract all BMX racing events. For each event, provide:
+  const prompt = `You are an expert at extracting BMX event information from text.
+Analyze the following text and extract all BMX events. For each event, provide:
 - title: Event name
 - start_date: ISO 8601 date (YYYY-MM-DD)
 - end_date: ISO 8601 date if multi-day event
 - location: Venue/track name and location
 - description: Event description
-- event_type: One of [race, practice, clinic, championship, regional, national]
-- class_categories: Array of racing classes (e.g., ["Novice", "Intermediate", "Expert"])
-- age_groups: Array of age groups (e.g., ["5-6", "7-8", "9-10"])
+- event_type: One of these exact values [Race, Freestyle, Park, Street, Dirt, Flatland]
+  * Use "Race" for: races, racing, competition, championship, regional, national, provincial
+  * Use "Freestyle" for: freestyle competitions, tricks, stunts
+  * Use "Park" for: park events, skateparks, park competitions
+  * Use "Street" for: street events, street competitions
+  * Use "Dirt" for: dirt jumping, dirt events
+  * Use "Flatland" for: flatland competitions
+- class_categories: Array of racing classes if applicable (e.g., ["Novice", "Intermediate", "Expert"])
+- age_groups: Array of age groups if applicable (e.g., ["5-6", "7-8", "9-10"])
 - registration_url: URL for registration if available
 - contact_info: Contact information if available
+
+IMPORTANT: Match event_type to one of the exact values above based on the event description.
 
 Return ONLY valid JSON array of events. If no events found, return empty array [].
 

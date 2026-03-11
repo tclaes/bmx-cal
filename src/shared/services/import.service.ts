@@ -77,12 +77,28 @@ export class ImportService {
 
     let eventTypeId: string | undefined;
     if (event.event_type) {
-      const eventTypeLower = event.event_type.toLowerCase();
+      const eventTypeLower = event.event_type.toLowerCase().trim();
+
       eventTypeId = eventTypeMap.get(eventTypeLower);
 
-      if (!eventTypeId && eventTypeLower.includes('race')) {
-        eventTypeId = eventTypeMap.get('race');
+      if (!eventTypeId) {
+        if (eventTypeLower.includes('race') || eventTypeLower.includes('racing') ||
+            eventTypeLower.includes('competition') || eventTypeLower.includes('championship')) {
+          eventTypeId = eventTypeMap.get('race');
+        } else if (eventTypeLower.includes('freestyle')) {
+          eventTypeId = eventTypeMap.get('freestyle');
+        } else if (eventTypeLower.includes('park')) {
+          eventTypeId = eventTypeMap.get('park');
+        } else if (eventTypeLower.includes('street')) {
+          eventTypeId = eventTypeMap.get('street');
+        } else if (eventTypeLower.includes('dirt')) {
+          eventTypeId = eventTypeMap.get('dirt');
+        } else if (eventTypeLower.includes('flatland')) {
+          eventTypeId = eventTypeMap.get('flatland');
+        }
       }
+
+      console.log(`Matched event type "${event.event_type}" to ID:`, eventTypeId);
     }
 
     return {
