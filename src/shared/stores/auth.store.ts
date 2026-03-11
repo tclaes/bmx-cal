@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import type { AdminUser } from '@types';
 
 export interface AuthState {
@@ -30,4 +30,9 @@ function createAuthStore() {
   };
 }
 
-export const authStore = createAuthStore();
+const baseAuthStore = createAuthStore();
+
+export const authStore = {
+  ...baseAuthStore,
+  isAuthenticated: derived(baseAuthStore, $auth => $auth.user !== null)
+};
