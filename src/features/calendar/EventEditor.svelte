@@ -23,8 +23,9 @@
 
   let saving = false;
   let error = '';
+  let currentEventId: string | null = null;
 
-  $: if (event && open) {
+  $: if (event && open && event.id !== currentEventId) {
     formData = {
       title: event.title || '',
       date: event.date || '',
@@ -35,8 +36,13 @@
       event_type_id: event.event_type_id || '',
       status: event.status || 'upcoming'
     };
+    currentEventId = event.id;
     console.log('EventEditor opened with data:', formData);
     console.log('Event types available:', eventTypes);
+  }
+
+  $: if (!open) {
+    currentEventId = null;
   }
 
   async function handleSave() {
