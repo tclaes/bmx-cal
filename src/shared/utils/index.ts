@@ -3,3 +3,4 @@ export { parseCSV } from './csv-parser';
 export { parseExcel } from './excel-parser';
 export { parseICalendar } from './ical-parser';
 export { parsePDF } from './pdf-parser';
+export { generateICalContent, downloadICalFile, getGoogleCalendarUrl } from './ical-exporter';

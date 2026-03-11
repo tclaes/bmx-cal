@@ -1,12 +1,18 @@
 <script lang="ts">
   import EventFilters from './EventFilters.svelte';
   import EventList from './EventList.svelte';
+  import ExportButton from './ExportButton.svelte';
 </script>
 
 <div class="calendar-view">
   <div class="calendar-header">
-    <h1 class="calendar-title">BMX Events Calendar</h1>
-    <p class="calendar-subtitle">Upcoming BMX events, competitions, and shows</p>
+    <div class="header-content">
+      <div>
+        <h1 class="calendar-title">BMX Events Calendar</h1>
+        <p class="calendar-subtitle">Upcoming BMX events, competitions, and shows</p>
+      </div>
+      <ExportButton />
+    </div>
   </div>
 
   <EventFilters />
@@ -28,6 +34,13 @@
     margin-bottom: var(--spacing-xl);
   }
 
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+  }
+
   .calendar-title {
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
@@ -46,6 +59,11 @@
   }
 
   @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
     .calendar-title {
       font-size: var(--font-size-3xl);
     }
