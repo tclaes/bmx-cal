@@ -18,16 +18,6 @@
       <button class="nav-link" on:click={() => handleNavigate('/')}>
         Events
       </button>
-
-      {#if $authStore.user}
-        <button class="nav-link" on:click={() => handleNavigate('/admin')}>
-          Admin
-        </button>
-      {:else}
-        <button class="nav-link" on:click={() => handleNavigate('/admin/login')}>
-          Admin Login
-        </button>
-      {/if}
     </div>
   </div>
 </nav>
