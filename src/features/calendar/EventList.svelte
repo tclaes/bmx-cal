@@ -1,12 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import EventCard from './EventCard.svelte';
+  import EventEditor from './EventEditor.svelte';
   import { LoadingSpinner, Alert } from '@shared/components';
   import { eventsStore, filtersStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
-  import type { EventWithType } from '@types';
+  import type { EventWithType, Event } from '@types';
 
   let filteredEvents: EventWithType[] = [];
+  let editingEvent: Event | null = null;
+  let showEditor = false;
 
   $: {
     const filters = $filtersStore;
@@ -36,6 +39,28 @@
 
       return true;
     });
+  }
+
+  function handleEdit(event: CustomEvent<EventWithType>) {
+    editingEvent = event.detail;
+    showEditor = true;
+  }
+
+  async function handleSaved() {
+    try {
+      eventsStore.setLoading(true);
+      const events = await EventsService.getUpcomingEvents();
+      eventsStore.setEvents(events);
+    } catch (error) {
+      eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
+    } finally {
+      eventsStore.setLoading(false);
+    }
+  }
+
+  function handleClose() {
+    showEditor = false;
+    editingEvent = null;
   }
 
   onMount(async () => {
@@ -70,11 +95,19 @@
   {:else}
     <div class="events-grid">
       {#each filteredEvents as event (event.id)}
-        <EventCard {event} />
+        <EventCard {event} on:edit={handleEdit} />
       {/each}
     </div>
   {/if}
 </div>
+
+<EventEditor
+  event={editingEvent}
+  eventTypes={$eventsStore.eventTypes}
+  bind:open={showEditor}
+  on:saved={handleSaved}
+  on:close={handleClose}
+/>
 
 <style>
   .event-list {

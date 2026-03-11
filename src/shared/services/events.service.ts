@@ -76,9 +76,7 @@ export class EventsService {
     return data;
   }
 
-  static async updateEvent(event: UpdateEventInput): Promise<Event> {
-    const { id, ...updates } = event;
-
+  static async updateEvent(id: string, updates: Partial<CreateEventInput>): Promise<Event> {
     const { data, error } = await supabase
       .from('events')
       .update({

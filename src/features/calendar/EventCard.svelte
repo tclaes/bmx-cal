@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { Card, Badge } from '@shared/components';
+  import { createEventDispatcher } from 'svelte';
+  import { Card, Badge, Button } from '@shared/components';
   import type { EventWithType } from '@types';
+  import { authStore } from '@shared/stores';
 
   export let event: EventWithType;
+
+  const dispatch = createEventDispatcher();
 
   function formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
@@ -17,14 +21,28 @@
     if (!time) return '';
     return time.substring(0, 5);
   }
+
+  function handleEdit() {
+    dispatch('edit', event);
+  }
 </script>
 
 <Card padding="md" shadow="sm">
   <div class="event-card">
     <div class="event-header">
-      <h3 class="event-title">{event.title}</h3>
-      {#if event.event_type}
-        <Badge label={event.event_type.name} color={event.event_type.color_code} />
+      <div class="event-header-left">
+        <h3 class="event-title">{event.title}</h3>
+        {#if event.event_type}
+          <Badge label={event.event_type.name} color={event.event_type.color_code} />
+        {/if}
+      </div>
+      {#if $authStore.isAuthenticated}
+        <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
       {/if}
     </div>
 
@@ -78,11 +96,38 @@
     gap: var(--spacing-sm);
   }
 
+  .event-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    flex: 1;
+  }
+
   .event-title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     margin: 0;
+  }
+
+  .edit-btn {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .edit-btn:hover {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-primary);
+  }
+
+  .edit-btn:active {
+    transform: scale(0.95);
   }
 
   .event-details {
