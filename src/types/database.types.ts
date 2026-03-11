@@ -13,6 +13,7 @@ export interface Event {
   start_time: string | null;
   end_time: string | null;
   location: string;
+  maps_url: string | null;
   event_type_id: string | null;
   status: 'upcoming' | 'completed' | 'cancelled';
   created_at: string;

@@ -29,7 +29,10 @@
     dispatch('edit', event);
   }
 
-  function getGoogleMapsUrl(location: string): string {
+  function getGoogleMapsUrl(location: string, mapsUrl: string | null): string {
+    if (mapsUrl) {
+      return mapsUrl;
+    }
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
   }
 </script>
@@ -80,7 +83,7 @@
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
         <a
-          href={getGoogleMapsUrl(event.location)}
+          href={getGoogleMapsUrl(event.location, event.maps_url)}
           target="_blank"
           rel="noopener noreferrer"
           class="location-link"
