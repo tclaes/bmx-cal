@@ -28,6 +28,10 @@
     console.log('Edit button clicked for event:', event.id);
     dispatch('edit', event);
   }
+
+  function getGoogleMapsUrl(location: string): string {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+  }
 </script>
 
 <Card padding="md" shadow="sm">
@@ -75,7 +79,15 @@
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
           <circle cx="12" cy="10" r="3"></circle>
         </svg>
-        <span>{event.location}</span>
+        <a
+          href={getGoogleMapsUrl(event.location)}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="location-link"
+          title="View on Google Maps"
+        >
+          {event.location}
+        </a>
       </div>
     </div>
 
@@ -157,5 +169,21 @@
     color: var(--color-text-secondary);
     line-height: var(--line-height-relaxed);
     margin: 0;
+  }
+
+  .location-link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .location-link:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .location-link:active {
+    color: var(--color-primary-dark, var(--color-primary));
   }
 </style>
