@@ -35,6 +35,8 @@
       event_type_id: event.event_type_id || '',
       status: event.status || 'upcoming'
     };
+    console.log('EventEditor opened with data:', formData);
+    console.log('Event types available:', eventTypes);
   }
 
   async function handleSave() {

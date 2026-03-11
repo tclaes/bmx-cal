@@ -7,6 +7,7 @@
   export let disabled = false;
   export let required = false;
   export let id = '';
+  export let readonly = false;
 </script>
 
 <div class="input-wrapper">
@@ -20,6 +21,7 @@
       {placeholder}
       {disabled}
       {required}
+      {readonly}
       class="input"
       class:error={!!error}
       bind:value
@@ -34,6 +36,7 @@
       {placeholder}
       {disabled}
       {required}
+      {readonly}
       class="input"
       class:error={!!error}
       bind:value
@@ -48,6 +51,7 @@
       {placeholder}
       {disabled}
       {required}
+      {readonly}
       class="input"
       class:error={!!error}
       bind:value
@@ -62,6 +66,7 @@
       {placeholder}
       {disabled}
       {required}
+      {readonly}
       class="input"
       class:error={!!error}
       bind:value
@@ -76,6 +81,7 @@
       {placeholder}
       {disabled}
       {required}
+      {readonly}
       class="input"
       class:error={!!error}
       bind:value
