@@ -7,6 +7,11 @@
   export let disabled = false;
   export let required = false;
   export let id = '';
+
+  function handleInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    value = target.value;
+  }
 </script>
 
 <div class="input-wrapper">
@@ -21,8 +26,8 @@
     {required}
     class="input"
     class:error={!!error}
-    value={value}
-    on:input={(e) => { value = e.currentTarget.value; }}
+    {value}
+    on:input={handleInput}
     on:change
     on:blur
   />
