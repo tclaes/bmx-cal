@@ -8,6 +8,8 @@
 
   const dispatch = createEventDispatcher();
 
+  $: isAuthenticated = $authStore.user !== null;
+
   function formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
       weekday: 'short',
@@ -36,7 +38,7 @@
           <Badge label={event.event_type.name} color={event.event_type.color_code} />
         {/if}
       </div>
-      {#if $authStore.isAuthenticated}
+      {#if isAuthenticated}
         <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
