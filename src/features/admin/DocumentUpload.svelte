@@ -99,7 +99,8 @@
       <div class="preview-list">
         {#each parsedEvents.slice(0, 5) as event}
           <div class="preview-item">
-            <strong>{event.title}</strong> - {event.date} at {event.location}
+            <strong>{event.title}</strong> - {event.date}{#if event.location} at {event.location}{/if}
+            {#if event.event_type} <span class="event-type">({event.event_type})</span>{/if}
           </div>
         {/each}
         {#if parsedEvents.length > 5}

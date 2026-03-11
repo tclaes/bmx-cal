@@ -65,13 +65,14 @@ export class ImportService {
       throw new Error('Date must be in YYYY-MM-DD format');
     }
 
-    if (!event.location || event.location.trim() === '') {
-      throw new Error('Location is required');
-    }
-
     let eventTypeId: string | undefined;
     if (event.event_type) {
-      eventTypeId = eventTypeMap.get(event.event_type.toLowerCase());
+      const eventTypeLower = event.event_type.toLowerCase();
+      eventTypeId = eventTypeMap.get(eventTypeLower);
+
+      if (!eventTypeId && eventTypeLower.includes('race')) {
+        eventTypeId = eventTypeMap.get('race');
+      }
     }
 
     return {
@@ -80,7 +81,7 @@ export class ImportService {
       date: event.date,
       start_time: event.start_time || null,
       end_time: event.end_time || null,
-      location: event.location.trim(),
+      location: event.location?.trim() || 'TBD',
       event_type_id: eventTypeId,
       status: 'upcoming',
     };
