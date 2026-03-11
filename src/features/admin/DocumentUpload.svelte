@@ -41,11 +41,16 @@
       error = '';
       success = '';
 
+      console.log('Auth user:', $authStore.user);
+      console.log('Importing events:', parsedEvents);
+
       const result = await ImportService.importEvents(
         parsedEvents,
         selectedFile.name,
         userId
       );
+
+      console.log('Import result:', result);
 
       if (result.success) {
         success = `Successfully imported ${result.imported} events!`;
@@ -59,6 +64,7 @@
       selectedFile = null;
       parsedEvents = [];
     } catch (err) {
+      console.error('Import error:', err);
       error = err instanceof Error ? err.message : 'Failed to import events';
     } finally {
       importing = false;

@@ -14,11 +14,16 @@ export class ImportService {
     const eventTypes = await EventsService.getEventTypes();
     const eventTypeMap = new Map(eventTypes.map(et => [et.name.toLowerCase(), et.id]));
 
+    console.log('Event types:', eventTypes);
+    console.log('Validating events:', events);
+
     events.forEach((event, index) => {
       try {
         const validatedEvent = this.validateEvent(event, eventTypeMap);
+        console.log(`Validated event ${index + 1}:`, validatedEvent);
         validEvents.push(validatedEvent);
       } catch (error) {
+        console.error(`Validation error for event ${index + 1}:`, error);
         errors.push({
           row: index + 1,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -26,12 +31,17 @@ export class ImportService {
       }
     });
 
+    console.log('Valid events to import:', validEvents);
+    console.log('Validation errors:', errors);
+
     let imported = 0;
     if (validEvents.length > 0) {
       try {
         const created = await EventsService.createBulkEvents(validEvents);
+        console.log('Created events:', created);
         imported = created.length;
       } catch (error) {
+        console.error('Bulk insert error:', error);
         errors.push({
           row: 0,
           error: error instanceof Error ? error.message : 'Failed to insert events',
