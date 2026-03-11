@@ -37,14 +37,14 @@ export class ImportService {
     let imported = 0;
     if (validEvents.length > 0) {
       try {
-        const created = await EventsService.createBulkEvents(validEvents);
-        console.log('Created events:', created);
-        imported = created.length;
+        const result = await this.upsertEvents(validEvents);
+        console.log('Upserted events:', result);
+        imported = result.created + result.updated;
       } catch (error) {
-        console.error('Bulk insert error:', error);
+        console.error('Upsert error:', error);
         errors.push({
           row: 0,
-          error: error instanceof Error ? error.message : 'Failed to insert events',
+          error: error instanceof Error ? error.message : 'Failed to upsert events',
         });
       }
     }
@@ -56,6 +56,64 @@ export class ImportService {
       imported,
       errors,
     };
+  }
+
+  private static async upsertEvents(
+    events: CreateEventInput[]
+  ): Promise<{ created: number; updated: number }> {
+    const { data: existingEvents, error: fetchError } = await supabase
+      .from('events')
+      .select('id, title, date');
+
+    if (fetchError) throw fetchError;
+
+    const existingMap = new Map(
+      existingEvents?.map(e => [`${e.title.toLowerCase()}|${e.date}`, e.id]) || []
+    );
+
+    const toCreate: CreateEventInput[] = [];
+    const toUpdate: Array<{ id: string; data: CreateEventInput }> = [];
+
+    events.forEach(event => {
+      const key = `${event.title.toLowerCase()}|${event.date}`;
+      const existingId = existingMap.get(key);
+
+      if (existingId) {
+        toUpdate.push({ id: existingId, data: event });
+      } else {
+        toCreate.push(event);
+      }
+    });
+
+    console.log(`Creating ${toCreate.length} new events, updating ${toUpdate.length} existing events`);
+
+    let created = 0;
+    let updated = 0;
+
+    if (toCreate.length > 0) {
+      const { data, error } = await supabase
+        .from('events')
+        .insert(toCreate)
+        .select();
+
+      if (error) throw error;
+      created = data?.length || 0;
+    }
+
+    for (const { id, data } of toUpdate) {
+      const { error } = await supabase
+        .from('events')
+        .update(data)
+        .eq('id', id);
+
+      if (error) {
+        console.error(`Failed to update event ${id}:`, error);
+      } else {
+        updated++;
+      }
+    }
+
+    return { created, updated };
   }
 
   private static validateEvent(
