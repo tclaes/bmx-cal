@@ -47,11 +47,11 @@ CREATE POLICY "Authenticated admins can view sync logs"
 CREATE INDEX IF NOT EXISTS idx_sync_logs_organizer ON sync_logs(organizer_url);
 CREATE INDEX IF NOT EXISTS idx_sync_logs_scraped_at ON sync_logs(scraped_at DESC);
 
--- Schedule the sync-jstiming edge function every Sunday at 06:00 UTC
+-- Schedule the sync-jstiming edge function every Tuesday at 06:00 UTC
 -- pg_cron syntax: minute hour day-of-month month day-of-week
 SELECT cron.schedule(
   'sync-jstiming-weekly',            -- job name (unique)
-  '0 6 * * 0',                       -- every Sunday at 06:00 UTC
+  '0 6 * * 2',                       -- every Tuesday at 06:00 UTC
   $$
   SELECT net.http_post(
     url    := current_setting('app.supabase_url') || '/functions/v1/sync-jstiming',
