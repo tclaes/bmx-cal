@@ -33,6 +33,7 @@ export interface Event {
   registration_opens: string | null;
   registration_deadline: string | null;
   registration_status: string | null;
+  livestream_url: string | null;
   created_at: string;
   updated_at: string;
 }
