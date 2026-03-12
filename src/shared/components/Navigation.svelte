@@ -17,9 +17,11 @@
     </button>
 
     <div class="nav-links">
-      <button class="nav-link" on:click={() => handleNavigate('/')}>
-        Events
-      </button>
+      {#if $authStore.isAuthenticated}
+        <button class="nav-link" on:click={() => handleNavigate('/')}>
+          Events
+        </button>
+      {/if}
     </div>
   </div>
 </nav>
