@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let type: 'text' | 'email' | 'password' | 'date' | 'time' = 'text';
+  export let type: 'text' | 'email' | 'password' | 'date' | 'time' | 'url' = 'text';
   export let value = '';
   export let placeholder = '';
   export let label = '';
@@ -77,6 +77,21 @@
   {:else if type === 'time'}
     <input
       type="time"
+      {id}
+      {placeholder}
+      {disabled}
+      {required}
+      {readonly}
+      class="input"
+      class:error={!!error}
+      bind:value
+      on:input
+      on:change
+      on:blur
+    />
+  {:else if type === 'url'}
+    <input
+      type="url"
       {id}
       {placeholder}
       {disabled}
