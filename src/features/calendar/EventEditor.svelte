@@ -20,6 +20,7 @@
     event_type_id: '',
     status: 'upcoming' as 'upcoming' | 'completed' | 'cancelled',
     registration_url: '',
+    registration_opens: '',
     registration_deadline: '',
     registration_status: ''
   };
@@ -39,6 +40,7 @@
       event_type_id: event.event_type_id || '',
       status: event.status || 'upcoming',
       registration_url: event.registration_url || '',
+      registration_opens: event.registration_opens || '',
       registration_deadline: event.registration_deadline || '',
       registration_status: event.registration_status || ''
     };
@@ -68,6 +70,7 @@
         event_type_id: formData.event_type_id || null,
         status: formData.status,
         registration_url: formData.registration_url || null,
+        registration_opens: formData.registration_opens || null,
         registration_deadline: formData.registration_deadline || null,
         registration_status: formData.registration_status || null
       };
@@ -173,6 +176,14 @@
         bind:value={formData.registration_url}
         placeholder="https://registration.jstiming.com/..."
         type="url"
+      />
+    </div>
+
+    <div class="form-group">
+      <Input
+        label="Registration Opens"
+        type="date"
+        bind:value={formData.registration_opens}
       />
     </div>
 

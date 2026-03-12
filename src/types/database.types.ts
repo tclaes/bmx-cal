@@ -30,6 +30,7 @@ export interface Event {
   event_type_id: string | null;
   status: 'upcoming' | 'completed' | 'cancelled';
   registration_url: string | null;
+  registration_opens: string | null;
   registration_deadline: string | null;
   registration_status: string | null;
   created_at: string;
@@ -74,6 +75,7 @@ export interface CreateEventInput {
   event_type_id?: string;
   status?: 'upcoming' | 'completed' | 'cancelled';
   registration_url?: string;
+  registration_opens?: string;
   registration_deadline?: string;
   registration_status?: string;
 }
