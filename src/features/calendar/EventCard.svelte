@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { Card, Badge, Button } from '@shared/components';
   import type { EventWithDetails } from '@types';
-  import { authStore } from '@shared/stores';
+  import { authStore, filtersStore } from '@shared/stores';
 
   export let event: EventWithDetails;
 
@@ -63,6 +63,11 @@
     dispatch('edit', event);
   }
 
+  function handleEventTypeClick(eventTypeId: string) {
+    filtersStore.setEventType(eventTypeId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function getGoogleMapsUrl(): string {
     if (event.location_details?.maps_url) {
       return event.location_details.maps_url;
@@ -103,7 +108,14 @@
       <h3 class="event-title">{event.title}</h3>
       <div class="event-header-right">
         {#if event.event_type}
-          <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
+          <button
+            class="badge-button"
+            on:click={() => handleEventTypeClick(event.event_type.id)}
+            title="Filter by {event.event_type.name}"
+            aria-label="Filter by {event.event_type.name}"
+          >
+            <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
+          </button>
         {/if}
         {#if isAuthenticated}
           <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
@@ -222,6 +234,24 @@
 
   .event-card-content {
     flex: 1;
+  }
+
+  .badge-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .badge-button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+
+  .badge-button:active {
+    transform: translateY(0);
   }
 
   .edit-btn {
