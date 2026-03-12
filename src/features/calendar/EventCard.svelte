@@ -24,6 +24,18 @@
     return time.substring(0, 5);
   }
 
+  function getEventTypeAbbreviation(name: string): string {
+    const abbreviations: Record<string, string> = {
+      '3 Nations Cup': '3NC',
+      'Belgian Cycling': 'BC',
+      'Cycling Vlaanderen': 'CV',
+      'European Cup': 'EC',
+      'Wallonie Cycling': 'WAL',
+      'World Cup': 'WC',
+    };
+    return abbreviations[name] || name.substring(0, 3).toUpperCase();
+  }
+
   function handleEdit() {
     console.log('Edit button clicked for event:', event.id);
     dispatch('edit', event);
@@ -69,7 +81,7 @@
       <div class="event-header-left">
         <h3 class="event-title">{event.title}</h3>
         {#if event.event_type}
-          <Badge label={event.event_type.name} color={event.event_type.color_code} />
+          <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
         {/if}
       </div>
       {#if isAuthenticated}
