@@ -64,7 +64,7 @@
   }
 
   function handleEventTypeClick(eventTypeId: string) {
-    filtersStore.setEventType(eventTypeId);
+    filtersStore.setEventTypes([eventTypeId]);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -75,8 +75,26 @@
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   }
 
+  function getFridayBefore(dateStr: string): Date {
+    const date = new Date(dateStr);
+    const day = date.getDay();
+    const daysUntilFriday = (day + 2) % 7;
+    const friday = new Date(date);
+    friday.setDate(date.getDate() - daysUntilFriday);
+    friday.setHours(0, 0, 0, 0);
+    return friday;
+  }
+
   function getRegistrationStatus(): { label: string; color: string } | null {
     if (!event.registration_url) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const fridayBefore = getFridayBefore(event.date);
+    if (today >= fridayBefore) {
+      return null;
+    }
 
     if (event.registration_status === 'open') {
       return { label: 'Registration Open', color: '#10b981' };
@@ -88,9 +106,6 @@
 
     if (event.registration_deadline) {
       const deadline = new Date(event.registration_deadline);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
       if (deadline < today) {
         return { label: 'Registration Closed', color: '#6b7280' };
       }
