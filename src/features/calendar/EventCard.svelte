@@ -78,20 +78,20 @@
 <Card padding="md" shadow="sm">
   <div class="event-card">
     <div class="event-header">
-      <div class="event-header-left">
-        <h3 class="event-title">{event.title}</h3>
+      <h3 class="event-title">{event.title}</h3>
+      <div class="event-header-right">
         {#if event.event_type}
           <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
         {/if}
+        {#if isAuthenticated}
+          <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+          </button>
+        {/if}
       </div>
-      {#if isAuthenticated}
-        <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-          </svg>
-        </button>
-      {/if}
     </div>
 
     <div class="event-details">
@@ -132,9 +132,11 @@
       </div>
     </div>
 
-    {#if event.description}
-      <p class="event-description">{event.description}</p>
-    {/if}
+    <div class="event-card-content">
+      {#if event.description}
+        <p class="event-description">{event.description}</p>
+      {/if}
+    </div>
 
     {#if event.registration_url && registrationStatus}
       <div class="registration-section">
@@ -171,6 +173,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    min-height: 100%;
   }
 
   .event-header {
@@ -180,11 +183,11 @@
     gap: var(--spacing-sm);
   }
 
-  .event-header-left {
+  .event-header-right {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: var(--spacing-sm);
-    flex: 1;
+    flex-shrink: 0;
   }
 
   .event-title {
@@ -192,6 +195,11 @@
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     margin: 0;
+    flex: 1;
+  }
+
+  .event-card-content {
+    flex: 1;
   }
 
   .edit-btn {
@@ -260,7 +268,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
-    margin-top: var(--spacing-sm);
+    margin-top: auto;
     padding-top: var(--spacing-md);
     border-top: 1px solid var(--color-border);
   }
