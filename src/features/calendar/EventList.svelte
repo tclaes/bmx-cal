@@ -16,7 +16,7 @@
     const events = $eventsStore.events;
 
     filteredEvents = events.filter(event => {
-      if (filters.selectedEventType && event.event_type_id !== filters.selectedEventType) {
+      if (filters.selectedEventTypes.length > 0 && !filters.selectedEventTypes.includes(event.event_type_id)) {
         return false;
       }
 

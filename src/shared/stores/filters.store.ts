@@ -1,14 +1,14 @@
 import { writable } from 'svelte/store';
 
 export interface FiltersState {
-  selectedEventType: string | null;
+  selectedEventTypes: string[];
   startDate: string | null;
   endDate: string | null;
   searchQuery: string;
 }
 
 const initialState: FiltersState = {
-  selectedEventType: null,
+  selectedEventTypes: [],
   startDate: null,
   endDate: null,
   searchQuery: '',
@@ -19,8 +19,15 @@ function createFiltersStore() {
 
   return {
     subscribe,
-    setEventType: (eventType: string | null) =>
-      update(state => ({ ...state, selectedEventType: eventType })),
+    setEventTypes: (eventTypes: string[]) =>
+      update(state => ({ ...state, selectedEventTypes: eventTypes })),
+    toggleEventType: (eventType: string) =>
+      update(state => {
+        const types = state.selectedEventTypes.includes(eventType)
+          ? state.selectedEventTypes.filter(t => t !== eventType)
+          : [...state.selectedEventTypes, eventType];
+        return { ...state, selectedEventTypes: types };
+      }),
     setDateRange: (startDate: string | null, endDate: string | null) =>
       update(state => ({ ...state, startDate, endDate })),
     setSearchQuery: (query: string) =>

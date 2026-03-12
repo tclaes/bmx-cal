@@ -1,25 +1,20 @@
 <script lang="ts">
-  import { Select, Input } from '@shared/components';
+  import { Input } from '@shared/components';
   import { filtersStore } from '@shared/stores';
   import { eventsStore } from '@shared/stores';
   import type { EventType } from '@types';
 
   let eventTypes: EventType[] = [];
-  let selectedType = '';
+  let selectedTypes: string[] = [];
   let startDate = '';
   let endDate = '';
+  let dropdownOpen = false;
 
   $: eventTypes = $eventsStore.eventTypes;
+  $: selectedTypes = $filtersStore.selectedEventTypes;
 
-  $: eventTypeOptions = eventTypes.map(et => ({
-    value: et.id,
-    label: et.name,
-  }));
-
-  function handleTypeChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    selectedType = target.value;
-    filtersStore.setEventType(selectedType || null);
+  function handleTypeToggle(typeId: string) {
+    filtersStore.toggleEventType(typeId);
   }
 
   function handleStartDateChange(event: Event) {
@@ -35,22 +30,57 @@
   }
 
   function resetFilters() {
-    selectedType = '';
+    selectedTypes = [];
     startDate = '';
     endDate = '';
     filtersStore.reset();
   }
+
+  function toggleDropdown() {
+    dropdownOpen = !dropdownOpen;
+  }
+
+  function handleClickOutside(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.event-type-dropdown')) {
+      dropdownOpen = false;
+    }
+  }
 </script>
 
+<svelte:window on:click={handleClickOutside} />
+
 <div class="filters">
-  <Select
-    id="event-type-filter"
-    label="Event Type"
-    bind:value={selectedType}
-    options={eventTypeOptions}
-    placeholder="All Types"
-    on:change={handleTypeChange}
-  />
+  <div class="event-type-dropdown">
+    <label class="dropdown-label">Event Types</label>
+    <button
+      class="dropdown-button"
+      on:click|stopPropagation={toggleDropdown}
+      type="button"
+    >
+      <span class="dropdown-text">
+        {selectedTypes.length === 0
+          ? 'All Types'
+          : `${selectedTypes.length} selected`}
+      </span>
+      <span class="dropdown-arrow">{dropdownOpen ? '▲' : '▼'}</span>
+    </button>
+
+    {#if dropdownOpen}
+      <div class="dropdown-menu">
+        {#each eventTypes as eventType}
+          <label class="checkbox-item">
+            <input
+              type="checkbox"
+              checked={selectedTypes.includes(eventType.id)}
+              on:change={() => handleTypeToggle(eventType.id)}
+            />
+            <span class="checkbox-label">{eventType.name}</span>
+          </label>
+        {/each}
+      </div>
+    {/if}
+  </div>
 
   <Input
     type="date"
@@ -79,6 +109,91 @@
     padding: var(--spacing-lg);
     background-color: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
+  }
+
+  .event-type-dropdown {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .dropdown-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .dropdown-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .dropdown-button:hover {
+    border-color: var(--color-primary);
+  }
+
+  .dropdown-text {
+    flex: 1;
+  }
+
+  .dropdown-arrow {
+    margin-left: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    transition: background-color var(--transition-base);
+    cursor: pointer;
+  }
+
+  .checkbox-item:hover {
+    background-color: var(--color-bg-secondary);
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+
+  .checkbox-label {
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    user-select: none;
   }
 
   .reset-button {
