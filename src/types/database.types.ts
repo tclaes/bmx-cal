@@ -22,6 +22,7 @@ export interface Event {
   title: string;
   description: string;
   date: string;
+  end_date: string | null;
   start_time: string | null;
   end_time: string | null;
   location: string;
@@ -65,6 +66,7 @@ export interface CreateEventInput {
   title: string;
   description?: string;
   date: string;
+  end_date?: string;
   start_time?: string;
   end_time?: string;
   location: string;

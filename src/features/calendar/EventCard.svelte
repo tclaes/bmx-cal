@@ -19,6 +19,28 @@
     });
   }
 
+  function formatDateRange(startDate: string, endDate: string | null): string {
+    const start = new Date(startDate);
+
+    if (!endDate) {
+      return formatDate(startDate);
+    }
+
+    const end = new Date(endDate);
+
+    const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+    const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+    const startDay = start.getDate();
+    const endDay = end.getDate();
+    const year = start.getFullYear();
+
+    if (startMonth === endMonth) {
+      return `${startMonth} ${startDay}-${endDay}, ${year}`;
+    } else {
+      return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+    }
+  }
+
   function formatTime(time: string | null): string {
     if (!time) return '';
     return time.substring(0, 5);
@@ -102,7 +124,7 @@
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
-        <span>{formatDate(event.date)}</span>
+        <span>{formatDateRange(event.date, event.end_date)}</span>
       </div>
 
       {#if event.start_time}
