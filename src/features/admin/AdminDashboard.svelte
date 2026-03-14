@@ -13,12 +13,41 @@
   let deleteError = '';
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
+  let openYears: Set<number> = new Set();
+
+  const currentYear = new Date().getFullYear();
+
+  function getEventYear(dateString: string): number {
+    return new Date(dateString).getFullYear();
+  }
+
+  function groupEventsByYear(evts: EventWithType[]): Map<number, EventWithType[]> {
+    const map = new Map<number, EventWithType[]>();
+    for (const evt of evts) {
+      const year = getEventYear(evt.date);
+      if (!map.has(year)) map.set(year, []);
+      map.get(year)!.push(evt);
+    }
+    return new Map([...map.entries()].sort((a, b) => a[0] - b[0]));
+  }
+
+  function toggleYear(year: number) {
+    if (openYears.has(year)) {
+      openYears.delete(year);
+    } else {
+      openYears.add(year);
+    }
+    openYears = new Set(openYears);
+  }
+
+  $: eventsByYear = groupEventsByYear(events);
 
   async function loadEvents() {
     loading = true;
     error = '';
     try {
       events = await EventsService.getUpcomingEvents();
+      openYears = new Set([currentYear]);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load events';
     } finally {
@@ -101,39 +130,67 @@
         {:else if events.length === 0}
           <p class="no-events">No upcoming events found.</p>
         {:else}
-          <div class="events-list">
-            {#each events as event (event.id)}
-              <div class="event-item">
-                <div class="event-info">
-                  <div class="event-header">
-                    <h3 class="event-title">{event.title}</h3>
-                    {#if event.event_type}
-                      <span
-                        class="event-badge"
-                        style="background-color: {event.event_type.color_code}20; color: {event.event_type.color_code}; border-color: {event.event_type.color_code}40;"
-                      >
-                        {event.event_type.name}
-                      </span>
-                    {/if}
-                  </div>
-                  <div class="event-details">
-                    <span class="event-date">{formatDate(event.date)}</span>
-                    <span class="event-location">{event.location}</span>
-                  </div>
-                  {#if event.description}
-                    <p class="event-description">{event.description}</p>
-                  {/if}
-                </div>
-                <div class="event-actions">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    disabled={deletingEventId === event.id}
-                    on:click={() => handleDeleteEvent(event.id, event.title)}
+          <div class="years-list">
+            {#each [...eventsByYear.entries()] as [year, yearEvents] (year)}
+              <div class="year-group">
+                <button
+                  class="year-toggle"
+                  on:click={() => toggleYear(year)}
+                  aria-expanded={openYears.has(year)}
+                >
+                  <span class="year-label">{year}</span>
+                  <span class="year-count">{yearEvents.length} event{yearEvents.length !== 1 ? 's' : ''}</span>
+                  <svg
+                    class="year-chevron"
+                    class:open={openYears.has(year)}
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
-                  </Button>
-                </div>
+                    <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+
+                {#if openYears.has(year)}
+                  <div class="events-list">
+                    {#each yearEvents as event (event.id)}
+                      <div class="event-item">
+                        <div class="event-info">
+                          <div class="event-header">
+                            <h3 class="event-title">{event.title}</h3>
+                            {#if event.event_type}
+                              <span
+                                class="event-badge"
+                                style="background-color: {event.event_type.color_code}20; color: {event.event_type.color_code}; border-color: {event.event_type.color_code}40;"
+                              >
+                                {event.event_type.name}
+                              </span>
+                            {/if}
+                          </div>
+                          <div class="event-details">
+                            <span class="event-date">{formatDate(event.date)}</span>
+                            <span class="event-location">{event.location}</span>
+                          </div>
+                          {#if event.description}
+                            <p class="event-description">{event.description}</p>
+                          {/if}
+                        </div>
+                        <div class="event-actions">
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            disabled={deletingEventId === event.id}
+                            on:click={() => handleDeleteEvent(event.id, event.title)}
+                          >
+                            {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
+                          </Button>
+                        </div>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>
@@ -211,10 +268,62 @@
     margin: 0;
   }
 
+  .years-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .year-group {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+  }
+
+  .year-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-surface-secondary, #f8f9fa);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+
+  .year-toggle:hover {
+    background: var(--color-surface-hover, #f0f1f2);
+  }
+
+  .year-label {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    flex: 1;
+  }
+
+  .year-count {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .year-chevron {
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .year-chevron.open {
+    transform: rotate(180deg);
+  }
+
   .events-list {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    padding: var(--spacing-md);
   }
 
   .event-item {
