@@ -62,7 +62,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         from: "BMX Calendar <noreply@bmxcalendar.be>",
-        to: ["info@bmxcalendar.be"],
+        to: ["bmxcalendar@tcla.be"],
         reply_to: email,
         subject: `Team features inquiry from ${clubName || name}`,
         html: htmlBody,
