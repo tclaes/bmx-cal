@@ -65,16 +65,40 @@
         </div>
       {/if}
     </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span>&copy; {new Date().getFullYear()} BMX Calendar. All rights reserved.</span>
+      </div>
+    </footer>
   {/if}
 </div>
 
 <style>
   .app {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background-color: var(--color-bg-primary);
   }
 
+  .footer {
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-bg-secondary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin-top: auto;
+  }
+
+  .footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
   .main-content {
+    flex: 1;
     min-height: calc(100vh - 60px);
   }
 
