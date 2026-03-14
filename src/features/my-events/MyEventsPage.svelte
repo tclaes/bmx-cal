@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { eventsStore } from '../../shared/stores';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount } from '../../shared/stores';
+  import { EventsService } from '../../shared/services/events.service';
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
   import type { EventWithDetails } from '../../types';
@@ -12,13 +12,12 @@
   let exporting = false;
 
   $: sortedEvents = [...events].sort((a, b) =>
-    new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
   onMount(async () => {
     try {
-      await eventsStore.loadEvents();
-      events = $eventsStore.events;
+      events = await EventsService.getAllEvents();
       loadUserSelections();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load events';
@@ -69,7 +68,7 @@
     selectedEvents.forEach(event => {
       const params = new URLSearchParams({
         text: event.name,
-        dates: formatGoogleCalendarDate(event.start_date, event.end_date),
+        dates: formatGoogleCalendarDate(event.date, event.end_date),
         details: event.description || '',
         location: event.location?.name || ''
       });
@@ -80,7 +79,7 @@
     exporting = false;
   }
 
-  function formatGoogleCalendarDate(startDate: string, endDate: string | null): string {
+  function formatGoogleCalendarDate(startDate: string, endDate: string | null | undefined): string {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date(start.getTime() + 3600000);
 
@@ -143,7 +142,7 @@
 
           <div class="event-info">
             <h3 class="event-name">{event.name}</h3>
-            <p class="event-date">{formatDate(event.start_date)}</p>
+            <p class="event-date">{formatDate(event.date)}</p>
           </div>
         </button>
       {/each}
