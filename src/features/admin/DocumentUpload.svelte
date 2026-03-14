@@ -81,7 +81,6 @@
 </script>
 
 <div class="document-upload">
-  <h2 class="section-title">Import Events from File</h2>
   <p class="section-description">
     Upload a CSV, Excel, iCalendar, or PDF file to bulk import events. Supported formats: CSV, XLSX, XLS, ICS, PDF
   </p>
@@ -138,13 +137,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
-  }
-
-  .section-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0;
   }
 
   .section-description {
