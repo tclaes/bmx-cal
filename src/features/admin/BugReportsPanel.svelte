@@ -25,7 +25,8 @@
     loading = true;
     error = '';
     try {
-      reports = await adminBugReportService.getAllReports();
+      const fetched = await adminBugReportService.getAllReports();
+      reports = await adminBugReportService.syncGithubStatuses(fetched);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load bug reports';
     } finally {

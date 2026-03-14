@@ -115,6 +115,35 @@ async function updateGithubIssueState(githubIssueUrl: string, state: 'open' | 'c
   }
 }
 
+async function fetchGithubIssueStatuses(
+  urls: string[]
+): Promise<Record<string, 'open' | 'closed' | 'unknown'>> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/get-github-issue-statuses`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ urls }),
+    });
+
+    if (!response.ok) return {};
+
+    const data = await response.json();
+    const map: Record<string, 'open' | 'closed' | 'unknown'> = {};
+    for (const r of data.results ?? []) {
+      map[r.github_issue_url] = r.github_state;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
 export const adminBugReportService = {
   async getAllReports(): Promise<BugReport[]> {
     const { data, error } = await supabase
@@ -124,6 +153,44 @@ export const adminBugReportService = {
 
     if (error) throw new Error(error.message);
     return (data ?? []) as BugReport[];
+  },
+
+  async syncGithubStatuses(reports: BugReport[]): Promise<BugReport[]> {
+    const withIssue = reports.filter(r => r.github_issue_url);
+    if (withIssue.length === 0) return reports;
+
+    const urls = withIssue.map(r => r.github_issue_url as string);
+    const stateMap = await fetchGithubIssueStatuses(urls);
+
+    const updates: Promise<void>[] = [];
+    const updatedReports = reports.map(report => {
+      if (!report.github_issue_url) return report;
+
+      const githubState = stateMap[report.github_issue_url];
+      if (githubState === 'unknown' || githubState === undefined) return report;
+
+      const shouldBeResolved = githubState === 'closed' && report.status !== 'resolved';
+      const shouldBeOpen = githubState === 'open' && report.status === 'resolved';
+
+      if (shouldBeResolved) {
+        updates.push(
+          supabase.from('bug_reports').update({ status: 'resolved' }).eq('id', report.id).then(() => {})
+        );
+        return { ...report, status: 'resolved' };
+      }
+
+      if (shouldBeOpen) {
+        updates.push(
+          supabase.from('bug_reports').update({ status: 'open' }).eq('id', report.id).then(() => {})
+        );
+        return { ...report, status: 'open' };
+      }
+
+      return report;
+    });
+
+    await Promise.all(updates);
+    return updatedReports;
   },
 
   async updateStatus(id: string, status: string, report?: BugReport): Promise<void> {
