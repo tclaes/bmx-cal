@@ -40,6 +40,7 @@ export const authStore = {
 export const user = derived(baseAuthStore, $auth => $auth.user);
 export const isAdmin = derived(baseAuthStore, $auth => $auth.user?.role === 'admin');
 export const isTeamManager = derived(baseAuthStore, $auth =>
-  $auth.user?.role === 'admin' || ($auth.user?.teams?.length ?? 0) > 0
+  $auth.user?.role === 'admin' || ($auth.user?.managedTeams?.length ?? 0) > 0
 );
 export const userTeams = derived(baseAuthStore, $auth => $auth.user?.teams ?? []);
+export const userManagedTeams = derived(baseAuthStore, $auth => $auth.user?.managedTeams ?? []);

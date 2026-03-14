@@ -89,6 +89,7 @@ export interface AdminUser {
   email: string;
   role: string;
   teams?: Team[];
+  managedTeams?: Team[];
 }
 
 export interface CreateEventInput {

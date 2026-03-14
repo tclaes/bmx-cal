@@ -22,7 +22,7 @@
 
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
-  $: isTeamManager = isAdmin || (user?.teams?.length ?? 0) > 0;
+  $: isTeamManager = isAdmin || (user?.managedTeams?.length ?? 0) > 0;
 </script>
 
 <nav class="navigation">

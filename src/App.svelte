@@ -35,7 +35,7 @@
 
   $: isAuthenticated = $authStore.user !== null;
   $: isAdmin = $authStore.user?.role === 'admin';
-  $: isTeamManager = isAdmin || ($authStore.user?.teams?.length ?? 0) > 0;
+  $: isTeamManager = isAdmin || ($authStore.user?.managedTeams?.length ?? 0) > 0;
 </script>
 
 <div class="app">

@@ -2,13 +2,12 @@
   import { createEventDispatcher } from 'svelte';
   import { Card, Badge, Button } from '@shared/components';
   import type { EventWithDetails } from '@types';
-  import { authStore, filtersStore } from '@shared/stores';
+  import { filtersStore } from '@shared/stores';
 
   export let event: EventWithDetails;
+  export let canEdit = false;
 
   const dispatch = createEventDispatcher();
-
-  $: isAuthenticated = $authStore.user !== null;
 
   function formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
@@ -142,7 +141,7 @@
             <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
           </button>
         {/if}
-        {#if isAuthenticated}
+        {#if canEdit}
           <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
