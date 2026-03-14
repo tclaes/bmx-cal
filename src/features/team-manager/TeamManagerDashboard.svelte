@@ -61,14 +61,14 @@
     if (isAdmin) {
       const { data } = await supabase.from('teams').select('*').order('name');
       allTeams = data ?? [];
-      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, true]));
+      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
       expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     } else {
       allTeams = user?.teams ?? [];
       if (allTeams.length > 0 && !selectedTeamId) {
         selectedTeamId = allTeams[0].id;
       }
-      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, true]));
+      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
       expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     }
   }
@@ -294,7 +294,7 @@
         {#each allTeams as team (team.id)}
           {@const teamEvts = eventsByTeam[team.id] ?? []}
           {@const teamMbrs = teamMembers[team.id] ?? []}
-          {@const isExpanded = expandedTeams[team.id] ?? true}
+          {@const isExpanded = expandedTeams[team.id] ?? false}
           {@const isMembersExpanded = expandedMembersTeams[team.id] ?? false}
 
           <div class="team-group">
