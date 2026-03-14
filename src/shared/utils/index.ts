@@ -5,3 +5,4 @@ export { parseICalendar } from './ical-parser';
 export { parsePDF } from './pdf-parser';
 export { generateICalContent, downloadICalFile } from './ical-exporter';
 export { canEditEvent, getInitialTeamExpandedState } from './permissions';
+export { groupEventsByYear, getDefaultOpenYears } from './event-grouping';

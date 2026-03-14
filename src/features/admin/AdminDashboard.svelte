@@ -3,6 +3,7 @@
   import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
+  import { groupEventsByYear, getDefaultOpenYears } from '@shared/utils';
   import type { EventWithType } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
   import TeamMemberManager from './TeamMemberManager.svelte';
@@ -16,20 +17,6 @@
   let openYears: Set<number> = new Set();
 
   const currentYear = new Date().getFullYear();
-
-  function getEventYear(dateString: string): number {
-    return new Date(dateString).getFullYear();
-  }
-
-  function groupEventsByYear(evts: EventWithType[]): Map<number, EventWithType[]> {
-    const map = new Map<number, EventWithType[]>();
-    for (const evt of evts) {
-      const year = getEventYear(evt.date);
-      if (!map.has(year)) map.set(year, []);
-      map.get(year)!.push(evt);
-    }
-    return new Map([...map.entries()].sort((a, b) => a[0] - b[0]));
-  }
 
   function toggleYear(year: number) {
     if (openYears.has(year)) {
@@ -47,7 +34,7 @@
     error = '';
     try {
       events = await EventsService.getUpcomingEvents();
-      openYears = new Set([currentYear]);
+      openYears = getDefaultOpenYears(groupEventsByYear(events), currentYear);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load events';
     } finally {
