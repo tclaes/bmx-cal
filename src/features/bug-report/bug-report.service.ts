@@ -97,6 +97,24 @@ export const bugReportService = {
   },
 };
 
+async function reopenGithubIssue(githubIssueUrl: string): Promise<void> {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    await fetch(`${supabaseUrl}/functions/v1/reopen-github-issue`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ github_issue_url: githubIssueUrl }),
+    });
+  } catch {
+    // non-fatal
+  }
+}
+
 export const adminBugReportService = {
   async getAllReports(): Promise<BugReport[]> {
     const { data, error } = await supabase
@@ -108,12 +126,16 @@ export const adminBugReportService = {
     return (data ?? []) as BugReport[];
   },
 
-  async updateStatus(id: string, status: string): Promise<void> {
+  async updateStatus(id: string, status: string, report?: BugReport): Promise<void> {
     const { error } = await supabase
       .from('bug_reports')
       .update({ status })
       .eq('id', id);
 
     if (error) throw new Error(error.message);
+
+    if (status === 'open' && report?.github_issue_url) {
+      await reopenGithubIssue(report.github_issue_url);
+    }
   },
 };

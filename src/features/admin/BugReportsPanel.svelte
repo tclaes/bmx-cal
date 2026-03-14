@@ -36,7 +36,7 @@
   async function updateStatus(report: BugReport, status: string) {
     updatingId = report.id;
     try {
-      await adminBugReportService.updateStatus(report.id, status);
+      await adminBugReportService.updateStatus(report.id, status, report);
       reports = reports.map(r => r.id === report.id ? { ...r, status } : r);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to update status';
