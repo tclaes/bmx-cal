@@ -94,6 +94,12 @@
         <button class="footer-link" on:click={() => navigate('/about')}>About</button>
         <button class="footer-link" on:click={() => navigate('/get-in-touch')}>Get in touch</button>
         <button class="footer-link" on:click={() => navigate('/report-bug')}>Report a bug</button>
+        <a
+          class="footer-link footer-link--kofi"
+          href="https://ko-fi.com/bmxcalendar"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Support this project</a>
       </div>
     </footer>
   {/if}
@@ -137,6 +143,21 @@
 
   .footer-link:hover {
     color: var(--color-text-secondary);
+  }
+
+  .footer-link--kofi {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--border-radius-full);
+    padding: 2px var(--spacing-sm);
+    transition: all var(--transition-base);
+  }
+
+  .footer-link--kofi:hover {
+    background-color: var(--color-primary);
+    color: white;
   }
 
   .main-content {
