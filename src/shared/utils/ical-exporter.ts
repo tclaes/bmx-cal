@@ -25,16 +25,28 @@ export function generateICalContent(events: EventWithDetails[]): string {
     'X-WR-CALNAME:BMX Events Calendar',
     'X-WR-TIMEZONE:Europe/Brussels',
     'X-WR-CALDESC:BMX events, competitions, and shows',
+    'BEGIN:VTIMEZONE',
+    'TZID:Europe/Brussels',
+    'BEGIN:STANDARD',
+    'DTSTART:19701025T030000',
+    'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10',
+    'TZOFFSETFROM:+0200',
+    'TZOFFSETTO:+0100',
+    'TZNAME:CET',
+    'END:STANDARD',
+    'BEGIN:DAYLIGHT',
+    'DTSTART:19700329T020000',
+    'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3',
+    'TZOFFSETFROM:+0100',
+    'TZOFFSETTO:+0200',
+    'TZNAME:CEST',
+    'END:DAYLIGHT',
+    'END:VTIMEZONE',
   ];
 
   for (const event of events) {
     const uid = `${event.id}@bmx-events.local`;
-    const dtstart = formatICalDateStr(event.date);
-    const dtend = event.end_date
-      ? formatICalDateStrPlusOne(event.end_date)
-      : formatICalDateStrPlusOne(event.date);
     const dtstamp = formatICalDate(new Date());
-
     const summary = escapeICalText(event.title);
     const locationStr = buildLocationString(event);
     const description = escapeICalText([
@@ -42,12 +54,29 @@ export function generateICalContent(events: EventWithDetails[]): string {
       event.event_type?.name ? `Type: ${event.event_type.name}` : '',
     ].filter(Boolean).join('\\n\\n'));
 
+    let dtStartLine: string;
+    let dtEndLine: string;
+
+    if (event.start_time) {
+      const endDate = event.end_date || event.date;
+      const endTime = event.end_time || event.start_time;
+      dtStartLine = `DTSTART;TZID=Europe/Brussels:${formatICalDateTime(event.date, event.start_time)}`;
+      dtEndLine = `DTEND;TZID=Europe/Brussels:${formatICalDateTime(endDate, endTime)}`;
+    } else {
+      const dtstart = formatICalDateStr(event.date);
+      const dtend = event.end_date
+        ? formatICalDateStrPlusOne(event.end_date)
+        : formatICalDateStrPlusOne(event.date);
+      dtStartLine = `DTSTART;VALUE=DATE:${dtstart}`;
+      dtEndLine = `DTEND;VALUE=DATE:${dtend}`;
+    }
+
     lines.push(
       'BEGIN:VEVENT',
       `UID:${uid}`,
       `DTSTAMP:${dtstamp}`,
-      `DTSTART;VALUE=DATE:${dtstart}`,
-      `DTEND;VALUE=DATE:${dtend}`,
+      dtStartLine,
+      dtEndLine,
       `SUMMARY:${summary}`,
       description ? `DESCRIPTION:${description}` : '',
       locationStr ? `LOCATION:${escapeICalText(locationStr)}` : '',
@@ -63,6 +92,12 @@ export function generateICalContent(events: EventWithDetails[]): string {
 
 function formatICalDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+function formatICalDateTime(dateStr: string, timeStr: string): string {
+  const [year, month, day] = dateStr.slice(0, 10).split('-');
+  const [hour, minute] = timeStr.slice(0, 5).split(':');
+  return `${year}${month}${day}T${hour}${minute}00`;
 }
 
 function formatICalDateStr(dateStr: string): string {
