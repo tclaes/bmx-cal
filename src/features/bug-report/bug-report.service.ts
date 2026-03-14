@@ -97,7 +97,7 @@ export const bugReportService = {
   },
 };
 
-async function reopenGithubIssue(githubIssueUrl: string): Promise<void> {
+async function updateGithubIssueState(githubIssueUrl: string, state: 'open' | 'closed'): Promise<void> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -108,7 +108,7 @@ async function reopenGithubIssue(githubIssueUrl: string): Promise<void> {
         Authorization: `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ github_issue_url: githubIssueUrl }),
+      body: JSON.stringify({ github_issue_url: githubIssueUrl, state }),
     });
   } catch {
     // non-fatal
@@ -134,8 +134,12 @@ export const adminBugReportService = {
 
     if (error) throw new Error(error.message);
 
-    if (status === 'open' && report?.github_issue_url) {
-      await reopenGithubIssue(report.github_issue_url);
+    if (report?.github_issue_url) {
+      if (status === 'open') {
+        await updateGithubIssueState(report.github_issue_url, 'open');
+      } else if (status === 'resolved') {
+        await updateGithubIssueState(report.github_issue_url, 'closed');
+      }
     }
   },
 };

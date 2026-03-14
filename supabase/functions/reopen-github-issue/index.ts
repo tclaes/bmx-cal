@@ -6,8 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-interface ReopenPayload {
+interface UpdatePayload {
   github_issue_url: string;
+  state: "open" | "closed";
 }
 
 Deno.serve(async (req: Request) => {
@@ -26,7 +27,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const payload: ReopenPayload = await req.json();
+    const payload: UpdatePayload = await req.json();
 
     const match = payload.github_issue_url.match(/\/issues\/(\d+)$/);
     if (!match) {
@@ -37,6 +38,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const issueNumber = match[1];
+    const state = payload.state === "closed" ? "closed" : "open";
 
     const response = await fetch(
       `https://api.github.com/repos/${githubRepo}/issues/${issueNumber}`,
@@ -48,7 +50,7 @@ Deno.serve(async (req: Request) => {
           "Content-Type": "application/json",
           "X-GitHub-Api-Version": "2022-11-28",
         },
-        body: JSON.stringify({ state: "open" }),
+        body: JSON.stringify({ state }),
       }
     );
 
