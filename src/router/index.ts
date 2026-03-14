@@ -31,6 +31,9 @@ router
   })
   .on('/login', () => {
     currentRoute.set('/login');
+  })
+  .on('/profile', () => {
+    currentRoute.set('/profile');
   });
 
 export function navigate(path: string) {

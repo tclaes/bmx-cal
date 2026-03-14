@@ -49,6 +49,9 @@
               Admin
             </button>
           {/if}
+          <button class="nav-link" on:click={() => handleNavigate('/profile')}>
+            Profile
+          </button>
           <button class="nav-link nav-link--signout" on:click={handleLogout}>
             Sign out
           </button>
@@ -88,6 +91,9 @@
             Admin
           </button>
         {/if}
+        <button class="mobile-link" on:click={() => handleNavigate('/profile')}>
+          Profile
+        </button>
         <button class="mobile-link mobile-link--signout" on:click={handleLogout}>
           Sign out
         </button>

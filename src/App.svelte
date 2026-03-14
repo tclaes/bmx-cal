@@ -10,6 +10,7 @@
   import MyEventsPage from './features/my-events/MyEventsPage.svelte';
   import RegisterPage from './features/auth/RegisterPage.svelte';
   import LoginPage from './features/auth/LoginPage.svelte';
+  import ProfilePage from './features/profile/ProfilePage.svelte';
 
   let loading = true;
 
@@ -57,6 +58,12 @@
           <AdminDashboard />
         {:else}
           <Login on:loginSuccess={handleLoginSuccess} />
+        {/if}
+      {:else if $currentRoute === '/profile'}
+        {#if isAuthenticated}
+          <ProfilePage />
+        {:else}
+          <LoginPage />
         {/if}
       {:else}
         <div class="not-found">
