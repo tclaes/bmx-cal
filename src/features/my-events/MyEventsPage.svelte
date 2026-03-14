@@ -110,14 +110,21 @@
   }
 
   function formatGoogleCalendarDate(startDate: string, endDate: string | null | undefined): string {
-    const start = new Date(startDate);
-    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 3600000);
+    const formatAllDay = (dateStr: string) => dateStr.replace(/-/g, '');
 
-    const formatDateTime = (date: Date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    };
+    const startFormatted = formatAllDay(startDate.slice(0, 10));
 
-    return `${formatDateTime(start)}/${formatDateTime(end)}`;
+    if (endDate) {
+      const end = new Date(endDate.slice(0, 10));
+      end.setDate(end.getDate() + 1);
+      const endFormatted = end.toISOString().slice(0, 10).replace(/-/g, '');
+      return `${startFormatted}/${endFormatted}`;
+    }
+
+    const nextDay = new Date(startDate.slice(0, 10));
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextDayFormatted = nextDay.toISOString().slice(0, 10).replace(/-/g, '');
+    return `${startFormatted}/${nextDayFormatted}`;
   }
 </script>
 
