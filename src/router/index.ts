@@ -17,6 +17,9 @@ router
   .on('/', () => {
     currentRoute.set('/');
   })
+  .on('/my-events', () => {
+    currentRoute.set('/my-events');
+  })
   .on('/admin', () => {
     currentRoute.set('/admin');
   })

@@ -36,3 +36,5 @@ export const authStore = {
   ...baseAuthStore,
   isAuthenticated: derived(baseAuthStore, $auth => $auth.user !== null)
 };
+
+export const user = derived(baseAuthStore, $auth => $auth.user);
