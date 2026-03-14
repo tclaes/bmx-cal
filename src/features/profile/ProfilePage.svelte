@@ -28,8 +28,8 @@
       return;
     }
 
-    if (newPassword.length < 6) {
-      passwordError = 'New password must be at least 6 characters';
+    if (newPassword.length < 8) {
+      passwordError = 'New password must be at least 8 characters';
       return;
     }
 
@@ -118,7 +118,7 @@
           type="password"
           id="new-password"
           label="New password"
-          placeholder="At least 6 characters"
+          placeholder="At least 8 characters"
           bind:value={newPassword}
           required
         />
