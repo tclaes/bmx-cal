@@ -143,6 +143,7 @@
     font-size: var(--font-size-base);
     color: var(--color-text-secondary);
     margin: 0;
+    padding-top: var(--spacing-md);
   }
 
   .parsing-container {
