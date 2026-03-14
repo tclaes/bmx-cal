@@ -161,6 +161,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    padding-top: var(--spacing-md);
   }
 
   .panel-header {
@@ -169,7 +170,6 @@
     justify-content: space-between;
     gap: var(--spacing-md);
     flex-wrap: wrap;
-    padding-top: var(--spacing-xs);
   }
 
   .panel-desc {
