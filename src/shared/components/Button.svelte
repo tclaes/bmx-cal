@@ -35,7 +35,7 @@
   }
 
   .button-sm {
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
     font-size: var(--font-size-sm);
   }
 
