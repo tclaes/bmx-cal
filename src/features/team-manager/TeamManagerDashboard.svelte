@@ -2,13 +2,13 @@
   import { onMount } from 'svelte';
   import { Card, Button, Input, Select, Alert, LoadingSpinner } from '@shared/components';
   import { authStore } from '@shared/stores';
-  import { AuthService, EventsService } from '@shared/services';
+  import { EventsService } from '@shared/services';
   import { supabase } from '@data/supabase';
-  import { navigate } from '../../router';
-  import type { EventWithDetails, EventType, Location, Team } from '@types';
+import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let events: EventWithDetails[] = [];
   let locations: Location[] = [];
+  let globalEventTypes: EventType[] = [];
   let teamEventType: EventType | null = null;
   let allTeams: Team[] = [];
   let selectedTeamId = '';
@@ -42,6 +42,7 @@
     location: '',
     description: '',
     status: 'upcoming' as 'upcoming' | 'completed' | 'cancelled',
+    related_event_type_id: '',
   };
 
   let saving = false;
@@ -64,7 +65,12 @@
     error = '';
     try {
       await loadTeams();
-      locations = await EventsService.getLocations();
+      const [locs, allTypes] = await Promise.all([
+        EventsService.getLocations(),
+        EventsService.getEventTypes(),
+      ]);
+      locations = locs;
+      globalEventTypes = allTypes.filter(t => t.team_id === null);
       if (selectedTeamId) {
         teamEventType = await EventsService.getTeamEventType(selectedTeamId);
       }
@@ -102,6 +108,7 @@
       location: '',
       description: '',
       status: 'upcoming',
+      related_event_type_id: '',
     };
     formError = '';
     showAddLocation = false;
@@ -125,6 +132,7 @@
       location: event.location,
       description: event.description ?? '',
       status: event.status,
+      related_event_type_id: event.related_event_type_id ?? '',
     };
     formError = '';
     showAddLocation = false;
@@ -190,6 +198,7 @@
         location_id: formData.location_id,
         description: formData.description || undefined,
         event_type_id: teamEventType?.id,
+        related_event_type_id: formData.related_event_type_id || undefined,
         team_id: selectedTeamId,
         status: formData.status,
       };
@@ -226,12 +235,6 @@
     }
   }
 
-  async function handleLogout() {
-    await AuthService.logout();
-    authStore.logout();
-    navigate('/');
-  }
-
   function formatDate(d: string) {
     return new Date(d).toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -259,7 +262,6 @@
         <span class="team-badge">{selectedTeam.name}</span>
       {/if}
     </div>
-    <Button variant="ghost" size="md" on:click={handleLogout}>Logout</Button>
   </div>
 
   <div class="tm-content">
@@ -389,17 +391,21 @@
           {/if}
 
           <div class="form-row form-row--cols">
-            <div>
-              <Select
-                label="Status"
-                bind:value={formData.status}
-                options={[
-                  { value: 'upcoming', label: 'Upcoming' },
-                  { value: 'completed', label: 'Completed' },
-                  { value: 'cancelled', label: 'Cancelled' },
-                ]}
-              />
-            </div>
+            <Select
+              label="Status"
+              bind:value={formData.status}
+              options={[
+                { value: 'upcoming', label: 'Upcoming' },
+                { value: 'completed', label: 'Completed' },
+                { value: 'cancelled', label: 'Cancelled' },
+              ]}
+            />
+            <Select
+              label="For event type"
+              bind:value={formData.related_event_type_id}
+              placeholder="None"
+              options={globalEventTypes.map(t => ({ value: t.id, label: t.name }))}
+            />
           </div>
 
           <div class="form-row">

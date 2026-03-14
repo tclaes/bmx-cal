@@ -29,6 +29,7 @@ export interface Event {
   location: string;
   location_id: string | null;
   event_type_id: string | null;
+  related_event_type_id: string | null;
   status: 'upcoming' | 'completed' | 'cancelled';
   registration_url: string | null;
   registration_opens: string | null;
@@ -91,6 +92,7 @@ export interface CreateEventInput {
   location: string;
   location_id?: string;
   event_type_id?: string;
+  related_event_type_id?: string;
   team_id?: string;
   status?: 'upcoming' | 'completed' | 'cancelled';
   registration_url?: string;
