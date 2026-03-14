@@ -9,6 +9,7 @@
   let startDate = '';
   let endDate = '';
   let dropdownOpen = false;
+  let filtersExpanded = false;
 
   $: eventTypes = $eventsStore.eventTypes;
   $: selectedTypes = $filtersStore.selectedEventTypes;
@@ -51,7 +52,21 @@
 
 <svelte:window on:click={handleClickOutside} />
 
-<div class="filters">
+<div class="filters-wrapper">
+  <button
+    class="filters-toggle"
+    type="button"
+    on:click={() => (filtersExpanded = !filtersExpanded)}
+    aria-expanded={filtersExpanded}
+  >
+    <span>Filters</span>
+    {#if selectedTypes.length > 0 || startDate || endDate || $filtersStore.showPastEvents}
+      <span class="filter-badge">{selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}</span>
+    {/if}
+    <span class="toggle-chevron" class:rotated={filtersExpanded}>▼</span>
+  </button>
+
+<div class="filters" class:collapsed={!filtersExpanded}>
   <div class="event-type-dropdown">
     <label class="dropdown-label">Event Types</label>
     <button
@@ -114,8 +129,60 @@
 
   <button class="reset-button" on:click={resetFilters}>Reset Filters</button>
 </div>
+</div>
 
 <style>
+  .filters-wrapper {
+    position: relative;
+  }
+
+  .filters-toggle {
+    display: none;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    gap: var(--spacing-sm);
+  }
+
+  .filters-toggle:hover {
+    border-color: var(--color-primary);
+  }
+
+  .filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: white;
+    background-color: var(--color-primary);
+    border-radius: 10px;
+    margin-left: auto;
+  }
+
+  .toggle-chevron {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .toggle-chevron.rotated {
+    transform: rotate(180deg);
+  }
+
   .filters {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -276,8 +343,25 @@
   }
 
   @media (max-width: 768px) {
+    .filters-toggle {
+      display: flex;
+    }
+
     .filters {
       grid-template-columns: 1fr;
+      margin-top: var(--spacing-sm);
+      overflow: hidden;
+      max-height: 1000px;
+      transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
+      opacity: 1;
+    }
+
+    .filters.collapsed {
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      pointer-events: none;
     }
   }
 </style>
