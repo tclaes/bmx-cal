@@ -115,6 +115,16 @@
   }
 
   $: registrationStatus = getRegistrationStatus();
+
+  $: isEventOngoing = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(event.date);
+    start.setHours(0, 0, 0, 0);
+    const end = event.end_date ? new Date(event.end_date) : new Date(event.date);
+    end.setHours(23, 59, 59, 999);
+    return today >= start && today <= end;
+  })();
 </script>
 
 <Card padding="md" shadow="sm">
@@ -226,7 +236,7 @@
       </div>
     {/if}
 
-    {#if event.livestream_url}
+    {#if event.livestream_url && isEventOngoing}
       <div class="livestream-section">
         <a
           href={event.livestream_url}
