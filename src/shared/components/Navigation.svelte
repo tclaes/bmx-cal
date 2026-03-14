@@ -43,7 +43,6 @@
 
       {#if user}
         <div class="user-menu">
-          <span class="user-email">{user.email}</span>
           {#if isAdmin}
             <button class="nav-link" on:click={() => handleNavigate('/admin')}>
               Admin
