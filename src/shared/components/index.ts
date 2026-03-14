@@ -7,3 +7,4 @@ export { default as LoadingSpinner } from './LoadingSpinner.svelte';
 export { default as Alert } from './Alert.svelte';
 export { default as Badge } from './Badge.svelte';
 export { default as FileUpload } from './FileUpload.svelte';
+export { default as LocationPicker } from './LocationPicker.svelte';

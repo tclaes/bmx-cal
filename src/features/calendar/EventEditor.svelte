@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import type { Event, EventType } from '@types';
-  import { Modal, Button, Input, Select } from '@shared/components';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import type { Event, EventType, Location } from '@types';
+  import { Modal, Button, Input, Select, LocationPicker } from '@shared/components';
   import { EventsService } from '@shared/services';
 
   export let event: Event | null = null;
@@ -10,12 +10,14 @@
 
   const dispatch = createEventDispatcher();
 
+  let locations: Location[] = [];
   let formData = {
     title: '',
     date: '',
     start_time: '',
     end_time: '',
     location: '',
+    location_id: '',
     description: '',
     event_type_id: '',
     status: 'upcoming' as 'upcoming' | 'completed' | 'cancelled',
@@ -29,6 +31,12 @@
   let error = '';
   let currentEventId: string | null = null;
 
+  onMount(async () => {
+    try {
+      locations = await EventsService.getLocations();
+    } catch {}
+  });
+
   $: if (event && open && event.id !== currentEventId) {
     formData = {
       title: event.title || '',
@@ -36,6 +44,7 @@
       start_time: event.start_time || '',
       end_time: event.end_time || '',
       location: event.location || '',
+      location_id: (event as any).location_id || '',
       description: event.description || '',
       event_type_id: event.event_type_id || '',
       status: event.status || 'upcoming',
@@ -45,12 +54,19 @@
       registration_status: event.registration_status || ''
     };
     currentEventId = event.id;
-    console.log('EventEditor opened with data:', formData);
-    console.log('Event types available:', eventTypes);
   }
 
   $: if (!open) {
     currentEventId = null;
+  }
+
+  function handleLocationChange(e: CustomEvent<{ locationId: string; locationLabel: string }>) {
+    formData.location_id = e.detail.locationId;
+    formData.location = e.detail.locationLabel;
+  }
+
+  function handleLocationsUpdated(e: CustomEvent<Location[]>) {
+    locations = e.detail;
   }
 
   async function handleSave() {
@@ -66,6 +82,7 @@
         start_time: formData.start_time || null,
         end_time: formData.end_time || null,
         location: formData.location,
+        location_id: formData.location_id || null,
         description: formData.description,
         event_type_id: formData.event_type_id || null,
         status: formData.status,
@@ -75,13 +92,10 @@
         registration_status: formData.registration_status || null
       };
 
-      console.log('Updating event:', event.id, updateData);
       await EventsService.updateEvent(event.id, updateData);
-      console.log('Event updated successfully');
       dispatch('saved');
       handleClose();
     } catch (e) {
-      console.error('Failed to update event:', e);
       error = e instanceof Error ? e.message : 'Failed to save event';
     } finally {
       saving = false;
@@ -115,15 +129,12 @@
       />
     </div>
 
-    <div class="form-group">
+    <div class="form-group form-group--cols">
       <Input
         label="Start Time"
         type="time"
         bind:value={formData.start_time}
       />
-    </div>
-
-    <div class="form-group">
       <Input
         label="End Time"
         type="time"
@@ -132,10 +143,12 @@
     </div>
 
     <div class="form-group">
-      <Input
-        label="Location"
-        bind:value={formData.location}
-        placeholder="Event location"
+      <LocationPicker
+        {locations}
+        selectedLocationId={formData.location_id}
+        selectedLocationLabel={formData.location}
+        on:change={handleLocationChange}
+        on:locationsUpdated={handleLocationsUpdated}
       />
     </div>
 
@@ -161,9 +174,9 @@
     </div>
 
     <div class="form-group">
-      <label for="description">Description</label>
+      <label class="field-label" for="editor-description">Description</label>
       <textarea
-        id="description"
+        id="editor-description"
         bind:value={formData.description}
         placeholder="Event description"
         rows="4"
@@ -179,15 +192,12 @@
       />
     </div>
 
-    <div class="form-group">
+    <div class="form-group form-group--cols">
       <Input
         label="Registration Opens"
         type="date"
         bind:value={formData.registration_opens}
       />
-    </div>
-
-    <div class="form-group">
       <Input
         label="Registration Deadline"
         type="date"
@@ -228,26 +238,36 @@
     margin-bottom: 1rem;
   }
 
-  label {
+  .form-group--cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .field-label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xs);
   }
 
   textarea {
     width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm, 4px);
     font-family: inherit;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     resize: vertical;
+    box-sizing: border-box;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
   }
 
   textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: var(--color-primary);
   }
 
   .error-message {
@@ -256,7 +276,7 @@
     border: 1px solid #fecaca;
     border-radius: 4px;
     color: #dc2626;
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     margin-bottom: 1rem;
   }
 
@@ -265,5 +285,11 @@
     justify-content: flex-end;
     gap: 0.75rem;
     margin-top: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    .form-group--cols {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

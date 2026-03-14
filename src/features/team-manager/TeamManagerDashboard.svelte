@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Card, Button, Input, Select, Alert, LoadingSpinner } from '@shared/components';
+  import { Card, Button, Input, Select, Alert, LoadingSpinner, LocationPicker } from '@shared/components';
   import { authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
   import { supabase } from '@data/supabase';
@@ -20,13 +20,6 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
 
-  let showAddLocation = false;
-  let newLocationName = '';
-  let newLocationCity = '';
-  let newLocationAddress = '';
-  let newLocationCountry = 'Belgium';
-  let savingLocation = false;
-  let locationError = '';
 
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
@@ -111,7 +104,6 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
       related_event_type_id: '',
     };
     formError = '';
-    showAddLocation = false;
   }
 
   function openCreateForm() {
@@ -135,48 +127,16 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
       related_event_type_id: event.related_event_type_id ?? '',
     };
     formError = '';
-    showAddLocation = false;
     showForm = true;
   }
 
-  async function handleSaveLocation() {
-    if (!newLocationName.trim()) return;
-    savingLocation = true;
-    locationError = '';
-    try {
-      const created = await EventsService.createLocation({
-        name: newLocationName.trim(),
-        city: newLocationCity.trim() || undefined,
-        address: newLocationAddress.trim() || undefined,
-        country: newLocationCountry.trim() || undefined,
-      });
-      locations = [...locations, created].sort((a, b) => a.name.localeCompare(b.name));
-      formData.location_id = created.id;
-      formData.location = created.name;
-      newLocationName = '';
-      newLocationCity = '';
-      newLocationAddress = '';
-      newLocationCountry = 'Belgium';
-      showAddLocation = false;
-    } catch (err) {
-      locationError = err instanceof Error ? err.message : 'Failed to create location';
-    } finally {
-      savingLocation = false;
-    }
+  function handleLocationChange(e: CustomEvent<{ locationId: string; locationLabel: string }>) {
+    formData.location_id = e.detail.locationId;
+    formData.location = e.detail.locationLabel;
   }
 
-  function handleLocationSelect(e: Event) {
-    const val = (e.target as HTMLSelectElement).value;
-    if (val === '__new__') {
-      showAddLocation = true;
-      formData.location_id = '';
-      formData.location = '';
-      return;
-    }
-    showAddLocation = false;
-    formData.location_id = val;
-    const loc = locations.find(l => l.id === val);
-    formData.location = loc ? (loc.city ? `${loc.name}, ${loc.city}` : loc.name) : '';
+  function handleLocationsUpdated(e: CustomEvent<Location[]>) {
+    locations = e.detail;
   }
 
   async function handleSave() {
@@ -241,12 +201,6 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
       month: 'short',
       year: 'numeric',
     });
-  }
-
-  function locationLabel(loc: Location) {
-    const parts = [loc.name];
-    if (loc.city) parts.push(loc.city);
-    return parts.join(', ');
   }
 
   onMount(() => {
@@ -347,48 +301,15 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
           </div>
 
           <div class="form-row">
-            <label class="field-label" for="location-select">Location</label>
-            <select
-              id="location-select"
-              class="location-select"
-              value={formData.location_id || ''}
-              on:change={handleLocationSelect}
+            <LocationPicker
+              {locations}
+              selectedLocationId={formData.location_id}
+              selectedLocationLabel={formData.location}
               required
-            >
-              <option value="" disabled>Select a location...</option>
-              {#each locations as loc (loc.id)}
-                <option value={loc.id}>{locationLabel(loc)}</option>
-              {/each}
-              <option value="__new__">+ Add new location...</option>
-            </select>
+              on:change={handleLocationChange}
+              on:locationsUpdated={handleLocationsUpdated}
+            />
           </div>
-
-          {#if showAddLocation}
-            <div class="add-location-panel">
-              <p class="add-location-title">New Location</p>
-              {#if locationError}
-                <Alert type="danger" message={locationError} />
-              {/if}
-              <div class="form-row">
-                <Input label="Name" bind:value={newLocationName} required placeholder="e.g. BMX Track Gent" />
-              </div>
-              <div class="form-row form-row--cols">
-                <Input label="City" bind:value={newLocationCity} placeholder="e.g. Gent" />
-                <Input label="Country" bind:value={newLocationCountry} placeholder="e.g. Belgium" />
-              </div>
-              <div class="form-row">
-                <Input label="Address" bind:value={newLocationAddress} placeholder="Street and number (optional)" />
-              </div>
-              <div class="add-location-actions">
-                <Button type="button" variant="ghost" size="sm" on:click={() => { showAddLocation = false; }} disabled={savingLocation}>
-                  Cancel
-                </Button>
-                <Button type="button" variant="secondary" size="sm" on:click={handleSaveLocation} disabled={savingLocation || !newLocationName.trim()}>
-                  {savingLocation ? 'Saving...' : 'Save Location'}
-                </Button>
-              </div>
-            </div>
-          {/if}
 
           <div class="form-row form-row--cols">
             <Select
@@ -603,47 +524,6 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-xs);
-  }
-
-  .location-select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm, 4px);
-    font-size: var(--font-size-sm);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    cursor: pointer;
-    box-sizing: border-box;
-  }
-
-  .location-select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
-  .add-location-panel {
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md, 8px);
-    padding: var(--spacing-md);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-
-  .add-location-title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0 0 var(--spacing-xs);
-  }
-
-  .add-location-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-xs);
-    margin-top: var(--spacing-xs);
   }
 
   textarea {
