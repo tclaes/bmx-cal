@@ -21,20 +21,26 @@
     submitting = true;
 
     try {
-      const mailtoSubject = encodeURIComponent(`Team features inquiry from ${clubName || name}`);
-      const body = [
-        `Name: ${name}`,
-        clubName ? `Club / Team: ${clubName}` : null,
-        `Email: ${email}`,
-        '',
-        message,
-      ].filter(Boolean).join('\n');
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-      const mailtoLink = `mailto:info@bmxcalendar.be?subject=${mailtoSubject}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailtoLink;
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-contact-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, clubName, message }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to send message');
+      }
+
       submitted = true;
-    } catch {
-      error = 'Something went wrong. Please try again.';
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
     } finally {
       submitting = false;
     }
@@ -128,16 +134,16 @@
           </button>
 
           <p class="note">
-            This will open your email client. Your message is not stored on our servers.
+            We'll reply to the email address you provide above.
           </p>
         </form>
       </div>
     {:else}
       <div class="success">
         <div class="success-icon">&#10003;</div>
-        <h2>Your email client should have opened</h2>
+        <h2>Message sent!</h2>
         <p>
-          If it didn't open automatically, you can email us directly. We'll get back to you as soon as we can.
+          Thanks for reaching out. We'll get back to you at {email} as soon as we can.
         </p>
         <div class="success-actions">
           <button class="btn-primary" on:click={() => navigate('/')}>
