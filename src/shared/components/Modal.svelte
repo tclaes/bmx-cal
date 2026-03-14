@@ -18,7 +18,12 @@
 </script>
 
 {#if open}
-  <div class="modal-backdrop" on:click={handleBackdropClick}>
+  <div
+    class="modal-backdrop"
+    role="presentation"
+    on:click={handleBackdropClick}
+    on:keydown={(e) => { if (e.key === 'Escape') close(); }}
+  >
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title">{title}</h2>

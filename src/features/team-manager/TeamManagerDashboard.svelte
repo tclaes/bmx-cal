@@ -298,23 +298,25 @@
           {@const isMembersExpanded = expandedMembersTeams[team.id] ?? false}
 
           <div class="team-group">
-            <button
-              class="team-group-header"
-              type="button"
-              on:click={() => toggleTeam(team.id)}
-              aria-expanded={isExpanded}
-            >
-              <div class="team-group-title">
-                <span class="chevron" class:chevron--open={isExpanded}>&#9654;</span>
-                <span class="team-name">{team.name}</span>
-                <span class="event-count">{teamEvts.length} event{teamEvts.length !== 1 ? 's' : ''}</span>
-              </div>
-              <div class="team-group-actions" on:click|stopPropagation>
+            <div class="team-group-header-row">
+              <button
+                class="team-group-header"
+                type="button"
+                on:click={() => toggleTeam(team.id)}
+                aria-expanded={isExpanded}
+              >
+                <div class="team-group-title">
+                  <span class="chevron" class:chevron--open={isExpanded}>&#9654;</span>
+                  <span class="team-name">{team.name}</span>
+                  <span class="event-count">{teamEvts.length} event{teamEvts.length !== 1 ? 's' : ''}</span>
+                </div>
+              </button>
+              <div class="team-group-actions">
                 <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
                   + Add Event
                 </Button>
               </div>
-            </button>
+            </div>
 
             {#if isExpanded}
               <div class="team-group-body">
@@ -563,22 +565,28 @@
     overflow: hidden;
   }
 
-  .team-group-header {
-    width: 100%;
+  .team-group-header-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-primary);
+    transition: background 0.15s ease;
+  }
+
+  .team-group-header-row:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .team-group-header {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
     border: none;
     cursor: pointer;
     text-align: left;
-    transition: background 0.15s ease;
     gap: var(--spacing-md);
-  }
-
-  .team-group-header:hover {
-    background: var(--color-bg-secondary);
   }
 
   .team-group-title {
@@ -622,6 +630,7 @@
 
   .team-group-actions {
     flex-shrink: 0;
+    padding-right: var(--spacing-lg);
   }
 
   .team-group-body {

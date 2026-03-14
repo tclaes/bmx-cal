@@ -68,8 +68,9 @@
 
 <div class="filters" class:collapsed={!filtersExpanded}>
   <div class="event-type-dropdown">
-    <label class="dropdown-label">Event Types</label>
+    <label class="dropdown-label" for="event-type-dropdown-btn">Event Types</label>
     <button
+      id="event-type-dropdown-btn"
       class="dropdown-button"
       on:click|stopPropagation={toggleDropdown}
       type="button"
@@ -115,8 +116,9 @@
   />
 
   <div class="past-events-toggle">
-    <label class="toggle-label">Show Past Events</label>
+    <label class="toggle-label" for="show-past-events-btn">Show Past Events</label>
     <button
+      id="show-past-events-btn"
       class="toggle-btn"
       class:active={showPastEvents}
       on:click={() => filtersStore.toggleShowPastEvents()}

@@ -51,10 +51,13 @@
   class="file-upload"
   class:dragging={isDragging}
   class:disabled
+  role="button"
+  tabindex={disabled ? -1 : 0}
   on:drop={handleDrop}
   on:dragover={handleDragOver}
   on:dragleave={handleDragLeave}
   on:click={handleClick}
+  on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
 >
   <input
     type="file"
