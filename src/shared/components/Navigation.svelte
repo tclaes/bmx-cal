@@ -90,7 +90,6 @@
       </button>
 
       {#if user}
-        <div class="mobile-user-email">{user.email}</div>
         {#if isAdmin}
           <button class="mobile-link" on:click={() => handleNavigate('/admin')}>
             Admin
