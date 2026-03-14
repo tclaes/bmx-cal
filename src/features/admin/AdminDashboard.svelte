@@ -15,6 +15,7 @@
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
   let openYears: Set<number> = new Set();
+  let importSectionOpen = false;
 
   const currentYear = new Date().getFullYear();
 
@@ -88,8 +89,32 @@
   </div>
 
   <div class="dashboard-content">
-    <Card padding="lg" shadow="md">
-      <DocumentUpload />
+    <Card padding="none" shadow="md">
+      <div class="collapsible-section">
+        <button
+          class="collapsible-header"
+          on:click={() => (importSectionOpen = !importSectionOpen)}
+          aria-expanded={importSectionOpen}
+        >
+          <span class="collapsible-title">Import Events from File</span>
+          <svg
+            class="collapsible-chevron"
+            class:open={importSectionOpen}
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        {#if importSectionOpen}
+          <div class="collapsible-body">
+            <DocumentUpload />
+          </div>
+        {/if}
+      </div>
     </Card>
 
     <Card padding="lg" shadow="md">
@@ -221,6 +246,50 @@
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     margin: 0;
+  }
+
+  .collapsible-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .collapsible-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+    border-radius: var(--border-radius-md);
+  }
+
+  .collapsible-header:hover {
+    background: var(--color-surface-secondary, #f8f9fa);
+  }
+
+  .collapsible-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  .collapsible-chevron {
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .collapsible-chevron.open {
+    transform: rotate(180deg);
+  }
+
+  .collapsible-body {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
   }
 
   .dashboard-content {

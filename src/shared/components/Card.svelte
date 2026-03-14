@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let padding: 'sm' | 'md' | 'lg' = 'md';
+  export let padding: 'none' | 'sm' | 'md' | 'lg' = 'md';
   export let shadow: 'sm' | 'md' | 'lg' = 'md';
 </script>
 
@@ -12,6 +12,10 @@
     background-color: var(--color-bg-primary);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-border);
+  }
+
+  .card-padding-none {
+    padding: 0;
   }
 
   .card-padding-sm {
