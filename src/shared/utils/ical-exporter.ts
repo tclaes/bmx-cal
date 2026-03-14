@@ -1,5 +1,20 @@
 import type { EventWithDetails } from '@types';
 
+function buildLocationString(event: EventWithDetails): string {
+  const details = event.location_details;
+  if (details) {
+    const parts = [
+      details.name,
+      details.address,
+      details.city,
+      details.postal_code,
+      details.country,
+    ].filter(Boolean);
+    return parts.join(', ');
+  }
+  return event.location || '';
+}
+
 export function generateICalContent(events: EventWithDetails[]): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
@@ -13,22 +28,19 @@ export function generateICalContent(events: EventWithDetails[]): string {
   ];
 
   for (const event of events) {
-    const startDate = new Date(event.start_date);
-    const endDate = event.end_date ? new Date(event.end_date) : startDate;
-
     const uid = `${event.id}@bmx-events.local`;
-    const dtstart = formatICalDate(startDate);
-    const dtend = formatICalDate(endDate);
+    const dtstart = formatICalDateStr(event.date);
+    const dtend = event.end_date
+      ? formatICalDateStrPlusOne(event.end_date)
+      : formatICalDateStrPlusOne(event.date);
     const dtstamp = formatICalDate(new Date());
 
     const summary = escapeICalText(event.title);
+    const locationStr = buildLocationString(event);
     const description = escapeICalText([
       event.description || '',
       event.event_type?.name ? `Type: ${event.event_type.name}` : '',
-      event.location ? `Location: ${event.location}` : '',
     ].filter(Boolean).join('\\n\\n'));
-
-    const location = escapeICalText(event.location || '');
 
     lines.push(
       'BEGIN:VEVENT',
@@ -38,7 +50,7 @@ export function generateICalContent(events: EventWithDetails[]): string {
       `DTEND;VALUE=DATE:${dtend}`,
       `SUMMARY:${summary}`,
       description ? `DESCRIPTION:${description}` : '',
-      location ? `LOCATION:${location}` : '',
+      locationStr ? `LOCATION:${escapeICalText(locationStr)}` : '',
       `STATUS:CONFIRMED`,
       'END:VEVENT'
     );
@@ -50,10 +62,17 @@ export function generateICalContent(events: EventWithDetails[]): string {
 }
 
 function formatICalDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}${month}${day}`;
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+function formatICalDateStr(dateStr: string): string {
+  return dateStr.slice(0, 10).replace(/-/g, '');
+}
+
+function formatICalDateStrPlusOne(dateStr: string): string {
+  const d = new Date(dateStr.slice(0, 10));
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10).replace(/-/g, '');
 }
 
 function escapeICalText(text: string): string {
@@ -76,24 +95,3 @@ export function downloadICalFile(content: string, filename: string = 'bmx-events
   URL.revokeObjectURL(url);
 }
 
-export function getGoogleCalendarUrl(events: EventWithDetails[]): string {
-  if (events.length === 0) return '';
-
-  const event = events[0];
-  const startDate = new Date(event.start_date);
-  const endDate = event.end_date ? new Date(event.end_date) : startDate;
-
-  const formatGoogleDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: event.title,
-    dates: `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`,
-    details: event.description || '',
-    location: event.location || '',
-  });
-
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-}

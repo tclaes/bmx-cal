@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '../../shared/stores';
   import { EventsService } from '../../shared/services/events.service';
+  import { generateICalContent, downloadICalFile } from '../../shared/utils/ical-exporter';
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
   import type { EventWithDetails, EventType } from '../../types';
@@ -84,47 +85,26 @@
     });
   }
 
-  function exportToGoogleCalendar() {
+  function exportToCalendar() {
     if ($selectedCount === 0) {
       error = 'Please select at least one event';
       return;
     }
 
     exporting = true;
-    const selectedEvents = events.filter(e => $selectedEventIds.has(e.id));
+    try {
+      const selectedEvents = events
+        .filter(e => $selectedEventIds.has(e.id))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    const baseUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
-
-    selectedEvents.forEach(event => {
-      const params = new URLSearchParams({
-        text: event.title,
-        dates: formatGoogleCalendarDate(event.date, event.end_date),
-        details: event.description || '',
-        location: event.location?.name || ''
-      });
-
-      window.open(`${baseUrl}&${params.toString()}`, '_blank');
-    });
-
-    exporting = false;
-  }
-
-  function formatGoogleCalendarDate(startDate: string, endDate: string | null | undefined): string {
-    const formatAllDay = (dateStr: string) => dateStr.replace(/-/g, '');
-
-    const startFormatted = formatAllDay(startDate.slice(0, 10));
-
-    if (endDate) {
-      const end = new Date(endDate.slice(0, 10));
-      end.setDate(end.getDate() + 1);
-      const endFormatted = end.toISOString().slice(0, 10).replace(/-/g, '');
-      return `${startFormatted}/${endFormatted}`;
+      const content = generateICalContent(selectedEvents);
+      downloadICalFile(content, 'bmx-events.ics');
+      error = '';
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Export failed';
+    } finally {
+      exporting = false;
     }
-
-    const nextDay = new Date(startDate.slice(0, 10));
-    nextDay.setDate(nextDay.getDate() + 1);
-    const nextDayFormatted = nextDay.toISOString().slice(0, 10).replace(/-/g, '');
-    return `${startFormatted}/${nextDayFormatted}`;
   }
 </script>
 
@@ -141,8 +121,8 @@
         <Button variant="secondary" size="sm" on:click={handleClearAll}>
           Clear All
         </Button>
-        <Button on:click={exportToGoogleCalendar} disabled={exporting}>
-          {exporting ? 'Exporting...' : 'Export to Google Calendar'}
+        <Button on:click={exportToCalendar} disabled={exporting}>
+          {exporting ? 'Exporting...' : 'Export to Calendar (.ics)'}
         </Button>
       </div>
     {/if}
