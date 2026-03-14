@@ -120,7 +120,6 @@
 </script>
 
 <div class="tmm-section">
-  <h2 class="section-title">Team Members</h2>
   <p class="section-desc">Assign users to teams. Members can see their team's events.</p>
 
   {#if error}
@@ -203,13 +202,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
-  }
-
-  .section-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0;
   }
 
   .section-desc {
