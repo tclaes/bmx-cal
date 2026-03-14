@@ -31,7 +31,6 @@
       <span class="brand-icon">
         <img src="/bmx-calendar.png" alt="BMX Calendar Logo" />
       </span>
-      <span class="brand-text">BMX Calendar</span>
     </button>
 
     <div class="nav-links">
@@ -155,9 +154,6 @@
     width: auto;
   }
 
-  .brand-text {
-    display: none;
-  }
 
   .nav-links {
     display: flex;
@@ -309,9 +305,6 @@
   }
 
   @media (min-width: 768px) {
-    .brand-text {
-      display: inline;
-    }
 
     .mobile-menu {
       display: none !important;
