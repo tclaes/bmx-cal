@@ -3,7 +3,7 @@
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
   import { LoadingSpinner, Alert } from '@shared/components';
-  import { eventsStore, filtersStore } from '@shared/stores';
+  import { eventsStore, filtersStore, authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
   import type { EventWithDetails, Event } from '@types';
 
@@ -47,6 +47,26 @@
 
       return true;
     });
+  }
+
+  let previousUserId: string | null | undefined = undefined;
+
+  $: {
+    const currentUserId = $authStore.user?.id ?? null;
+    if (previousUserId !== undefined && previousUserId !== currentUserId) {
+      (async () => {
+        try {
+          eventsStore.setLoading(true);
+          const events = await EventsService.getAllEvents();
+          eventsStore.setEvents(events);
+        } catch (error) {
+          eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
+        } finally {
+          eventsStore.setLoading(false);
+        }
+      })();
+    }
+    previousUserId = currentUserId;
   }
 
   function handleEdit(event: CustomEvent<EventWithDetails>) {
