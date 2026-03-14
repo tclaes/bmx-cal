@@ -22,6 +22,7 @@
 
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
+  $: isTeamManager = isAdmin || (user?.teams?.length ?? 0) > 0;
 </script>
 
 <nav class="navigation">
@@ -46,6 +47,11 @@
           {#if isAdmin}
             <button class="nav-link" on:click={() => handleNavigate('/admin')}>
               Admin
+            </button>
+          {/if}
+          {#if isTeamManager}
+            <button class="nav-link" on:click={() => handleNavigate('/team-manager')}>
+              Team Manager
             </button>
           {/if}
           <button class="nav-link" on:click={() => handleNavigate('/profile')}>
@@ -88,6 +94,11 @@
         {#if isAdmin}
           <button class="mobile-link" on:click={() => handleNavigate('/admin')}>
             Admin
+          </button>
+        {/if}
+        {#if isTeamManager}
+          <button class="mobile-link" on:click={() => handleNavigate('/team-manager')}>
+            Team Manager
           </button>
         {/if}
         <button class="mobile-link" on:click={() => handleNavigate('/profile')}>
@@ -189,15 +200,6 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-  }
-
-  .user-email {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .hamburger {

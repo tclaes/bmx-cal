@@ -6,6 +6,8 @@ export type {
   Location,
   ImportLog,
   AdminUser,
+  Team,
+  TeamManager,
   CreateEventInput,
   UpdateEventInput,
   ParsedEvent,

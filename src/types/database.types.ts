@@ -34,6 +34,7 @@ export interface Event {
   registration_deadline: string | null;
   registration_status: string | null;
   livestream_url: string | null;
+  team_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -58,10 +59,25 @@ export interface ImportLog {
   created_at: string;
 }
 
+export interface Team {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface TeamManager {
+  id: string;
+  user_id: string;
+  team_id: string;
+  created_at: string;
+  team?: Team;
+}
+
 export interface AdminUser {
   id: string;
   email: string;
   role: string;
+  teams?: Team[];
 }
 
 export interface CreateEventInput {
@@ -74,6 +90,7 @@ export interface CreateEventInput {
   location: string;
   location_id?: string;
   event_type_id?: string;
+  team_id?: string;
   status?: 'upcoming' | 'completed' | 'cancelled';
   registration_url?: string;
   registration_opens?: string;

@@ -11,6 +11,7 @@
   import RegisterPage from './features/auth/RegisterPage.svelte';
   import LoginPage from './features/auth/LoginPage.svelte';
   import ProfilePage from './features/profile/ProfilePage.svelte';
+  import TeamManagerDashboard from './features/team-manager/TeamManagerDashboard.svelte';
 
   let loading = true;
 
@@ -32,10 +33,9 @@
     navigate('/admin');
   }
 
-  $: isAdminRoute = $currentRoute === '/admin';
-  $: requiresAuth = isAdminRoute;
   $: isAuthenticated = $authStore.user !== null;
   $: isAdmin = $authStore.user?.role === 'admin';
+  $: isTeamManager = isAdmin || ($authStore.user?.teams?.length ?? 0) > 0;
 </script>
 
 <div class="app">
@@ -62,6 +62,12 @@
       {:else if $currentRoute === '/profile'}
         {#if isAuthenticated}
           <ProfilePage />
+        {:else}
+          <LoginPage />
+        {/if}
+      {:else if $currentRoute === '/team-manager'}
+        {#if isAuthenticated && isTeamManager}
+          <TeamManagerDashboard />
         {:else}
           <LoginPage />
         {/if}

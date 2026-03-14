@@ -1,5 +1,15 @@
 import { supabase } from '@data/supabase';
-import type { AdminUser } from '@types';
+import type { AdminUser, Team } from '@types';
+
+async function fetchUserTeams(userId: string): Promise<Team[]> {
+  const { data } = await supabase
+    .from('team_managers')
+    .select('team:teams(id, name, created_at)')
+    .eq('user_id', userId);
+
+  if (!data) return [];
+  return data.map((row: { team: Team }) => row.team).filter(Boolean);
+}
 
 export class AuthService {
   static async login(email: string, password: string) {
@@ -22,10 +32,16 @@ export class AuthService {
 
     if (!user) return null;
 
+    const role = user.app_metadata?.role || 'user';
+    const teams = await fetchUserTeams(user.id);
+
+    const effectiveRole = role === 'admin' || teams.length > 0 ? role : 'user';
+
     return {
       id: user.id,
       email: user.email || '',
-      role: user.app_metadata?.role || 'user',
+      role: effectiveRole,
+      teams,
     };
   }
 
@@ -34,14 +50,23 @@ export class AuthService {
     return user?.role === 'admin';
   }
 
+  static async isTeamManager(): Promise<boolean> {
+    const user = await this.getCurrentUser();
+    return user?.role === 'admin' || (user?.teams?.length ?? 0) > 0;
+  }
+
   static onAuthStateChange(callback: (user: AdminUser | null) => void) {
     return supabase.auth.onAuthStateChange((_event, session) => {
       (async () => {
         if (session?.user) {
+          const role = session.user.app_metadata?.role || 'user';
+          const teams = await fetchUserTeams(session.user.id);
+
           const adminUser: AdminUser = {
             id: session.user.id,
             email: session.user.email || '',
-            role: session.user.app_metadata?.role || 'user',
+            role,
+            teams,
           };
           callback(adminUser);
         } else {
