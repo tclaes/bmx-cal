@@ -129,20 +129,20 @@
         >
           <div class="checkbox">
             {#if $selectedEventIds.has(event.id)}
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <rect width="20" height="20" rx="4" fill="currentColor"/>
                 <path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             {:else}
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <rect width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
               </svg>
             {/if}
           </div>
 
           <div class="event-info">
-            <h3 class="event-name">{event.title}</h3>
-            <p class="event-date">{formatDate(event.date)}</p>
+            <span class="event-name">{event.title}</span>
+            <span class="event-date">{formatDate(event.date)}</span>
           </div>
         </button>
       {/each}
@@ -215,19 +215,19 @@
   .events-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 2px;
   }
 
   .event-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
     background: white;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     text-align: left;
     width: 100%;
   }
@@ -259,19 +259,25 @@
   .event-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
   }
 
   .event-name {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    margin: 0 0 0.25rem 0;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .event-date {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
-    margin: 0;
+    white-space: nowrap;
   }
 
   @media (max-width: 640px) {
