@@ -5,12 +5,19 @@
   import { generateICalContent, downloadICalFile } from '../../shared/utils/ical-exporter';
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
+  import { authStore } from '../../shared/stores/auth.store';
+  import SaveCalendarModal from './SaveCalendarModal.svelte';
+  import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';
 
   let events: EventWithDetails[] = [];
   let loading = true;
   let error = '';
   let exporting = false;
+  let showSaveModal = false;
+  let savedCalendarsRefresh = 0;
+
+  $: isLoggedIn = !!$authStore.user;
 
   $: sortedEvents = [...events].sort((a, b) =>
     new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -85,6 +92,21 @@
     });
   }
 
+  function handleSaveCalendar() {
+    if ($selectedCount === 0) {
+      error = 'Please select at least one event before saving';
+      return;
+    }
+    showSaveModal = true;
+  }
+
+  async function handleLoadCalendar(eventIds: string[]) {
+    await clearAllSelections();
+    for (const id of eventIds) {
+      await toggleEventSelection(id);
+    }
+  }
+
   function exportToCalendar() {
     if ($selectedCount === 0) {
       error = 'Please select at least one event';
@@ -121,6 +143,11 @@
         <Button variant="secondary" size="sm" on:click={handleClearAll}>
           Clear All
         </Button>
+        {#if isLoggedIn}
+          <Button variant="secondary" on:click={handleSaveCalendar}>
+            Save calendar
+          </Button>
+        {/if}
         <Button on:click={exportToCalendar} disabled={exporting}>
           {exporting ? 'Exporting...' : 'Export to Calendar (.ics)'}
         </Button>
@@ -205,8 +232,22 @@
         </button>
       {/each}
     </div>
+
+    {#if isLoggedIn}
+      <SavedCalendarsList
+        refreshTrigger={savedCalendarsRefresh}
+        on:load={(e) => handleLoadCalendar(e.detail)}
+      />
+    {/if}
   {/if}
 </div>
+
+<SaveCalendarModal
+  open={showSaveModal}
+  selectedEventIds={Array.from($selectedEventIds)}
+  on:saved={() => { showSaveModal = false; savedCalendarsRefresh += 1; }}
+  on:close={() => { showSaveModal = false; }}
+/>
 
 <style>
   .my-events-page {
