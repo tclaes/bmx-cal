@@ -155,6 +155,13 @@
     {/if}
   </div>
 
+  {#if isLoggedIn}
+    <SavedCalendarsList
+      refreshTrigger={savedCalendarsRefresh}
+      on:load={(e) => handleLoadCalendar(e.detail)}
+    />
+  {/if}
+
   {#if loading}
     <div class="loading-container">
       <LoadingSpinner />
@@ -232,13 +239,6 @@
         </button>
       {/each}
     </div>
-
-    {#if isLoggedIn}
-      <SavedCalendarsList
-        refreshTrigger={savedCalendarsRefresh}
-        on:load={(e) => handleLoadCalendar(e.detail)}
-      />
-    {/if}
   {/if}
 </div>
 

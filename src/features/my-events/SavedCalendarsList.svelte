@@ -91,9 +91,9 @@
 
 <style>
   .saved-list {
-    margin-top: 2rem;
-    border-top: 1px solid var(--color-border, #e5e7eb);
-    padding-top: 1.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    padding-bottom: 1.5rem;
   }
 
   .section-title {
