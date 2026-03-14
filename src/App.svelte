@@ -8,6 +8,7 @@
   import AdminDashboard from '@features/admin/AdminDashboard.svelte';
   import Login from '@features/admin/Login.svelte';
   import MyEventsPage from './features/my-events/MyEventsPage.svelte';
+  import RegisterPage from './features/auth/RegisterPage.svelte';
 
   let loading = true;
 
@@ -44,6 +45,8 @@
         <CalendarView />
       {:else if $currentRoute === '/my-events'}
         <MyEventsPage />
+      {:else if $currentRoute === '/register'}
+        <RegisterPage />
       {:else if $currentRoute === '/admin/login'}
         <Login on:loginSuccess={handleLoginSuccess} />
       {:else if $currentRoute === '/admin'}
