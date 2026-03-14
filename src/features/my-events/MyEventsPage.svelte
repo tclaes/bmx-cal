@@ -30,16 +30,16 @@
     return Array.from(map.values()).sort((a, b) => a.type.name.localeCompare(b.type.name));
   })();
 
-  function isTypeFullySelected(ids: string[]): boolean {
-    return ids.length > 0 && ids.every(id => $selectedEventIds.has(id));
+  function isTypeFullySelected(ids: string[], selected: Set<string>): boolean {
+    return ids.length > 0 && ids.every(id => selected.has(id));
   }
 
-  function isTypePartiallySelected(ids: string[]): boolean {
-    return ids.some(id => $selectedEventIds.has(id)) && !isTypeFullySelected(ids);
+  function isTypePartiallySelected(ids: string[], selected: Set<string>): boolean {
+    return ids.some(id => selected.has(id)) && !isTypeFullySelected(ids, selected);
   }
 
   function handleTypeToggle(ids: string[]) {
-    if (isTypeFullySelected(ids)) {
+    if (isTypeFullySelected(ids, $selectedEventIds)) {
       deselectEventsByType(ids);
     } else {
       selectEventsByType(ids);
@@ -142,8 +142,8 @@
         <span class="type-selector-label">Select by type:</span>
         <div class="type-buttons">
           {#each eventTypes as { type, ids } (type.id)}
-            {@const fully = isTypeFullySelected(ids)}
-            {@const partial = isTypePartiallySelected(ids)}
+            {@const fully = isTypeFullySelected(ids, $selectedEventIds)}
+            {@const partial = isTypePartiallySelected(ids, $selectedEventIds)}
             <button
               class="type-btn"
               class:fully-selected={fully}
