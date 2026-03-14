@@ -68,7 +68,7 @@
       if (allTeams.length > 0 && !selectedTeamId) {
         selectedTeamId = allTeams[0].id;
       }
-      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
+      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, true]));
       expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     }
   }
