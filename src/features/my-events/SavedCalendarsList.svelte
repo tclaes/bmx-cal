@@ -3,7 +3,6 @@
   import { CalendarService } from '../../shared/services/calendar.service';
   import type { SavedCalendar } from '../../shared/services/calendar.service';
   import Button from '../../shared/components/Button.svelte';
-  import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
 
   export let refreshTrigger = 0;
 
@@ -51,43 +50,39 @@
   }
 </script>
 
+{#if !loading && calendars.length > 0}
 <div class="saved-list">
   <h3 class="section-title">Saved calendars</h3>
 
-  {#if loading}
-    <div class="loading"><LoadingSpinner /></div>
-  {:else if calendars.length === 0}
-    <p class="empty">No saved calendars yet.</p>
-  {:else}
-    <ul class="list">
-      {#each calendars as cal (cal.id)}
-        <li class="item">
-          <div class="item-info">
-            <span class="item-name">{cal.name}</span>
-            <span class="item-meta">
-              {cal.event_count ?? 0} event{(cal.event_count ?? 0) === 1 ? '' : 's'}
-              &middot;
-              saved {formatDate(cal.created_at)}
-            </span>
-          </div>
-          <div class="item-actions">
-            <Button variant="secondary" size="sm" on:click={() => handleLoad(cal.id)}>
-              Load
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              disabled={deletingId === cal.id}
-              on:click={() => handleDelete(cal.id)}
-            >
-              {deletingId === cal.id ? '...' : 'Delete'}
-            </Button>
-          </div>
-        </li>
-      {/each}
-    </ul>
-  {/if}
+  <ul class="list">
+    {#each calendars as cal (cal.id)}
+      <li class="item">
+        <div class="item-info">
+          <span class="item-name">{cal.name}</span>
+          <span class="item-meta">
+            {cal.event_count ?? 0} event{(cal.event_count ?? 0) === 1 ? '' : 's'}
+            &middot;
+            saved {formatDate(cal.created_at)}
+          </span>
+        </div>
+        <div class="item-actions">
+          <Button variant="secondary" size="sm" on:click={() => handleLoad(cal.id)}>
+            Load
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            disabled={deletingId === cal.id}
+            on:click={() => handleDelete(cal.id)}
+          >
+            {deletingId === cal.id ? '...' : 'Delete'}
+          </Button>
+        </div>
+      </li>
+    {/each}
+  </ul>
 </div>
+{/if}
 
 <style>
   .saved-list {
@@ -103,18 +98,6 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0 0 1rem 0;
-  }
-
-  .loading {
-    display: flex;
-    justify-content: center;
-    padding: 1.5rem 0;
-  }
-
-  .empty {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary, #6b7280);
-    margin: 0;
   }
 
   .list {
