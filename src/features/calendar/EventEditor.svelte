@@ -183,6 +183,7 @@
       />
     </div>
 
+    {#if !event?.team_id}
     <div class="form-group">
       <Input
         label="Registration URL"
@@ -217,6 +218,7 @@
         ]}
       />
     </div>
+    {/if}
 
     {#if error}
       <div class="error-message">{error}</div>
