@@ -67,7 +67,7 @@
 
     selectedEvents.forEach(event => {
       const params = new URLSearchParams({
-        text: event.name,
+        text: event.title,
         dates: formatGoogleCalendarDate(event.date, event.end_date),
         details: event.description || '',
         location: event.location?.name || ''
@@ -141,7 +141,7 @@
           </div>
 
           <div class="event-info">
-            <h3 class="event-name">{event.name}</h3>
+            <h3 class="event-name">{event.title}</h3>
             <p class="event-date">{formatDate(event.date)}</p>
           </div>
         </button>
