@@ -13,6 +13,12 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
     },
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/tests/setup.ts'],
+    include: ['src/tests/**/*.test.ts'],
+  },
   build: {
     rollupOptions: {
       output: {

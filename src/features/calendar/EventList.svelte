@@ -3,22 +3,14 @@
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
   import { LoadingSpinner, Alert } from '@shared/components';
-  import { eventsStore, filtersStore, authStore, userManagedTeams } from '@shared/stores';
+  import { eventsStore, filtersStore, authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
+  import { canEditEvent } from '@shared/utils/permissions';
   import type { EventWithDetails, Event } from '@types';
 
   let filteredEvents: EventWithDetails[] = [];
   let editingEvent: Event | null = null;
   let showEditor = false;
-
-  $: isAdmin = $authStore.user?.role === 'admin';
-  $: managedTeamIds = new Set(($userManagedTeams).map(t => t.id));
-
-  function canEditEvent(event: EventWithDetails): boolean {
-    if (isAdmin) return true;
-    if (managedTeamIds.size > 0 && event.team_id && managedTeamIds.has(event.team_id)) return true;
-    return false;
-  }
 
   $: {
     const filters = $filtersStore;
@@ -136,7 +128,7 @@
   {:else}
     <div class="events-grid">
       {#each filteredEvents as event (event.id)}
-        <EventCard {event} canEdit={canEditEvent(event)} on:edit={handleEdit} />
+        <EventCard {event} canEdit={canEditEvent(event, $authStore.user)} on:edit={handleEdit} />
       {/each}
     </div>
   {/if}
