@@ -58,8 +58,14 @@
       (async () => {
         try {
           eventsStore.setLoading(true);
-          const events = await EventsService.getAllEvents();
+          const [events, eventTypes, locations] = await Promise.all([
+            EventsService.getAllEvents(),
+            EventsService.getEventTypes(),
+            EventsService.getLocations(),
+          ]);
           eventsStore.setEvents(events);
+          eventsStore.setEventTypes(eventTypes);
+          eventsStore.setLocations(locations);
         } catch (error) {
           eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
         } finally {
