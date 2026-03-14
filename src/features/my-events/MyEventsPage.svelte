@@ -124,7 +124,7 @@
 <div class="my-events-page">
   <div class="header">
     <div>
-      <h1>My Events</h1>
+      <h1>Create my calendar</h1>
       <p class="subtitle">Select events you want to attend</p>
     </div>
 

@@ -21,7 +21,7 @@
         Events
       </button>
       <button class="nav-link" on:click={() => handleNavigate('/my-events')}>
-        My Events
+        Create my calendar
       </button>
     </div>
   </div>
