@@ -150,7 +150,7 @@ async function syncEventsToDatabase(
     try {
       const { data: existing } = await supabase
         .from("events")
-        .select("id, registration_opens, registration_deadline, registration_status")
+        .select("id, title, registration_opens, registration_deadline, registration_status")
         .eq("registration_url", jsEvent.url)
         .maybeSingle();
 
@@ -162,12 +162,14 @@ async function syncEventsToDatabase(
         const hasChanges =
           existing.registration_opens !== newOpens ||
           existing.registration_deadline !== newDeadline ||
-          existing.registration_status !== newStatus;
+          existing.registration_status !== newStatus ||
+          existing.title !== jsEvent.name;
 
         if (hasChanges) {
           const { error } = await supabase
             .from("events")
             .update({
+              title: jsEvent.name,
               registration_opens: newOpens,
               registration_deadline: newDeadline,
               registration_status: newStatus,
@@ -187,7 +189,7 @@ async function syncEventsToDatabase(
       } else {
         const { data: byTitle } = await supabase
           .from("events")
-          .select("id, registration_opens, registration_deadline, registration_status")
+          .select("id, title, registration_opens, registration_deadline, registration_status")
           .ilike("title", `%${jsEvent.name.trim()}%`)
           .eq("date", jsEvent.event_date)
           .maybeSingle();
@@ -196,12 +198,14 @@ async function syncEventsToDatabase(
           const hasChanges =
             byTitle.registration_opens !== newOpens ||
             byTitle.registration_deadline !== newDeadline ||
-            byTitle.registration_status !== newStatus;
+            byTitle.registration_status !== newStatus ||
+            byTitle.title !== jsEvent.name;
 
           if (hasChanges) {
             const { error } = await supabase
               .from("events")
               .update({
+                title: jsEvent.name,
                 registration_url: jsEvent.url,
                 registration_opens: newOpens,
                 registration_deadline: newDeadline,
