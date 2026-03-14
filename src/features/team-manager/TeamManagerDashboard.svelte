@@ -5,10 +5,11 @@
   import { AuthService, EventsService } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
-  import type { EventWithDetails, EventType, Team } from '@types';
+  import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let events: EventWithDetails[] = [];
-  let eventTypes: EventType[] = [];
+  let locations: Location[] = [];
+  let teamEventType: EventType | null = null;
   let allTeams: Team[] = [];
   let selectedTeamId = '';
   let loading = false;
@@ -18,6 +19,14 @@
   let showForm = false;
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
+
+  let showAddLocation = false;
+  let newLocationName = '';
+  let newLocationCity = '';
+  let newLocationAddress = '';
+  let newLocationCountry = 'Belgium';
+  let savingLocation = false;
+  let locationError = '';
 
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
@@ -29,14 +38,10 @@
     end_date: '',
     start_time: '',
     end_time: '',
+    location_id: '',
     location: '',
     description: '',
-    event_type_id: '',
     status: 'upcoming' as 'upcoming' | 'completed' | 'cancelled',
-    registration_url: '',
-    registration_opens: '',
-    registration_deadline: '',
-    registration_status: '',
   };
 
   let saving = false;
@@ -59,9 +64,10 @@
     error = '';
     try {
       await loadTeams();
-      [eventTypes] = await Promise.all([
-        EventsService.getEventTypes(),
-      ]);
+      locations = await EventsService.getLocations();
+      if (selectedTeamId) {
+        teamEventType = await EventsService.getTeamEventType(selectedTeamId);
+      }
       await loadTeamEvents();
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load data';
@@ -81,27 +87,29 @@
 
   async function handleTeamChange(e: Event) {
     selectedTeamId = (e.target as HTMLSelectElement).value;
+    teamEventType = await EventsService.getTeamEventType(selectedTeamId);
     await loadTeamEvents();
   }
 
-  function openCreateForm() {
-    editingEvent = null;
+  function resetForm() {
     formData = {
       title: '',
       date: '',
       end_date: '',
       start_time: '',
       end_time: '',
+      location_id: '',
       location: '',
       description: '',
-      event_type_id: '',
       status: 'upcoming',
-      registration_url: '',
-      registration_opens: '',
-      registration_deadline: '',
-      registration_status: '',
     };
     formError = '';
+    showAddLocation = false;
+  }
+
+  function openCreateForm() {
+    editingEvent = null;
+    resetForm();
     showForm = true;
   }
 
@@ -113,21 +121,62 @@
       end_date: event.end_date ?? '',
       start_time: event.start_time ?? '',
       end_time: event.end_time ?? '',
+      location_id: event.location_id ?? '',
       location: event.location,
       description: event.description ?? '',
-      event_type_id: event.event_type_id ?? '',
       status: event.status,
-      registration_url: event.registration_url ?? '',
-      registration_opens: event.registration_opens ?? '',
-      registration_deadline: event.registration_deadline ?? '',
-      registration_status: event.registration_status ?? '',
     };
     formError = '';
+    showAddLocation = false;
     showForm = true;
+  }
+
+  async function handleSaveLocation() {
+    if (!newLocationName.trim()) return;
+    savingLocation = true;
+    locationError = '';
+    try {
+      const created = await EventsService.createLocation({
+        name: newLocationName.trim(),
+        city: newLocationCity.trim() || undefined,
+        address: newLocationAddress.trim() || undefined,
+        country: newLocationCountry.trim() || undefined,
+      });
+      locations = [...locations, created].sort((a, b) => a.name.localeCompare(b.name));
+      formData.location_id = created.id;
+      formData.location = created.name;
+      newLocationName = '';
+      newLocationCity = '';
+      newLocationAddress = '';
+      newLocationCountry = 'Belgium';
+      showAddLocation = false;
+    } catch (err) {
+      locationError = err instanceof Error ? err.message : 'Failed to create location';
+    } finally {
+      savingLocation = false;
+    }
+  }
+
+  function handleLocationSelect(e: Event) {
+    const val = (e.target as HTMLSelectElement).value;
+    if (val === '__new__') {
+      showAddLocation = true;
+      formData.location_id = '';
+      formData.location = '';
+      return;
+    }
+    showAddLocation = false;
+    formData.location_id = val;
+    const loc = locations.find(l => l.id === val);
+    formData.location = loc ? (loc.city ? `${loc.name}, ${loc.city}` : loc.name) : '';
   }
 
   async function handleSave() {
     if (!selectedTeamId) return;
+    if (!formData.location_id) {
+      formError = 'Please select a location';
+      return;
+    }
     formError = '';
     saving = true;
     try {
@@ -138,14 +187,11 @@
         start_time: formData.start_time || undefined,
         end_time: formData.end_time || undefined,
         location: formData.location,
-        description: formData.description,
-        event_type_id: formData.event_type_id || undefined,
+        location_id: formData.location_id,
+        description: formData.description || undefined,
+        event_type_id: teamEventType?.id,
         team_id: selectedTeamId,
         status: formData.status,
-        registration_url: formData.registration_url || undefined,
-        registration_opens: formData.registration_opens || undefined,
-        registration_deadline: formData.registration_deadline || undefined,
-        registration_status: formData.registration_status || undefined,
       };
 
       if (editingEvent) {
@@ -156,7 +202,7 @@
         successMessage = 'Event created successfully';
       }
       showForm = false;
-      await loadData();
+      await loadTeamEvents();
     } catch (err) {
       formError = err instanceof Error ? err.message : 'Failed to save event';
     } finally {
@@ -172,7 +218,7 @@
     try {
       await EventsService.deleteEvent(event.id);
       successMessage = `"${event.title}" deleted`;
-      await loadData();
+      await loadTeamEvents();
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to delete event';
     } finally {
@@ -192,6 +238,12 @@
       month: 'short',
       year: 'numeric',
     });
+  }
+
+  function locationLabel(loc: Location) {
+    const parts = [loc.name];
+    if (loc.city) parts.push(loc.city);
+    return parts.join(', ');
   }
 
   onMount(() => {
@@ -214,7 +266,7 @@
     {#if error}
       <Alert type="danger" message={error} />
     {/if}
-    {#if successMessage}
+    {#if successMessage && !showForm}
       <Alert type="success" message={successMessage} />
     {/if}
 
@@ -268,6 +320,11 @@
       <Card padding="lg" shadow="md">
         <div class="section-header">
           <h2 class="section-title">{editingEvent ? 'Edit Event' : 'New Event'}</h2>
+          {#if teamEventType}
+            <span class="type-badge" style="background:{teamEventType.color_code}20; color:{teamEventType.color_code}; border-color:{teamEventType.color_code}40">
+              {teamEventType.name}
+            </span>
+          {/if}
         </div>
 
         {#if formError}
@@ -286,26 +343,65 @@
             <Input label="Start Time" type="time" bind:value={formData.start_time} />
             <Input label="End Time" type="time" bind:value={formData.end_time} />
           </div>
+
           <div class="form-row">
-            <Input label="Location" bind:value={formData.location} placeholder="Venue name or city" />
+            <label class="field-label" for="location-select">Location</label>
+            <select
+              id="location-select"
+              class="location-select"
+              value={formData.location_id || ''}
+              on:change={handleLocationSelect}
+              required
+            >
+              <option value="" disabled>Select a location...</option>
+              {#each locations as loc (loc.id)}
+                <option value={loc.id}>{locationLabel(loc)}</option>
+              {/each}
+              <option value="__new__">+ Add new location...</option>
+            </select>
           </div>
+
+          {#if showAddLocation}
+            <div class="add-location-panel">
+              <p class="add-location-title">New Location</p>
+              {#if locationError}
+                <Alert type="danger" message={locationError} />
+              {/if}
+              <div class="form-row">
+                <Input label="Name" bind:value={newLocationName} required placeholder="e.g. BMX Track Gent" />
+              </div>
+              <div class="form-row form-row--cols">
+                <Input label="City" bind:value={newLocationCity} placeholder="e.g. Gent" />
+                <Input label="Country" bind:value={newLocationCountry} placeholder="e.g. Belgium" />
+              </div>
+              <div class="form-row">
+                <Input label="Address" bind:value={newLocationAddress} placeholder="Street and number (optional)" />
+              </div>
+              <div class="add-location-actions">
+                <Button type="button" variant="ghost" size="sm" on:click={() => { showAddLocation = false; }} disabled={savingLocation}>
+                  Cancel
+                </Button>
+                <Button type="button" variant="secondary" size="sm" on:click={handleSaveLocation} disabled={savingLocation || !newLocationName.trim()}>
+                  {savingLocation ? 'Saving...' : 'Save Location'}
+                </Button>
+              </div>
+            </div>
+          {/if}
+
           <div class="form-row form-row--cols">
-            <Select
-              label="Event Type"
-              bind:value={formData.event_type_id}
-              options={eventTypes.map(t => ({ value: t.id, label: t.name }))}
-              placeholder="Select type"
-            />
-            <Select
-              label="Status"
-              bind:value={formData.status}
-              options={[
-                { value: 'upcoming', label: 'Upcoming' },
-                { value: 'completed', label: 'Completed' },
-                { value: 'cancelled', label: 'Cancelled' },
-              ]}
-            />
+            <div>
+              <Select
+                label="Status"
+                bind:value={formData.status}
+                options={[
+                  { value: 'upcoming', label: 'Upcoming' },
+                  { value: 'completed', label: 'Completed' },
+                  { value: 'cancelled', label: 'Cancelled' },
+                ]}
+              />
+            </div>
           </div>
+
           <div class="form-row">
             <label class="field-label" for="tm-description">Description</label>
             <textarea
@@ -315,28 +411,9 @@
               placeholder="Optional description"
             />
           </div>
-          <div class="form-row">
-            <Input label="Registration URL" type="url" bind:value={formData.registration_url} placeholder="https://..." />
-          </div>
-          <div class="form-row form-row--cols">
-            <Input label="Registration Opens" type="date" bind:value={formData.registration_opens} />
-            <Input label="Registration Deadline" type="date" bind:value={formData.registration_deadline} />
-          </div>
-          <div class="form-row">
-            <Select
-              label="Registration Status"
-              bind:value={formData.registration_status}
-              options={[
-                { value: '', label: 'Not set' },
-                { value: 'upcoming', label: 'Upcoming' },
-                { value: 'open', label: 'Open' },
-                { value: 'closed', label: 'Closed' },
-              ]}
-            />
-          </div>
 
           <div class="form-actions">
-            <Button type="button" variant="ghost" on:click={() => { showForm = false; }} disabled={saving}>
+            <Button type="button" variant="ghost" on:click={() => { showForm = false; resetForm(); }} disabled={saving}>
               Cancel
             </Button>
             <Button type="submit" variant="primary" disabled={saving}>
@@ -385,6 +462,14 @@
     border-radius: 20px;
     padding: 0.25rem 0.75rem;
     border: 1px solid var(--color-primary-200, #bfdbfe);
+  }
+
+  .type-badge {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid;
   }
 
   .tm-content {
@@ -512,6 +597,47 @@
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-xs);
+  }
+
+  .location-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm, 4px);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    box-sizing: border-box;
+  }
+
+  .location-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  .add-location-panel {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 8px);
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .add-location-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-xs);
+  }
+
+  .add-location-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
   }
 
   textarea {

@@ -127,11 +127,33 @@ export class EventsService {
     return data;
   }
 
+  static async getTeamEventType(teamId: string): Promise<EventType | null> {
+    const { data, error } = await supabase
+      .from('event_types')
+      .select('*')
+      .eq('team_id', teamId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
   static async getLocations(): Promise<Location[]> {
     const { data, error } = await supabase
       .from('locations')
       .select('*')
       .order('name', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async createLocation(location: { name: string; city?: string; address?: string; country?: string }): Promise<Location> {
+    const { data, error } = await supabase
+      .from('locations')
+      .insert({ ...location, updated_at: new Date().toISOString() })
+      .select()
+      .single();
 
     if (error) throw error;
     return data;

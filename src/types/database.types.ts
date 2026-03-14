@@ -2,6 +2,7 @@ export interface EventType {
   id: string;
   name: string;
   color_code: string;
+  team_id: string | null;
   created_at: string;
 }
 
