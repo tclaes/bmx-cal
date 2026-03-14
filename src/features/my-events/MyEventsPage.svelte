@@ -131,7 +131,7 @@
     {#if $selectedCount > 0}
       <div class="header-actions">
         <span class="count">{$selectedCount} selected</span>
-        <Button variant="secondary" size="small" on:click={handleClearAll}>
+        <Button variant="secondary" size="sm" on:click={handleClearAll}>
           Clear All
         </Button>
         <Button on:click={exportToGoogleCalendar} disabled={exporting}>
