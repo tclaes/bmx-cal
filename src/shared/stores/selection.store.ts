@@ -36,3 +36,21 @@ export function clearAllSelections() {
   selectionService.clearAllSelections();
   selectedEventIds.set(new Set());
 }
+
+export function selectEventsByType(eventIds: string[]) {
+  selectedEventIds.update(ids => {
+    const newIds = new Set(ids);
+    eventIds.forEach(id => newIds.add(id));
+    selectionService.saveSelections(Array.from(newIds));
+    return newIds;
+  });
+}
+
+export function deselectEventsByType(eventIds: string[]) {
+  selectedEventIds.update(ids => {
+    const newIds = new Set(ids);
+    eventIds.forEach(id => newIds.delete(id));
+    selectionService.saveSelections(Array.from(newIds));
+    return newIds;
+  });
+}

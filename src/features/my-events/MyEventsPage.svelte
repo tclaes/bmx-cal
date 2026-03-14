@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount } from '../../shared/stores';
+  import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '../../shared/stores';
   import { EventsService } from '../../shared/services/events.service';
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
-  import type { EventWithDetails } from '../../types';
+  import type { EventWithDetails, EventType } from '../../types';
 
   let events: EventWithDetails[] = [];
   let loading = true;
@@ -14,6 +14,36 @@
   $: sortedEvents = [...events].sort((a, b) =>
     new Date(a.date).getTime() - new Date(b.date).getTime()
   );
+
+  $: eventTypes = (() => {
+    const map = new Map<string, { type: EventType; ids: string[] }>();
+    for (const event of events) {
+      if (event.event_type) {
+        const key = event.event_type.id;
+        if (!map.has(key)) {
+          map.set(key, { type: event.event_type, ids: [] });
+        }
+        map.get(key)!.ids.push(event.id);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.type.name.localeCompare(b.type.name));
+  })();
+
+  function isTypeFullySelected(ids: string[]): boolean {
+    return ids.length > 0 && ids.every(id => $selectedEventIds.has(id));
+  }
+
+  function isTypePartiallySelected(ids: string[]): boolean {
+    return ids.some(id => $selectedEventIds.has(id)) && !isTypeFullySelected(ids);
+  }
+
+  function handleTypeToggle(ids: string[]) {
+    if (isTypeFullySelected(ids)) {
+      deselectEventsByType(ids);
+    } else {
+      selectEventsByType(ids);
+    }
+  }
 
   onMount(async () => {
     try {
@@ -120,6 +150,39 @@
       <p class="error">{error}</p>
     </div>
   {:else}
+    {#if eventTypes.length > 0}
+      <div class="type-selector">
+        <span class="type-selector-label">Select by type:</span>
+        <div class="type-buttons">
+          {#each eventTypes as { type, ids } (type.id)}
+            {@const fully = isTypeFullySelected(ids)}
+            {@const partial = isTypePartiallySelected(ids)}
+            <button
+              class="type-btn"
+              class:fully-selected={fully}
+              class:partially-selected={partial}
+              style="--type-color: {type.color_code}"
+              on:click={() => handleTypeToggle(ids)}
+              title="{fully ? 'Deselect' : 'Select'} all {type.name} events ({ids.length})"
+            >
+              <span class="type-dot"></span>
+              <span class="type-name">{type.name}</span>
+              <span class="type-count">{ids.length}</span>
+              {#if fully}
+                <svg class="type-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              {:else if partial}
+                <svg class="type-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              {/if}
+            </button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
     <div class="events-list">
       {#each sortedEvents as event (event.id)}
         <button
@@ -139,6 +202,14 @@
               </svg>
             {/if}
           </div>
+
+          {#if event.event_type}
+            <span
+              class="type-indicator"
+              style="background: {event.event_type.color_code}"
+              title={event.event_type.name}
+            ></span>
+          {/if}
 
           <div class="event-info">
             <span class="event-name">{event.title}</span>
@@ -162,7 +233,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 2rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     flex-wrap: wrap;
   }
 
@@ -212,6 +283,92 @@
     margin: 0;
   }
 
+  .type-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .type-selector-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .type-buttons {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .type-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+    line-height: 1;
+  }
+
+  .type-btn:hover {
+    border-color: var(--type-color);
+    color: var(--text-primary);
+    background: var(--background-secondary);
+  }
+
+  .type-btn.fully-selected {
+    border-color: var(--type-color);
+    background: color-mix(in srgb, var(--type-color) 12%, white);
+    color: var(--text-primary);
+  }
+
+  .type-btn.partially-selected {
+    border-color: var(--type-color);
+    background: color-mix(in srgb, var(--type-color) 6%, white);
+    color: var(--text-primary);
+  }
+
+  .type-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--type-color);
+    flex-shrink: 0;
+  }
+
+  .type-name {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .type-count {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    background: var(--background-secondary);
+    border-radius: 10px;
+    padding: 0 0.3rem;
+    line-height: 1.4;
+  }
+
+  .type-check {
+    color: var(--type-color);
+    flex-shrink: 0;
+  }
+
   .events-list {
     display: flex;
     flex-direction: column;
@@ -256,6 +413,13 @@
     color: var(--primary);
   }
 
+  .type-indicator {
+    width: 3px;
+    height: 24px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
   .event-info {
     flex: 1;
     min-width: 0;
@@ -295,6 +459,11 @@
       order: -1;
       width: 100%;
       text-align: center;
+    }
+
+    .type-selector {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>
