@@ -289,14 +289,6 @@
     background-color: var(--color-error-bg, #fef2f2);
   }
 
-  .mobile-user-email {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    padding: 0.5rem var(--spacing-sm);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 
   @media (max-width: 767px) {
     .nav-container {
