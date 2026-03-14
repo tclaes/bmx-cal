@@ -40,6 +40,12 @@ router
   })
   .on('/report-bug', () => {
     currentRoute.set('/report-bug');
+  })
+  .on('/about', () => {
+    currentRoute.set('/about');
+  })
+  .on('/get-in-touch', () => {
+    currentRoute.set('/get-in-touch');
   });
 
 export function navigate(path: string) {

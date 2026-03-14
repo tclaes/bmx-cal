@@ -13,6 +13,8 @@
   import ProfilePage from './features/profile/ProfilePage.svelte';
   import TeamManagerDashboard from './features/team-manager/TeamManagerDashboard.svelte';
   import BugReportPage from './features/bug-report/BugReportPage.svelte';
+  import AboutPage from './features/about/AboutPage.svelte';
+  import GetInTouchPage from './features/about/GetInTouchPage.svelte';
 
   let loading = true;
 
@@ -74,6 +76,10 @@
         {/if}
       {:else if $currentRoute === '/report-bug'}
         <BugReportPage />
+      {:else if $currentRoute === '/about'}
+        <AboutPage />
+      {:else if $currentRoute === '/get-in-touch'}
+        <GetInTouchPage />
       {:else}
         <div class="not-found">
           <h1>404 - Page Not Found</h1>
@@ -85,6 +91,8 @@
     <footer class="footer">
       <div class="footer-inner">
         <span>&copy; {new Date().getFullYear()} BMX Calendar. All rights reserved.</span>
+        <button class="footer-link" on:click={() => navigate('/about')}>About</button>
+        <button class="footer-link" on:click={() => navigate('/get-in-touch')}>Get in touch</button>
         <button class="footer-link" on:click={() => navigate('/report-bug')}>Report a bug</button>
       </div>
     </footer>
