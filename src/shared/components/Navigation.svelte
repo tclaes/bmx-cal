@@ -1,10 +1,20 @@
 <script lang="ts">
   import { authStore } from '@shared/stores';
+  import { AuthService } from '@shared/services';
   import { navigate } from '../../router';
 
   function handleNavigate(path: string) {
     navigate(path);
   }
+
+  async function handleLogout() {
+    await AuthService.logout();
+    authStore.logout();
+    navigate('/');
+  }
+
+  $: user = $authStore.user;
+  $: isAdmin = user?.role === 'admin';
 </script>
 
 <nav class="navigation">
@@ -23,6 +33,24 @@
       <button class="nav-link" on:click={() => handleNavigate('/my-events')}>
         Create my calendar
       </button>
+
+      {#if user}
+        <div class="user-menu">
+          <span class="user-email">{user.email}</span>
+          {#if isAdmin}
+            <button class="nav-link" on:click={() => handleNavigate('/admin')}>
+              Admin
+            </button>
+          {/if}
+          <button class="nav-link nav-link--signout" on:click={handleLogout}>
+            Sign out
+          </button>
+        </div>
+      {:else}
+        <button class="nav-link nav-link--signin" on:click={() => handleNavigate('/login')}>
+          Sign in
+        </button>
+      {/if}
     </div>
   </div>
 </nav>
@@ -75,6 +103,10 @@
     .nav-container {
       justify-content: center;
     }
+
+    .nav-links {
+      display: none;
+    }
   }
 
   @media (min-width: 768px) {
@@ -102,5 +134,35 @@
   .nav-link:hover {
     color: var(--color-primary);
     background-color: var(--color-bg-secondary);
+  }
+
+  .nav-link--signin {
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+
+  .nav-link--signin:hover {
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  .nav-link--signout:hover {
+    color: var(--color-error, #dc2626);
+    background-color: var(--color-error-bg, #fef2f2);
+  }
+
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .user-email {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 </style>

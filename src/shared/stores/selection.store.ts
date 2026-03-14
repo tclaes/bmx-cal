@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import { selectionService } from '../services/selection.service';
+import { supabase } from '@data/supabase';
 
 export const selectedEventIds = writable<Set<string>>(new Set());
 export const isLoadingSelections = writable<boolean>(false);
@@ -9,17 +10,39 @@ export const selectedCount = derived(
   $selectedEventIds => $selectedEventIds.size
 );
 
-export function loadUserSelections() {
+async function isLoggedIn(): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return !!user;
+}
+
+export async function loadUserSelections() {
   try {
-    const eventIds = selectionService.getSelections();
+    if (await isLoggedIn()) {
+      const eventIds = await selectionService.getRemoteSelections();
+      selectionService.saveLocalSelections(eventIds);
+      selectedEventIds.set(new Set(eventIds));
+    } else {
+      const eventIds = selectionService.getLocalSelections();
+      selectedEventIds.set(new Set(eventIds));
+    }
+  } catch {
+    const eventIds = selectionService.getLocalSelections();
     selectedEventIds.set(new Set(eventIds));
-  } catch (error) {
-    console.error('Failed to load selections:', error);
   }
 }
 
-export function toggleEventSelection(eventId: string) {
+export async function toggleEventSelection(eventId: string) {
+  const loggedIn = await isLoggedIn();
+
   const isSelected = selectionService.toggleSelection(eventId);
+
+  if (loggedIn) {
+    if (isSelected) {
+      await selectionService.addRemoteSelection(eventId);
+    } else {
+      await selectionService.removeRemoteSelection(eventId);
+    }
+  }
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
@@ -32,25 +55,40 @@ export function toggleEventSelection(eventId: string) {
   });
 }
 
-export function clearAllSelections() {
-  selectionService.clearAllSelections();
+export async function clearAllSelections() {
+  selectionService.clearLocalSelections();
+  if (await isLoggedIn()) {
+    await selectionService.clearRemoteSelections();
+  }
   selectedEventIds.set(new Set());
 }
 
-export function selectEventsByType(eventIds: string[]) {
+export async function selectEventsByType(eventIds: string[]) {
+  const loggedIn = await isLoggedIn();
+
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
     eventIds.forEach(id => newIds.add(id));
-    selectionService.saveSelections(Array.from(newIds));
+    selectionService.saveLocalSelections(Array.from(newIds));
     return newIds;
   });
+
+  if (loggedIn) {
+    await Promise.all(eventIds.map(id => selectionService.addRemoteSelection(id)));
+  }
 }
 
-export function deselectEventsByType(eventIds: string[]) {
+export async function deselectEventsByType(eventIds: string[]) {
+  const loggedIn = await isLoggedIn();
+
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
     eventIds.forEach(id => newIds.delete(id));
-    selectionService.saveSelections(Array.from(newIds));
+    selectionService.saveLocalSelections(Array.from(newIds));
     return newIds;
   });
+
+  if (loggedIn) {
+    await Promise.all(eventIds.map(id => selectionService.removeRemoteSelection(id)));
+  }
 }

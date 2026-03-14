@@ -38,18 +38,18 @@
     return ids.some(id => selected.has(id)) && !isTypeFullySelected(ids, selected);
   }
 
-  function handleTypeToggle(ids: string[]) {
+  async function handleTypeToggle(ids: string[]) {
     if (isTypeFullySelected(ids, $selectedEventIds)) {
-      deselectEventsByType(ids);
+      await deselectEventsByType(ids);
     } else {
-      selectEventsByType(ids);
+      await selectEventsByType(ids);
     }
   }
 
   onMount(async () => {
     try {
       events = await EventsService.getAllEvents();
-      loadUserSelections();
+      await loadUserSelections();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load events';
     } finally {
@@ -57,18 +57,18 @@
     }
   });
 
-  function handleToggle(eventId: string) {
+  async function handleToggle(eventId: string) {
     try {
-      toggleEventSelection(eventId);
+      await toggleEventSelection(eventId);
       error = '';
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to update selection';
     }
   }
 
-  function handleClearAll() {
+  async function handleClearAll() {
     try {
-      clearAllSelections();
+      await clearAllSelections();
       error = '';
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to clear selections';

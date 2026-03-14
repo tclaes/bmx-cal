@@ -28,6 +28,9 @@ router
   })
   .on('/register', () => {
     currentRoute.set('/register');
+  })
+  .on('/login', () => {
+    currentRoute.set('/login');
   });
 
 export function navigate(path: string) {

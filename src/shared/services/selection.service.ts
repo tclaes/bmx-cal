@@ -1,40 +1,84 @@
+import { supabase } from '@data/supabase';
+
 const STORAGE_KEY = 'bmx_selected_events';
 
 export const selectionService = {
-  getSelections(): string[] {
+  getLocalSelections(): string[] {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Failed to load selections:', error);
+    } catch {
       return [];
     }
   },
 
-  saveSelections(eventIds: string[]): void {
+  saveLocalSelections(eventIds: string[]): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(eventIds));
-    } catch (error) {
-      console.error('Failed to save selections:', error);
+    } catch {
+      // ignore
     }
   },
 
-  toggleSelection(eventId: string): boolean {
-    const selections = this.getSelections();
-    const index = selections.indexOf(eventId);
+  clearLocalSelections(): void {
+    localStorage.removeItem(STORAGE_KEY);
+  },
 
+  async getRemoteSelections(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_event_selections')
+      .select('event_id');
+    if (error) throw error;
+    return (data as { event_id: string }[]).map(row => row.event_id);
+  },
+
+  async addRemoteSelection(eventId: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase
+      .from('user_event_selections')
+      .insert({ user_id: user.id, event_id: eventId });
+  },
+
+  async removeRemoteSelection(eventId: string): Promise<void> {
+    await supabase
+      .from('user_event_selections')
+      .delete()
+      .eq('event_id', eventId);
+  },
+
+  async clearRemoteSelections(): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase
+      .from('user_event_selections')
+      .delete()
+      .eq('user_id', user.id);
+  },
+
+  getSelections(): string[] {
+    return this.getLocalSelections();
+  },
+
+  saveSelections(eventIds: string[]): void {
+    this.saveLocalSelections(eventIds);
+  },
+
+  toggleSelection(eventId: string): boolean {
+    const selections = this.getLocalSelections();
+    const index = selections.indexOf(eventId);
     if (index > -1) {
       selections.splice(index, 1);
-      this.saveSelections(selections);
+      this.saveLocalSelections(selections);
       return false;
     } else {
       selections.push(eventId);
-      this.saveSelections(selections);
+      this.saveLocalSelections(selections);
       return true;
     }
   },
 
   clearAllSelections(): void {
-    localStorage.removeItem(STORAGE_KEY);
+    this.clearLocalSelections();
   }
 };
