@@ -12,6 +12,7 @@
   import LoginPage from './features/auth/LoginPage.svelte';
   import ProfilePage from './features/profile/ProfilePage.svelte';
   import TeamManagerDashboard from './features/team-manager/TeamManagerDashboard.svelte';
+  import BugReportPage from './features/bug-report/BugReportPage.svelte';
 
   let loading = true;
 
@@ -71,6 +72,8 @@
         {:else}
           <LoginPage />
         {/if}
+      {:else if $currentRoute === '/report-bug'}
+        <BugReportPage />
       {:else}
         <div class="not-found">
           <h1>404 - Page Not Found</h1>
@@ -82,6 +85,7 @@
     <footer class="footer">
       <div class="footer-inner">
         <span>&copy; {new Date().getFullYear()} BMX Calendar. All rights reserved.</span>
+        <button class="footer-link" on:click={() => navigate('/report-bug')}>Report a bug</button>
       </div>
     </footer>
   {/if}
@@ -105,9 +109,26 @@
   .footer-inner {
     max-width: 1280px;
     margin: 0 auto;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
+  }
+
+  .footer-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--color-text-secondary);
   }
 
   .main-content {

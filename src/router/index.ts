@@ -37,6 +37,9 @@ router
   })
   .on('/team-manager', () => {
     currentRoute.set('/team-manager');
+  })
+  .on('/report-bug', () => {
+    currentRoute.set('/report-bug');
   });
 
 export function navigate(path: string) {
