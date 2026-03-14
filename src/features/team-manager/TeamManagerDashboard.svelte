@@ -29,9 +29,6 @@
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
 
-  let memberManagerOpen = false;
-  let expandedTeams: Record<string, boolean> = {};
-  let expandedMembersTeams: Record<string, boolean> = {};
   let teamMembers: Record<string, TeamMemberWithEmail[]> = {};
   let loadingMembersMap: Record<string, boolean> = {};
 
@@ -64,15 +61,11 @@
     if (isAdmin) {
       const { data } = await supabase.from('teams').select('*').order('name');
       allTeams = data ?? [];
-      expandedTeams = getInitialTeamExpandedState(allTeams, user);
-      expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     } else {
       allTeams = user?.teams ?? [];
       if (allTeams.length > 0 && !selectedTeamId) {
         selectedTeamId = allTeams[0].id;
       }
-      expandedTeams = getInitialTeamExpandedState(allTeams, user);
-      expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     }
   }
 
@@ -130,14 +123,6 @@
     } finally {
       removingMemberId = null;
     }
-  }
-
-  function toggleTeam(teamId: string) {
-    expandedTeams = { ...expandedTeams, [teamId]: !expandedTeams[teamId] };
-  }
-
-  function toggleMembers(teamId: string) {
-    expandedMembersTeams = { ...expandedMembersTeams, [teamId]: !expandedMembersTeams[teamId] };
   }
 
   function resetForm() {
@@ -297,31 +282,24 @@
         {#each allTeams as team (team.id)}
           {@const teamEvts = eventsByTeam[team.id] ?? []}
           {@const teamMbrs = teamMembers[team.id] ?? []}
-          {@const isExpanded = expandedTeams[team.id] ?? false}
-          {@const isMembersExpanded = expandedMembersTeams[team.id] ?? false}
 
           <div class="team-group">
-            <div class="team-group-header-row">
-              <button
-                class="team-group-header"
-                type="button"
-                on:click={() => toggleTeam(team.id)}
-                aria-expanded={isExpanded}
-              >
-                <div class="team-group-title">
-                  <span class="chevron" class:chevron--open={isExpanded}>&#9654;</span>
+            <details class="team-details">
+              <summary class="team-summary">
+                <div class="team-summary-left">
+                  <svg class="team-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                   <span class="team-name">{team.name}</span>
                   <span class="event-count">{teamEvts.length} event{teamEvts.length !== 1 ? 's' : ''}</span>
                 </div>
-              </button>
-              <div class="team-group-actions">
-                <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
-                  + Add Event
-                </Button>
-              </div>
-            </div>
+                <div class="team-summary-action" on:click|stopPropagation role="none">
+                  <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
+                    + Add Event
+                  </Button>
+                </div>
+              </summary>
 
-            {#if isExpanded}
               <div class="team-group-body">
                 {#if teamEvts.length === 0}
                   <p class="empty-state-inline">No events yet for this team.</p>
@@ -349,18 +327,15 @@
                   </div>
                 {/if}
 
-                <button
-                  class="members-toggle"
-                  type="button"
-                  on:click={() => toggleMembers(team.id)}
-                  aria-expanded={isMembersExpanded}
-                >
-                  <span class="chevron chevron--sm" class:chevron--open={isMembersExpanded}>&#9654;</span>
-                  Members
-                  <span class="member-pill">{teamMbrs.length}</span>
-                </button>
+                <details class="members-details">
+                  <summary class="members-summary">
+                    <svg class="members-chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2.5 3.75L5 6.25l2.5-2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Members
+                    <span class="member-pill">{teamMbrs.length}</span>
+                  </summary>
 
-                {#if isMembersExpanded}
                   <div class="members-section">
                     {#if loadingMembersMap[team.id]}
                       <div class="loading-wrap-sm"><LoadingSpinner size="sm" /></div>
@@ -387,39 +362,33 @@
                       </div>
                     {/if}
                   </div>
-                {/if}
+                </details>
               </div>
-            {/if}
+            </details>
           </div>
         {/each}
       {/if}
 
       {#if isAdmin}
         <div class="admin-card">
-          <button
-            class="admin-section-header"
-            type="button"
-            on:click={() => (memberManagerOpen = !memberManagerOpen)}
-            aria-expanded={memberManagerOpen}
-          >
-            <span class="admin-section-title">Team Members</span>
-            <svg
-              class="admin-chevron"
-              class:open={memberManagerOpen}
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          {#if memberManagerOpen}
+          <details class="admin-details">
+            <summary class="admin-summary">
+              <span class="admin-section-title">Team Members</span>
+              <svg
+                class="admin-chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
             <div class="admin-section-body">
               <TeamMemberManager />
             </div>
-          {/if}
+          </details>
         </div>
       {/if}
     {:else}
@@ -597,35 +566,53 @@
     overflow: hidden;
   }
 
-  .team-group-header-row {
+  .team-details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .team-details > summary {
+    list-style: none;
+  }
+
+  .team-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .team-summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--color-bg-primary);
+    padding: var(--spacing-md) var(--spacing-lg);
+    cursor: pointer;
     transition: background 0.15s ease;
+    user-select: none;
   }
 
-  .team-group-header-row:hover {
+  .team-summary:hover {
     background: var(--color-bg-secondary);
   }
 
-  .team-group-header {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-md) var(--spacing-lg);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    gap: var(--spacing-md);
-  }
-
-  .team-group-title {
+  .team-summary-left {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
     min-width: 0;
+    flex: 1;
+  }
+
+  .team-summary-action {
+    flex-shrink: 0;
+  }
+
+  .team-chevron {
+    color: var(--color-text-muted);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .team-details[open] > .team-summary .team-chevron {
+    transform: rotate(180deg);
   }
 
   .team-name {
@@ -642,27 +629,6 @@
     border-radius: 20px;
     padding: 0.15rem 0.5rem;
     white-space: nowrap;
-  }
-
-  .chevron {
-    font-size: 0.6rem;
-    color: var(--color-text-muted);
-    transition: transform 0.2s ease;
-    display: inline-block;
-    flex-shrink: 0;
-  }
-
-  .chevron--sm {
-    font-size: 0.5rem;
-  }
-
-  .chevron--open {
-    transform: rotate(90deg);
-  }
-
-  .team-group-actions {
-    flex-shrink: 0;
-    padding-right: var(--spacing-lg);
   }
 
   .team-group-body {
@@ -718,24 +684,45 @@
     flex-shrink: 0;
   }
 
-  /* Members toggle */
-  .members-toggle {
+  /* Members details */
+  .members-details {
+    margin-top: var(--spacing-xs);
+  }
+
+  .members-details > summary {
+    list-style: none;
+  }
+
+  .members-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .members-summary {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    background: none;
-    border: none;
     cursor: pointer;
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
     padding: var(--spacing-xs) 0;
-    margin-top: var(--spacing-xs);
     transition: color 0.15s;
+    user-select: none;
+    width: fit-content;
   }
 
-  .members-toggle:hover {
+  .members-summary:hover {
     color: var(--color-text-primary);
+  }
+
+  .members-chevron {
+    color: currentColor;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .members-details[open] > .members-summary .members-chevron {
+    transform: rotate(180deg);
   }
 
   .member-pill {
@@ -787,6 +774,62 @@
   .member-since {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
+  }
+
+  /* Admin section */
+  .admin-card {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+  }
+
+  .admin-details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-details > summary {
+    list-style: none;
+  }
+
+  .admin-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .admin-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    user-select: none;
+  }
+
+  .admin-summary:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .admin-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  .admin-chevron {
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .admin-details[open] > .admin-summary .admin-chevron {
+    transform: rotate(180deg);
+  }
+
+  .admin-section-body {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
   }
 
   /* Form */
@@ -862,62 +905,17 @@
     margin-top: var(--spacing-sm);
   }
 
-  .admin-card {
-    background: var(--color-bg-primary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg, 12px);
-    overflow: hidden;
-  }
-
-  .admin-section-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-md) var(--spacing-lg);
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    transition: background-color 0.15s ease;
-  }
-
-  .admin-section-header:hover {
-    background: var(--color-bg-secondary);
-  }
-
-  .admin-section-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-  }
-
-  .admin-chevron {
-    color: var(--color-text-secondary);
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
-  }
-
-  .admin-chevron.open {
-    transform: rotate(180deg);
-  }
-
-  .admin-section-body {
-    padding: var(--spacing-lg);
-    border-top: 1px solid var(--color-border);
-  }
-
   @media (max-width: 600px) {
     .form-row--cols {
       grid-template-columns: 1fr;
     }
 
-    .team-group-header {
-      flex-direction: column;
-      align-items: flex-start;
+    .team-summary {
+      flex-wrap: wrap;
+      gap: var(--spacing-sm);
     }
 
-    .team-group-actions {
+    .team-summary-action {
       width: 100%;
     }
 

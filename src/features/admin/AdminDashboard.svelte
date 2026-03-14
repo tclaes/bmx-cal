@@ -13,19 +13,8 @@
   let deleteError = '';
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
-  let openYears: Set<number> = new Set();
-  let importSectionOpen = false;
 
   const currentYear = new Date().getFullYear();
-
-  function toggleYear(year: number) {
-    if (openYears.has(year)) {
-      openYears.delete(year);
-    } else {
-      openYears.add(year);
-    }
-    openYears = new Set(openYears);
-  }
 
   $: eventsByYear = groupEventsByYear(events);
 
@@ -34,7 +23,6 @@
     error = '';
     try {
       events = await EventsService.getUpcomingEvents();
-      openYears = getDefaultOpenYears(groupEventsByYear(events), currentYear);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load events';
     } finally {
@@ -72,6 +60,10 @@
     });
   }
 
+  function isCurrentOrFutureYear(year: number): boolean {
+    return year >= currentYear;
+  }
+
   onMount(() => {
     loadEvents();
   });
@@ -89,16 +81,11 @@
 
   <div class="dashboard-content">
     <Card padding="none" shadow="md">
-      <div class="collapsible-section">
-        <button
-          class="collapsible-header"
-          on:click={() => (importSectionOpen = !importSectionOpen)}
-          aria-expanded={importSectionOpen}
-        >
+      <details class="collapsible-section">
+        <summary class="collapsible-header">
           <span class="collapsible-title">Import Events from File</span>
           <svg
             class="collapsible-chevron"
-            class:open={importSectionOpen}
             width="16"
             height="16"
             viewBox="0 0 16 16"
@@ -107,13 +94,11 @@
           >
             <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-        </button>
-        {#if importSectionOpen}
-          <div class="collapsible-body">
-            <DocumentUpload />
-          </div>
-        {/if}
-      </div>
+        </summary>
+        <div class="collapsible-body">
+          <DocumentUpload />
+        </div>
+      </details>
     </Card>
 
     <Card padding="lg" shadow="md">
@@ -140,27 +125,21 @@
           <div class="years-list">
             {#each [...eventsByYear.entries()] as [year, yearEvents] (year)}
               <div class="year-group">
-                <button
-                  class="year-toggle"
-                  on:click={() => toggleYear(year)}
-                  aria-expanded={openYears.has(year)}
-                >
-                  <span class="year-label">{year}</span>
-                  <span class="year-count">{yearEvents.length} event{yearEvents.length !== 1 ? 's' : ''}</span>
-                  <svg
-                    class="year-chevron"
-                    class:open={openYears.has(year)}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-
-                {#if openYears.has(year)}
+                <details open={isCurrentOrFutureYear(year)}>
+                  <summary class="year-toggle">
+                    <span class="year-label">{year}</span>
+                    <span class="year-count">{yearEvents.length} event{yearEvents.length !== 1 ? 's' : ''}</span>
+                    <svg
+                      class="year-chevron"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </summary>
                   <div class="events-list">
                     {#each yearEvents as event (event.id)}
                       <div class="event-item">
@@ -197,7 +176,7 @@
                       </div>
                     {/each}
                   </div>
-                {/if}
+                </details>
               </div>
             {/each}
           </div>
@@ -248,18 +227,24 @@
     flex-direction: column;
   }
 
+  .collapsible-section > summary {
+    list-style: none;
+  }
+
+  .collapsible-section > summary::-webkit-details-marker {
+    display: none;
+  }
+
   .collapsible-header {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-lg);
-    background: none;
-    border: none;
     cursor: pointer;
-    text-align: left;
     transition: background-color 0.15s ease;
     border-radius: var(--border-radius-md);
+    user-select: none;
   }
 
   .collapsible-header:hover {
@@ -278,7 +263,7 @@
     flex-shrink: 0;
   }
 
-  .collapsible-chevron.open {
+  details[open] .collapsible-chevron {
     transform: rotate(180deg);
   }
 
@@ -331,6 +316,14 @@
     overflow: hidden;
   }
 
+  .year-group details > summary {
+    list-style: none;
+  }
+
+  .year-group details > summary::-webkit-details-marker {
+    display: none;
+  }
+
   .year-toggle {
     width: 100%;
     display: flex;
@@ -338,10 +331,9 @@
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-surface-secondary, #f8f9fa);
-    border: none;
     cursor: pointer;
-    text-align: left;
     transition: background-color 0.15s ease;
+    user-select: none;
   }
 
   .year-toggle:hover {
@@ -366,7 +358,7 @@
     flex-shrink: 0;
   }
 
-  .year-chevron.open {
+  .year-group details[open] .year-chevron {
     transform: rotate(180deg);
   }
 
