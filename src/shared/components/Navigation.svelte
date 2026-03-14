@@ -70,6 +70,12 @@
     display: none;
   }
 
+  @media (max-width: 767px) {
+    .nav-container {
+      justify-content: center;
+    }
+  }
+
   @media (min-width: 768px) {
     .brand-text {
       display: inline;
