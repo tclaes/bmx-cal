@@ -1,8 +1,5 @@
 {
   "mcpServers": {
-    "context7": {
-      "enabled": true
-    },
     "github": {
       "enabled": true
     }
