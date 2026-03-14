@@ -2,9 +2,10 @@
   import { onMount } from 'svelte';
   import { Card, Button, Input, Select, Alert, LoadingSpinner, LocationPicker } from '@shared/components';
   import { authStore } from '@shared/stores';
-  import { EventsService } from '@shared/services';
+  import { EventsService, TeamService } from '@shared/services';
+  import type { TeamMemberWithEmail } from '@shared/services';
   import { supabase } from '@data/supabase';
-import type { EventWithDetails, EventType, Location, Team } from '@types';
+  import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let events: EventWithDetails[] = [];
   let locations: Location[] = [];
@@ -15,6 +16,12 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
   let loading = false;
   let error = '';
   let successMessage = '';
+
+  let members: TeamMemberWithEmail[] = [];
+  let loadingMembers = false;
+  let removingMemberId: string | null = null;
+  let memberError = '';
+  let memberSuccess = '';
 
   let showForm = false;
   let editingEvent: EventWithDetails | null = null;
@@ -68,6 +75,7 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
         teamEventType = await EventsService.getTeamEventType(selectedTeamId);
       }
       await loadTeamEvents();
+      await loadMembers();
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load data';
     } finally {
@@ -84,10 +92,44 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
     events = all.filter(e => e.team_id === selectedTeamId);
   }
 
+  async function loadMembers() {
+    if (!selectedTeamId) {
+      members = [];
+      return;
+    }
+    loadingMembers = true;
+    memberError = '';
+    try {
+      members = await TeamService.getTeamMembers(selectedTeamId);
+    } catch (err) {
+      memberError = err instanceof Error ? err.message : 'Failed to load members';
+    } finally {
+      loadingMembers = false;
+    }
+  }
+
+  async function handleRemoveMember(member: TeamMemberWithEmail) {
+    const teamName = selectedTeam?.name ?? 'this team';
+    if (!confirm(`Remove ${member.user_email} from ${teamName}?`)) return;
+    removingMemberId = member.id;
+    memberError = '';
+    memberSuccess = '';
+    try {
+      await TeamService.removeTeamMember(member.id);
+      memberSuccess = `${member.user_email} removed from ${teamName}`;
+      await loadMembers();
+    } catch (err) {
+      memberError = err instanceof Error ? err.message : 'Failed to remove member';
+    } finally {
+      removingMemberId = null;
+    }
+  }
+
   async function handleTeamChange(e: Event) {
     selectedTeamId = (e.target as HTMLSelectElement).value;
     teamEventType = await EventsService.getTeamEventType(selectedTeamId);
     await loadTeamEvents();
+    await loadMembers();
   }
 
   function resetForm() {
@@ -267,6 +309,45 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
                     {deletingEventId === event.id ? '...' : 'Delete'}
                   </Button>
                 </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </Card>
+
+      <Card padding="lg" shadow="md">
+        <div class="section-header">
+          <h2 class="section-title">Members of {selectedTeam?.name ?? 'your team'}</h2>
+          <span class="member-count">{members.length} member{members.length !== 1 ? 's' : ''}</span>
+        </div>
+
+        {#if memberError}
+          <Alert type="danger" message={memberError} />
+        {/if}
+        {#if memberSuccess}
+          <Alert type="success" message={memberSuccess} />
+        {/if}
+
+        {#if loadingMembers}
+          <div class="loading-wrap"><LoadingSpinner size="md" /></div>
+        {:else if members.length === 0}
+          <p class="empty-state">No members yet. An admin can assign users to this team.</p>
+        {:else}
+          <div class="members-list">
+            {#each members as member (member.id)}
+              <div class="member-row">
+                <div class="member-info">
+                  <span class="member-email">{member.user_email}</span>
+                  <span class="member-since">Member since {formatDate(member.created_at)}</span>
+                </div>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  disabled={removingMemberId === member.id}
+                  on:click={() => handleRemoveMember(member)}
+                >
+                  {removingMemberId === member.id ? '...' : 'Remove'}
+                </Button>
               </div>
             {/each}
           </div>
@@ -551,6 +632,54 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
     margin-top: var(--spacing-sm);
   }
 
+  .member-count {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 8px);
+    gap: var(--spacing-md);
+  }
+
+  .member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .member-email {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .member-since {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
   @media (max-width: 600px) {
     .form-row--cols {
       grid-template-columns: 1fr;
@@ -564,6 +693,11 @@ import type { EventWithDetails, EventType, Location, Team } from '@types';
     .event-actions {
       width: 100%;
       justify-content: flex-end;
+    }
+
+    .member-row {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>

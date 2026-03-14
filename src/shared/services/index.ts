@@ -4,3 +4,5 @@ export { ImportService } from './import.service';
 export { selectionService } from './selection.service';
 export { CalendarService } from './calendar.service';
 export type { SavedCalendar } from './calendar.service';
+export { TeamService } from './team.service';
+export type { TeamMemberWithEmail } from './team.service';

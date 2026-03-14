@@ -75,6 +75,15 @@ export interface TeamManager {
   team?: Team;
 }
 
+export interface TeamMember {
+  id: string;
+  user_id: string;
+  team_id: string;
+  created_at: string;
+  team?: Team;
+  user_email?: string;
+}
+
 export interface AdminUser {
   id: string;
   email: string;

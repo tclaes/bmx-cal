@@ -8,6 +8,7 @@ export type {
   AdminUser,
   Team,
   TeamManager,
+  TeamMember,
   CreateEventInput,
   UpdateEventInput,
   ParsedEvent,

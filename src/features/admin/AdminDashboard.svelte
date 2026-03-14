@@ -5,6 +5,7 @@
   import { AuthService, EventsService } from '@shared/services';
   import type { EventWithType } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
+  import TeamMemberManager from './TeamMemberManager.svelte';
 
   let events: EventWithType[] = [];
   let loading = false;
@@ -81,6 +82,10 @@
   <div class="dashboard-content">
     <Card padding="lg" shadow="md">
       <DocumentUpload />
+    </Card>
+
+    <Card padding="lg" shadow="md">
+      <TeamMemberManager />
     </Card>
 
     <Card padding="lg" shadow="md">

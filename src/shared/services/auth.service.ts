@@ -2,13 +2,33 @@ import { supabase } from '@data/supabase';
 import type { AdminUser, Team } from '@types';
 
 async function fetchUserTeams(userId: string): Promise<Team[]> {
-  const { data } = await supabase
-    .from('team_managers')
-    .select('team:teams(id, name, created_at)')
-    .eq('user_id', userId);
+  const [managersResult, membersResult] = await Promise.all([
+    supabase
+      .from('team_managers')
+      .select('team:teams(id, name, created_at)')
+      .eq('user_id', userId),
+    supabase
+      .from('team_members')
+      .select('team:teams(id, name, created_at)')
+      .eq('user_id', userId),
+  ]);
 
-  if (!data) return [];
-  return data.map((row: { team: Team }) => row.team).filter(Boolean);
+  const managerTeams: Team[] = (managersResult.data ?? [])
+    .map((row: { team: Team }) => row.team)
+    .filter(Boolean);
+  const memberTeams: Team[] = (membersResult.data ?? [])
+    .map((row: { team: Team }) => row.team)
+    .filter(Boolean);
+
+  const seen = new Set<string>();
+  const combined: Team[] = [];
+  for (const t of [...managerTeams, ...memberTeams]) {
+    if (!seen.has(t.id)) {
+      seen.add(t.id);
+      combined.push(t);
+    }
+  }
+  return combined;
 }
 
 export class AuthService {
