@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { authStore } from '@shared/stores';
+  import { authStore, selectedEventIds } from '@shared/stores';
   import { AuthService } from '@shared/services';
+  import { selectionService } from '@shared/services/selection.service';
   import { navigate } from '../../router';
 
   let menuOpen = false;
@@ -14,6 +15,8 @@
     menuOpen = false;
     await AuthService.logout();
     authStore.logout();
+    selectionService.clearLocalSelections();
+    selectedEventIds.set(new Set());
     navigate('/');
   }
 
