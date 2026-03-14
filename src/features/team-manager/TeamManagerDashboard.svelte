@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { Card, Button, Input, Select, Alert, LoadingSpinner, LocationPicker } from '@shared/components';
   import { authStore } from '@shared/stores';
+  import TeamMemberManager from '../admin/TeamMemberManager.svelte';
   import { EventsService, TeamService } from '@shared/services';
   import type { TeamMemberWithEmail } from '@shared/services';
   import { supabase } from '@data/supabase';
@@ -28,6 +29,7 @@
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
 
+  let memberManagerOpen = false;
   let expandedTeams: Record<string, boolean> = {};
   let expandedMembersTeams: Record<string, boolean> = {};
   let teamMembers: Record<string, TeamMemberWithEmail[]> = {};
@@ -287,6 +289,35 @@
     {/if}
 
     {#if !showForm}
+      {#if isAdmin}
+        <div class="admin-card">
+          <button
+            class="admin-section-header"
+            type="button"
+            on:click={() => (memberManagerOpen = !memberManagerOpen)}
+            aria-expanded={memberManagerOpen}
+          >
+            <span class="admin-section-title">Team Members</span>
+            <svg
+              class="admin-chevron"
+              class:open={memberManagerOpen}
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          {#if memberManagerOpen}
+            <div class="admin-section-body">
+              <TeamMemberManager />
+            </div>
+          {/if}
+        </div>
+      {/if}
+
       {#if loading}
         <div class="loading-wrap"><LoadingSpinner size="lg" /></div>
       {:else if allTeams.length === 0}
@@ -829,6 +860,51 @@
     justify-content: flex-end;
     gap: var(--spacing-sm);
     margin-top: var(--spacing-sm);
+  }
+
+  .admin-card {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+  }
+
+  .admin-section-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+  }
+
+  .admin-section-header:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .admin-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  .admin-chevron {
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .admin-chevron.open {
+    transform: rotate(180deg);
+  }
+
+  .admin-section-body {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
   }
 
   @media (max-width: 600px) {

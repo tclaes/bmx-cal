@@ -6,7 +6,6 @@
   import { groupEventsByYear, getDefaultOpenYears } from '@shared/utils';
   import type { EventWithType } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
-  import TeamMemberManager from './TeamMemberManager.svelte';
 
   let events: EventWithType[] = [];
   let loading = false;
@@ -115,10 +114,6 @@
           </div>
         {/if}
       </div>
-    </Card>
-
-    <Card padding="lg" shadow="md">
-      <TeamMemberManager />
     </Card>
 
     <Card padding="lg" shadow="md">
