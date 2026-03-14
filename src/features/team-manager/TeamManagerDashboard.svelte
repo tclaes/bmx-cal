@@ -7,7 +7,7 @@
   import { supabase } from '@data/supabase';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 
-  let events: EventWithDetails[] = [];
+  let allEvents: EventWithDetails[] = [];
   let locations: Location[] = [];
   let globalEventTypes: EventType[] = [];
   let teamEventType: EventType | null = null;
@@ -27,10 +27,19 @@
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
 
+  let expandedTeams: Record<string, boolean> = {};
+  let expandedMembersTeams: Record<string, boolean> = {};
+  let teamMembers: Record<string, TeamMemberWithEmail[]> = {};
+  let loadingMembersMap: Record<string, boolean> = {};
 
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
   $: selectedTeam = allTeams.find(t => t.id === selectedTeamId) ?? null;
+
+  $: eventsByTeam = allTeams.reduce((acc, team) => {
+    acc[team.id] = allEvents.filter(e => e.team_id === team.id);
+    return acc;
+  }, {} as Record<string, EventWithDetails[]>);
 
   let formData = {
     title: '',
@@ -52,11 +61,15 @@
     if (isAdmin) {
       const { data } = await supabase.from('teams').select('*').order('name');
       allTeams = data ?? [];
+      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, true]));
+      expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     } else {
       allTeams = user?.teams ?? [];
-    }
-    if (allTeams.length > 0 && !selectedTeamId) {
-      selectedTeamId = allTeams[0].id;
+      if (allTeams.length > 0 && !selectedTeamId) {
+        selectedTeamId = allTeams[0].id;
+      }
+      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, true]));
+      expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     }
   }
 
@@ -65,17 +78,23 @@
     error = '';
     try {
       await loadTeams();
-      const [locs, allTypes] = await Promise.all([
+      const [locs, allTypes, evts] = await Promise.all([
         EventsService.getLocations(),
         EventsService.getEventTypes(),
+        EventsService.getAllEvents(),
       ]);
       locations = locs;
       globalEventTypes = allTypes.filter(t => t.team_id === null);
-      if (selectedTeamId) {
+      allEvents = evts.filter(e => e.team_id !== null);
+
+      if (!isAdmin && selectedTeamId) {
         teamEventType = await EventsService.getTeamEventType(selectedTeamId);
+        await loadMembersForTeam(selectedTeamId);
+      } else if (isAdmin) {
+        for (const team of allTeams) {
+          await loadMembersForTeam(team.id);
+        }
       }
-      await loadTeamEvents();
-      await loadMembers();
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to load data';
     } finally {
@@ -83,41 +102,26 @@
     }
   }
 
-  async function loadTeamEvents() {
-    if (!selectedTeamId) {
-      events = [];
-      return;
-    }
-    const all = await EventsService.getAllEvents();
-    events = all.filter(e => e.team_id === selectedTeamId);
-  }
-
-  async function loadMembers() {
-    if (!selectedTeamId) {
-      members = [];
-      return;
-    }
-    loadingMembers = true;
-    memberError = '';
+  async function loadMembersForTeam(teamId: string) {
+    loadingMembersMap = { ...loadingMembersMap, [teamId]: true };
     try {
-      members = await TeamService.getTeamMembers(selectedTeamId);
-    } catch (err) {
-      memberError = err instanceof Error ? err.message : 'Failed to load members';
+      teamMembers = { ...teamMembers, [teamId]: await TeamService.getTeamMembers(teamId) };
+    } catch {
+      teamMembers = { ...teamMembers, [teamId]: [] };
     } finally {
-      loadingMembers = false;
+      loadingMembersMap = { ...loadingMembersMap, [teamId]: false };
     }
   }
 
-  async function handleRemoveMember(member: TeamMemberWithEmail) {
-    const teamName = selectedTeam?.name ?? 'this team';
-    if (!confirm(`Remove ${member.user_email} from ${teamName}?`)) return;
+  async function handleRemoveMember(member: TeamMemberWithEmail, team: Team) {
+    if (!confirm(`Remove ${member.user_email} from ${team.name}?`)) return;
     removingMemberId = member.id;
     memberError = '';
     memberSuccess = '';
     try {
       await TeamService.removeTeamMember(member.id);
-      memberSuccess = `${member.user_email} removed from ${teamName}`;
-      await loadMembers();
+      memberSuccess = `${member.user_email} removed from ${team.name}`;
+      await loadMembersForTeam(team.id);
     } catch (err) {
       memberError = err instanceof Error ? err.message : 'Failed to remove member';
     } finally {
@@ -125,11 +129,12 @@
     }
   }
 
-  async function handleTeamChange(e: Event) {
-    selectedTeamId = (e.target as HTMLSelectElement).value;
-    teamEventType = await EventsService.getTeamEventType(selectedTeamId);
-    await loadTeamEvents();
-    await loadMembers();
+  function toggleTeam(teamId: string) {
+    expandedTeams = { ...expandedTeams, [teamId]: !expandedTeams[teamId] };
+  }
+
+  function toggleMembers(teamId: string) {
+    expandedMembersTeams = { ...expandedMembersTeams, [teamId]: !expandedMembersTeams[teamId] };
   }
 
   function resetForm() {
@@ -148,13 +153,17 @@
     formError = '';
   }
 
-  function openCreateForm() {
+  async function openCreateForm(teamId: string) {
+    selectedTeamId = teamId;
+    teamEventType = await EventsService.getTeamEventType(teamId);
     editingEvent = null;
     resetForm();
     showForm = true;
   }
 
-  function openEditForm(event: EventWithDetails) {
+  async function openEditForm(event: EventWithDetails) {
+    selectedTeamId = event.team_id ?? '';
+    teamEventType = selectedTeamId ? await EventsService.getTeamEventType(selectedTeamId) : null;
     editingEvent = event;
     formData = {
       title: event.title,
@@ -213,7 +222,8 @@
         successMessage = 'Event created successfully';
       }
       showForm = false;
-      await loadTeamEvents();
+      const evts = await EventsService.getAllEvents();
+      allEvents = evts.filter(e => e.team_id !== null);
     } catch (err) {
       formError = err instanceof Error ? err.message : 'Failed to save event';
     } finally {
@@ -229,7 +239,8 @@
     try {
       await EventsService.deleteEvent(event.id);
       successMessage = `"${event.title}" deleted`;
-      await loadTeamEvents();
+      const evts = await EventsService.getAllEvents();
+      allEvents = evts.filter(e => e.team_id !== null);
     } catch (err) {
       error = err instanceof Error ? err.message : 'Failed to delete event';
     } finally {
@@ -254,7 +265,7 @@
   <div class="tm-header">
     <div class="tm-header-left">
       <h1 class="tm-title">Team Manager</h1>
-      {#if selectedTeam}
+      {#if !isAdmin && selectedTeam}
         <span class="team-badge">{selectedTeam.name}</span>
       {/if}
     </div>
@@ -264,99 +275,128 @@
     {#if error}
       <Alert type="danger" message={error} />
     {/if}
+    {#if memberError}
+      <Alert type="danger" message={memberError} />
+    {/if}
     {#if successMessage && !showForm}
       <Alert type="success" message={successMessage} />
     {/if}
+    {#if memberSuccess && !showForm}
+      <Alert type="success" message={memberSuccess} />
+    {/if}
 
     {#if !showForm}
-      <Card padding="lg" shadow="md">
-        <div class="section-header">
-          <h2 class="section-title">Events for {selectedTeam?.name ?? 'your team'}</h2>
-          <div class="header-right">
-            {#if allTeams.length > 1}
-              <select class="team-select" value={selectedTeamId} on:change={handleTeamChange}>
-                {#each allTeams as team (team.id)}
-                  <option value={team.id}>{team.name}</option>
-                {/each}
-              </select>
-            {/if}
-            <Button variant="primary" on:click={openCreateForm}>+ Add Event</Button>
-          </div>
-        </div>
+      {#if loading}
+        <div class="loading-wrap"><LoadingSpinner size="lg" /></div>
+      {:else if allTeams.length === 0}
+        <p class="empty-state">No teams found.</p>
+      {:else}
+        {#each allTeams as team (team.id)}
+          {@const teamEvts = eventsByTeam[team.id] ?? []}
+          {@const teamMbrs = teamMembers[team.id] ?? []}
+          {@const isExpanded = expandedTeams[team.id] ?? true}
+          {@const isMembersExpanded = expandedMembersTeams[team.id] ?? false}
 
-        {#if loading}
-          <div class="loading-wrap">
-            <LoadingSpinner size="lg" />
-          </div>
-        {:else if events.length === 0}
-          <p class="empty-state">No events yet. Add your first event above.</p>
-        {:else}
-          <div class="events-list">
-            {#each events as event (event.id)}
-              <div class="event-row">
-                <div class="event-info">
-                  <span class="event-title">{event.title}</span>
-                  <span class="event-meta">{formatDate(event.date)} &middot; {event.location}</span>
-                </div>
-                <div class="event-actions">
-                  <Button variant="secondary" size="sm" on:click={() => openEditForm(event)}>Edit</Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    disabled={deletingEventId === event.id}
-                    on:click={() => handleDelete(event)}
-                  >
-                    {deletingEventId === event.id ? '...' : 'Delete'}
-                  </Button>
-                </div>
+          <div class="team-group">
+            <button
+              class="team-group-header"
+              type="button"
+              on:click={() => toggleTeam(team.id)}
+              aria-expanded={isExpanded}
+            >
+              <div class="team-group-title">
+                <span class="chevron" class:chevron--open={isExpanded}>&#9654;</span>
+                <span class="team-name">{team.name}</span>
+                <span class="event-count">{teamEvts.length} event{teamEvts.length !== 1 ? 's' : ''}</span>
               </div>
-            {/each}
-          </div>
-        {/if}
-      </Card>
-
-      <Card padding="lg" shadow="md">
-        <div class="section-header">
-          <h2 class="section-title">Members of {selectedTeam?.name ?? 'your team'}</h2>
-          <span class="member-count">{members.length} member{members.length !== 1 ? 's' : ''}</span>
-        </div>
-
-        {#if memberError}
-          <Alert type="danger" message={memberError} />
-        {/if}
-        {#if memberSuccess}
-          <Alert type="success" message={memberSuccess} />
-        {/if}
-
-        {#if loadingMembers}
-          <div class="loading-wrap"><LoadingSpinner size="md" /></div>
-        {:else if members.length === 0}
-          <p class="empty-state">No members yet. An admin can assign users to this team.</p>
-        {:else}
-          <div class="members-list">
-            {#each members as member (member.id)}
-              <div class="member-row">
-                <div class="member-info">
-                  <span class="member-email">{member.user_email}</span>
-                  <span class="member-since">Member since {formatDate(member.created_at)}</span>
-                </div>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  disabled={removingMemberId === member.id}
-                  on:click={() => handleRemoveMember(member)}
-                >
-                  {removingMemberId === member.id ? '...' : 'Remove'}
+              <div class="team-group-actions" on:click|stopPropagation>
+                <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
+                  + Add Event
                 </Button>
               </div>
-            {/each}
+            </button>
+
+            {#if isExpanded}
+              <div class="team-group-body">
+                {#if teamEvts.length === 0}
+                  <p class="empty-state-inline">No events yet for this team.</p>
+                {:else}
+                  <div class="events-list">
+                    {#each teamEvts as event (event.id)}
+                      <div class="event-row">
+                        <div class="event-info">
+                          <span class="event-title">{event.title}</span>
+                          <span class="event-meta">{formatDate(event.date)} &middot; {event.location}</span>
+                        </div>
+                        <div class="event-actions">
+                          <Button variant="secondary" size="sm" on:click={() => openEditForm(event)}>Edit</Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            disabled={deletingEventId === event.id}
+                            on:click={() => handleDelete(event)}
+                          >
+                            {deletingEventId === event.id ? '...' : 'Delete'}
+                          </Button>
+                        </div>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+
+                <button
+                  class="members-toggle"
+                  type="button"
+                  on:click={() => toggleMembers(team.id)}
+                  aria-expanded={isMembersExpanded}
+                >
+                  <span class="chevron chevron--sm" class:chevron--open={isMembersExpanded}>&#9654;</span>
+                  Members
+                  <span class="member-pill">{teamMbrs.length}</span>
+                </button>
+
+                {#if isMembersExpanded}
+                  <div class="members-section">
+                    {#if loadingMembersMap[team.id]}
+                      <div class="loading-wrap-sm"><LoadingSpinner size="sm" /></div>
+                    {:else if teamMbrs.length === 0}
+                      <p class="empty-state-inline">No members yet. An admin can assign users to this team.</p>
+                    {:else}
+                      <div class="members-list">
+                        {#each teamMbrs as member (member.id)}
+                          <div class="member-row">
+                            <div class="member-info">
+                              <span class="member-email">{member.user_email}</span>
+                              <span class="member-since">Member since {formatDate(member.created_at)}</span>
+                            </div>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={removingMemberId === member.id}
+                              on:click={() => handleRemoveMember(member, team)}
+                            >
+                              {removingMemberId === member.id ? '...' : 'Remove'}
+                            </Button>
+                          </div>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+              </div>
+            {/if}
           </div>
-        {/if}
-      </Card>
+        {/each}
+      {/if}
     {:else}
       <Card padding="lg" shadow="md">
         <div class="section-header">
-          <h2 class="section-title">{editingEvent ? 'Edit Event' : 'New Event'}</h2>
+          <div class="form-header-left">
+            <h2 class="section-title">{editingEvent ? 'Edit Event' : 'New Event'}</h2>
+            {#if selectedTeam}
+              <span class="team-badge">{selectedTeam.name}</span>
+            {/if}
+          </div>
           {#if teamEventType}
             <span class="type-badge" style="background:{teamEventType.color_code}20; color:{teamEventType.color_code}; border-color:{teamEventType.color_code}40">
               {teamEventType.name}
@@ -442,7 +482,7 @@
   }
 
   .tm-header {
-    max-width: 800px;
+    max-width: 860px;
     margin: 0 auto var(--spacing-xl);
     display: flex;
     align-items: center;
@@ -481,48 +521,11 @@
   }
 
   .tm-content {
-    max-width: 800px;
+    max-width: 860px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
-  }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-lg);
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-  }
-
-  .team-select {
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm, 4px);
-    font-size: var(--font-size-sm);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    cursor: pointer;
-  }
-
-  .team-select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-  }
-
-  .section-title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0;
+    gap: var(--spacing-md);
   }
 
   .loading-wrap {
@@ -531,25 +534,117 @@
     padding: var(--spacing-2xl) 0;
   }
 
+  .loading-wrap-sm {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-md) 0;
+  }
+
   .empty-state {
     text-align: center;
     color: var(--color-text-muted);
     padding: var(--spacing-2xl) 0;
     font-size: var(--font-size-base);
+    margin: 0;
   }
 
-  .events-list {
+  .empty-state-inline {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) 0 var(--spacing-xs);
+    margin: 0;
+  }
+
+  /* Team group */
+  .team-group {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+  }
+
+  .team-group-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-bg-primary);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+    gap: var(--spacing-md);
+  }
+
+  .team-group-header:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .team-group-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    min-width: 0;
+  }
+
+  .team-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  .event-count {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+  }
+
+  .chevron {
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
+    transition: transform 0.2s ease;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .chevron--sm {
+    font-size: 0.5rem;
+  }
+
+  .chevron--open {
+    transform: rotate(90deg);
+  }
+
+  .team-group-actions {
+    flex-shrink: 0;
+  }
+
+  .team-group-body {
+    border-top: 1px solid var(--color-border);
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+  }
+
+  /* Events */
+  .events-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
   }
 
   .event-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md);
-    background: var(--color-bg-primary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md, 8px);
     gap: var(--spacing-md);
@@ -565,14 +660,14 @@
   .event-title {
     font-weight: var(--font-weight-medium);
     color: var(--color-text-primary);
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .event-meta {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
@@ -580,6 +675,100 @@
     display: flex;
     gap: var(--spacing-xs);
     flex-shrink: 0;
+  }
+
+  /* Members toggle */
+  .members-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xs) 0;
+    margin-top: var(--spacing-xs);
+    transition: color 0.15s;
+  }
+
+  .members-toggle:hover {
+    color: var(--color-text-primary);
+  }
+
+  .member-pill {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    font-size: var(--font-size-xs);
+    padding: 0.1rem 0.45rem;
+    color: var(--color-text-muted);
+  }
+
+  .members-section {
+    padding-top: var(--spacing-xs);
+  }
+
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xs) var(--spacing-md);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 8px);
+    gap: var(--spacing-md);
+  }
+
+  .member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .member-email {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .member-since {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  /* Form */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .form-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .section-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
   }
 
   .event-form {
@@ -632,57 +821,18 @@
     margin-top: var(--spacing-sm);
   }
 
-  .member-count {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 20px;
-    padding: 0.2rem 0.6rem;
-  }
-
-  .members-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .member-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--color-bg-primary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md, 8px);
-    gap: var(--spacing-md);
-  }
-
-  .member-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .member-email {
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-sm);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .member-since {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-  }
-
   @media (max-width: 600px) {
     .form-row--cols {
       grid-template-columns: 1fr;
+    }
+
+    .team-group-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .team-group-actions {
+      width: 100%;
     }
 
     .event-row {
