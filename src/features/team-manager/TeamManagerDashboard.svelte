@@ -5,6 +5,7 @@
   import { EventsService, TeamService } from '@shared/services';
   import type { TeamMemberWithEmail } from '@shared/services';
   import { supabase } from '@data/supabase';
+  import { getInitialTeamExpandedState } from '@shared/utils';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let allEvents: EventWithDetails[] = [];
@@ -61,14 +62,14 @@
     if (isAdmin) {
       const { data } = await supabase.from('teams').select('*').order('name');
       allTeams = data ?? [];
-      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
+      expandedTeams = getInitialTeamExpandedState(allTeams, user);
       expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     } else {
       allTeams = user?.teams ?? [];
       if (allTeams.length > 0 && !selectedTeamId) {
         selectedTeamId = allTeams[0].id;
       }
-      expandedTeams = Object.fromEntries(allTeams.map(t => [t.id, true]));
+      expandedTeams = getInitialTeamExpandedState(allTeams, user);
       expandedMembersTeams = Object.fromEntries(allTeams.map(t => [t.id, false]));
     }
   }
