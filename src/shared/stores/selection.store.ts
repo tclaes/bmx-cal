@@ -1,6 +1,5 @@
 import { writable, derived } from 'svelte/store';
 import { selectionService } from '../services/selection.service';
-import { user } from './auth.store';
 
 export const selectedEventIds = writable<Set<string>>(new Set());
 export const isLoadingSelections = writable<boolean>(false);
@@ -10,43 +9,17 @@ export const selectedCount = derived(
   $selectedEventIds => $selectedEventIds.size
 );
 
-export async function loadUserSelections() {
-  const currentUser = await new Promise<any>(resolve => {
-    const unsubscribe = user.subscribe(u => {
-      unsubscribe();
-      resolve(u);
-    });
-  });
-
-  if (!currentUser) {
-    selectedEventIds.set(new Set());
-    return;
-  }
-
-  isLoadingSelections.set(true);
+export function loadUserSelections() {
   try {
-    const eventIds = await selectionService.getUserSelections(currentUser.id);
+    const eventIds = selectionService.getSelections();
     selectedEventIds.set(new Set(eventIds));
   } catch (error) {
     console.error('Failed to load selections:', error);
-  } finally {
-    isLoadingSelections.set(false);
   }
 }
 
-export async function toggleEventSelection(eventId: string) {
-  const currentUser = await new Promise<any>(resolve => {
-    const unsubscribe = user.subscribe(u => {
-      unsubscribe();
-      resolve(u);
-    });
-  });
-
-  if (!currentUser) {
-    throw new Error('Must be logged in to select events');
-  }
-
-  const isSelected = await selectionService.toggleSelection(currentUser.id, eventId);
+export function toggleEventSelection(eventId: string) {
+  const isSelected = selectionService.toggleSelection(eventId);
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
@@ -59,16 +32,7 @@ export async function toggleEventSelection(eventId: string) {
   });
 }
 
-export async function clearAllSelections() {
-  const currentUser = await new Promise<any>(resolve => {
-    const unsubscribe = user.subscribe(u => {
-      unsubscribe();
-      resolve(u);
-    });
-  });
-
-  if (!currentUser) return;
-
-  await selectionService.clearAllSelections(currentUser.id);
+export function clearAllSelections() {
+  selectionService.clearAllSelections();
   selectedEventIds.set(new Set());
 }

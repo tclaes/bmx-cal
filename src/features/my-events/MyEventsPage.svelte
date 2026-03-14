@@ -2,9 +2,7 @@
   import { onMount } from 'svelte';
   import { eventsStore } from '../../shared/stores';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount } from '../../shared/stores';
-  import { user } from '../../shared/stores/auth.store';
   import Button from '../../shared/components/Button.svelte';
-  import Card from '../../shared/components/Card.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
   import type { EventWithDetails } from '../../types';
 
@@ -13,7 +11,6 @@
   let error = '';
   let exporting = false;
 
-  $: isLoggedIn = !!$user;
   $: sortedEvents = [...events].sort((a, b) =>
     new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
   );
@@ -22,10 +19,7 @@
     try {
       await eventsStore.loadEvents();
       events = $eventsStore.events;
-
-      if (isLoggedIn) {
-        await loadUserSelections();
-      }
+      loadUserSelections();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load events';
     } finally {
@@ -33,25 +27,18 @@
     }
   });
 
-  async function handleToggle(eventId: string) {
-    if (!isLoggedIn) {
-      error = 'Please log in to select events';
-      return;
-    }
-
+  function handleToggle(eventId: string) {
     try {
-      await toggleEventSelection(eventId);
+      toggleEventSelection(eventId);
       error = '';
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to update selection';
     }
   }
 
-  async function handleClearAll() {
-    if (!isLoggedIn) return;
-
+  function handleClearAll() {
     try {
-      await clearAllSelections();
+      clearAllSelections();
       error = '';
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to clear selections';
@@ -112,7 +99,7 @@
       <p class="subtitle">Select events you want to attend</p>
     </div>
 
-    {#if isLoggedIn && $selectedCount > 0}
+    {#if $selectedCount > 0}
       <div class="header-actions">
         <span class="count">{$selectedCount} selected</span>
         <Button variant="secondary" size="small" on:click={handleClearAll}>
@@ -125,18 +112,14 @@
     {/if}
   </div>
 
-  {#if !isLoggedIn}
-    <Card>
-      <p class="login-notice">Please log in to select and export events to your calendar.</p>
-    </Card>
-  {:else if loading}
+  {#if loading}
     <div class="loading-container">
       <LoadingSpinner />
     </div>
   {:else if error}
-    <Card>
+    <div class="error-container">
       <p class="error">{error}</p>
-    </Card>
+    </div>
   {:else}
     <div class="events-list">
       {#each sortedEvents as event (event.id)}
@@ -217,11 +200,11 @@
     padding: 4rem 0;
   }
 
-  .login-notice {
-    text-align: center;
-    color: var(--text-secondary);
-    margin: 0;
-    padding: 1rem 0;
+  .error-container {
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
   }
 
   .error {

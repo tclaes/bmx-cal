@@ -1,55 +1,40 @@
-import { supabase } from '../../data/supabase';
-
-export interface UserEventSelection {
-  id: string;
-  user_id: string;
-  event_id: string;
-  created_at: string;
-}
+const STORAGE_KEY = 'bmx_selected_events';
 
 export const selectionService = {
-  async getUserSelections(userId: string): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('user_event_selections')
-      .select('event_id')
-      .eq('user_id', userId);
-
-    if (error) throw error;
-    return data?.map(s => s.event_id) || [];
+  getSelections(): string[] {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error('Failed to load selections:', error);
+      return [];
+    }
   },
 
-  async toggleSelection(userId: string, eventId: string): Promise<boolean> {
-    const { data: existing } = await supabase
-      .from('user_event_selections')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('event_id', eventId)
-      .maybeSingle();
+  saveSelections(eventIds: string[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(eventIds));
+    } catch (error) {
+      console.error('Failed to save selections:', error);
+    }
+  },
 
-    if (existing) {
-      const { error } = await supabase
-        .from('user_event_selections')
-        .delete()
-        .eq('id', existing.id);
+  toggleSelection(eventId: string): boolean {
+    const selections = this.getSelections();
+    const index = selections.indexOf(eventId);
 
-      if (error) throw error;
+    if (index > -1) {
+      selections.splice(index, 1);
+      this.saveSelections(selections);
       return false;
     } else {
-      const { error } = await supabase
-        .from('user_event_selections')
-        .insert({ user_id: userId, event_id: eventId });
-
-      if (error) throw error;
+      selections.push(eventId);
+      this.saveSelections(selections);
       return true;
     }
   },
 
-  async clearAllSelections(userId: string): Promise<void> {
-    const { error } = await supabase
-      .from('user_event_selections')
-      .delete()
-      .eq('user_id', userId);
-
-    if (error) throw error;
+  clearAllSelections(): void {
+    localStorage.removeItem(STORAGE_KEY);
   }
 };
