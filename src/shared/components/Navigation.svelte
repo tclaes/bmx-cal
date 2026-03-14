@@ -2,16 +2,18 @@
   import { authStore, selectedEventIds } from '@shared/stores';
   import { AuthService } from '@shared/services';
   import { selectionService } from '@shared/services/selection.service';
-  import { navigate } from '../../router';
+  import { currentRoute, navigate } from '../../router';
 
   let menuOpen = false;
 
-  function handleNavigate(path: string) {
+  function handleNav(e: MouseEvent, path: string) {
+    e.preventDefault();
     menuOpen = false;
     navigate(path);
   }
 
-  async function handleLogout() {
+  async function handleLogout(e: MouseEvent) {
+    e.preventDefault();
     menuOpen = false;
     await AuthService.logout();
     authStore.logout();
@@ -23,54 +25,66 @@
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
   $: isTeamManager = isAdmin || (user?.managedTeams?.length ?? 0) > 0;
+  $: route = $currentRoute;
 </script>
 
-<nav class="navigation">
+<nav class="navigation" aria-label="Main navigation">
   <div class="nav-container">
-    <button class="nav-brand" on:click={() => handleNavigate('/')}>
-      <span class="brand-icon">
-        <img src="/bmx-calendar.png" alt="BMX Calendar Logo" />
-      </span>
-    </button>
+    <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label="BMX Calendar home">
+      <img src="/bmx-calendar.png" alt="BMX Calendar" />
+    </a>
 
-    <div class="nav-links">
-      <button class="nav-link" on:click={() => handleNavigate('/')}>
-        Events
-      </button>
-      <button class="nav-link" on:click={() => handleNavigate('/my-events')}>
-        Create my calendar
-      </button>
+    <ul class="nav-links" role="list">
+      <li>
+        <a class="nav-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
+          Events
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
+          Create my calendar
+        </a>
+      </li>
 
       {#if user}
-        <div class="user-menu">
-          {#if isAdmin}
-            <button class="nav-link" on:click={() => handleNavigate('/admin')}>
+        {#if isAdmin}
+          <li>
+            <a class="nav-link" class:active={route === '/admin'} href="/admin" on:click={(e) => handleNav(e, '/admin')}>
               Admin
-            </button>
-          {/if}
-          {#if isTeamManager}
-            <button class="nav-link" on:click={() => handleNavigate('/team-manager')}>
+            </a>
+          </li>
+        {/if}
+        {#if isTeamManager}
+          <li>
+            <a class="nav-link" class:active={route === '/team-manager'} href="/team-manager" on:click={(e) => handleNav(e, '/team-manager')}>
               Team Manager
-            </button>
-          {/if}
-          <button class="nav-link" on:click={() => handleNavigate('/profile')}>
+            </a>
+          </li>
+        {/if}
+        <li>
+          <a class="nav-link" class:active={route === '/profile'} href="/profile" on:click={(e) => handleNav(e, '/profile')}>
             Profile
-          </button>
-          <button class="nav-link nav-link--signout" on:click={handleLogout}>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link nav-link--signout" href="/" on:click={handleLogout}>
             Sign out
-          </button>
-        </div>
+          </a>
+        </li>
       {:else}
-        <button class="nav-link nav-link--signin" on:click={() => handleNavigate('/login')}>
-          Sign in
-        </button>
+        <li>
+          <a class="nav-link nav-link--signin" href="/login" on:click={(e) => handleNav(e, '/login')}>
+            Sign in
+          </a>
+        </li>
       {/if}
-    </div>
+    </ul>
 
     <button
       class="hamburger"
       aria-label="Toggle menu"
       aria-expanded={menuOpen}
+      aria-controls="mobile-menu"
       on:click={() => (menuOpen = !menuOpen)}
     >
       <span class="hamburger-bar" class:open={menuOpen}></span>
@@ -80,37 +94,51 @@
   </div>
 
   {#if menuOpen}
-    <div class="mobile-menu">
-      <button class="mobile-link" on:click={() => handleNavigate('/')}>
-        Events
-      </button>
-      <button class="mobile-link" on:click={() => handleNavigate('/my-events')}>
-        Create my calendar
-      </button>
+    <ul class="mobile-menu" id="mobile-menu" role="list">
+      <li>
+        <a class="mobile-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
+          Events
+        </a>
+      </li>
+      <li>
+        <a class="mobile-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
+          Create my calendar
+        </a>
+      </li>
 
       {#if user}
         {#if isAdmin}
-          <button class="mobile-link" on:click={() => handleNavigate('/admin')}>
-            Admin
-          </button>
+          <li>
+            <a class="mobile-link" class:active={route === '/admin'} href="/admin" on:click={(e) => handleNav(e, '/admin')}>
+              Admin
+            </a>
+          </li>
         {/if}
         {#if isTeamManager}
-          <button class="mobile-link" on:click={() => handleNavigate('/team-manager')}>
-            Team Manager
-          </button>
+          <li>
+            <a class="mobile-link" class:active={route === '/team-manager'} href="/team-manager" on:click={(e) => handleNav(e, '/team-manager')}>
+              Team Manager
+            </a>
+          </li>
         {/if}
-        <button class="mobile-link" on:click={() => handleNavigate('/profile')}>
-          Profile
-        </button>
-        <button class="mobile-link mobile-link--signout" on:click={handleLogout}>
-          Sign out
-        </button>
+        <li>
+          <a class="mobile-link" class:active={route === '/profile'} href="/profile" on:click={(e) => handleNav(e, '/profile')}>
+            Profile
+          </a>
+        </li>
+        <li>
+          <a class="mobile-link mobile-link--signout" href="/" on:click={handleLogout}>
+            Sign out
+          </a>
+        </li>
       {:else}
-        <button class="mobile-link mobile-link--signin" on:click={() => handleNavigate('/login')}>
-          Sign in
-        </button>
+        <li>
+          <a class="mobile-link mobile-link--signin" href="/login" on:click={(e) => handleNav(e, '/login')}>
+            Sign in
+          </a>
+        </li>
       {/if}
-    </div>
+    </ul>
   {/if}
 </nav>
 
@@ -133,45 +161,34 @@
     justify-content: space-between;
   }
 
-  .nav-brand {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    cursor: pointer;
-  }
-
-  .brand-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .brand-icon img {
+  .nav-brand img {
     height: 8rem;
     width: auto;
+    display: block;
   }
-
 
   .nav-links {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .nav-link {
+    display: block;
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
-    cursor: pointer;
+    text-decoration: none;
   }
 
-  .nav-link:hover {
+  .nav-link:hover,
+  .nav-link.active {
     color: var(--color-primary);
     background-color: var(--color-bg-secondary);
   }
@@ -189,12 +206,6 @@
   .nav-link--signout:hover {
     color: var(--color-error, #dc2626);
     background-color: var(--color-error-bg, #fef2f2);
-  }
-
-  .user-menu {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
   }
 
   .hamburger {
@@ -238,8 +249,10 @@
   }
 
   .mobile-menu {
-    display: none;
+    display: flex;
     flex-direction: column;
+    list-style: none;
+    margin: 0;
     padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
     border-top: 1px solid var(--color-border);
     background-color: var(--color-bg-primary);
@@ -252,18 +265,18 @@
   }
 
   .mobile-link {
-    text-align: left;
+    display: block;
     padding: 0.75rem var(--spacing-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
-    cursor: pointer;
-    width: 100%;
+    text-decoration: none;
   }
 
-  .mobile-link:hover {
+  .mobile-link:hover,
+  .mobile-link.active {
     color: var(--color-primary);
     background-color: var(--color-bg-secondary);
   }
@@ -285,12 +298,7 @@
     background-color: var(--color-error-bg, #fef2f2);
   }
 
-
   @media (max-width: 767px) {
-    .nav-container {
-      justify-content: space-between;
-    }
-
     .nav-links {
       display: none;
     }
@@ -298,14 +306,9 @@
     .hamburger {
       display: flex;
     }
-
-    .mobile-menu {
-      display: flex;
-    }
   }
 
   @media (min-width: 768px) {
-
     .mobile-menu {
       display: none !important;
     }
