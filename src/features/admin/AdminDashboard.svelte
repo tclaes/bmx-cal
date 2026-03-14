@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
-  import { AuthService, EventsService } from '@shared/services';
+  import { EventsService } from '@shared/services';
   import type { EventWithType } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
   import TeamMemberManager from './TeamMemberManager.svelte';
@@ -13,11 +13,6 @@
   let deleteError = '';
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
-
-  async function handleLogout() {
-    await AuthService.logout();
-    authStore.logout();
-  }
 
   async function loadEvents() {
     loading = true;
@@ -74,9 +69,6 @@
         <p class="user-info">Logged in as {$authStore.user.email}</p>
       {/if}
     </div>
-    <Button variant="ghost" size="md" on:click={handleLogout}>
-      Logout
-    </Button>
   </div>
 
   <div class="dashboard-content">
