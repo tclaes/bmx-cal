@@ -5,6 +5,7 @@ export interface FiltersState {
   startDate: string | null;
   endDate: string | null;
   searchQuery: string;
+  showPastEvents: boolean;
 }
 
 const initialState: FiltersState = {
@@ -12,6 +13,7 @@ const initialState: FiltersState = {
   startDate: null,
   endDate: null,
   searchQuery: '',
+  showPastEvents: false,
 };
 
 function createFiltersStore() {
@@ -32,6 +34,8 @@ function createFiltersStore() {
       update(state => ({ ...state, startDate, endDate })),
     setSearchQuery: (query: string) =>
       update(state => ({ ...state, searchQuery: query })),
+    toggleShowPastEvents: () =>
+      update(state => ({ ...state, showPastEvents: !state.showPastEvents })),
     reset: () => set(initialState),
   };
 }

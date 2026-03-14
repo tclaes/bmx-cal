@@ -12,6 +12,7 @@
 
   $: eventTypes = $eventsStore.eventTypes;
   $: selectedTypes = $filtersStore.selectedEventTypes;
+  $: showPastEvents = $filtersStore.showPastEvents;
 
   function handleTypeToggle(typeId: string) {
     filtersStore.toggleEventType(typeId);
@@ -97,6 +98,19 @@
     bind:value={endDate}
     on:change={handleEndDateChange}
   />
+
+  <div class="past-events-toggle">
+    <label class="toggle-label">Show Past Events</label>
+    <button
+      class="toggle-btn"
+      class:active={showPastEvents}
+      on:click={() => filtersStore.toggleShowPastEvents()}
+      type="button"
+      aria-pressed={showPastEvents}
+    >
+      <span class="toggle-thumb" />
+    </button>
+  </div>
 
   <button class="reset-button" on:click={resetFilters}>Reset Filters</button>
 </div>
@@ -194,6 +208,52 @@
     font-size: var(--font-size-base);
     color: var(--color-text-primary);
     user-select: none;
+  }
+
+  .past-events-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .toggle-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .toggle-btn {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: var(--color-border);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn.active {
+    background-color: var(--color-primary);
+  }
+
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    display: block;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .toggle-btn.active .toggle-thumb {
+    transform: translateX(20px);
   }
 
   .reset-button {

@@ -14,8 +14,16 @@
   $: {
     const filters = $filtersStore;
     const events = $eventsStore.events;
+    const today = new Date().toISOString().split('T')[0];
 
     filteredEvents = events.filter(event => {
+      if (!filters.showPastEvents) {
+        const eventEnd = event.end_date || event.date;
+        if (eventEnd < today) {
+          return false;
+        }
+      }
+
       if (filters.selectedEventTypes.length > 0 && !filters.selectedEventTypes.includes(event.event_type_id)) {
         return false;
       }
@@ -51,7 +59,7 @@
   async function handleSaved() {
     try {
       eventsStore.setLoading(true);
-      const events = await EventsService.getUpcomingEvents();
+      const events = await EventsService.getAllEvents();
       eventsStore.setEvents(events);
     } catch (error) {
       eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
@@ -69,7 +77,7 @@
     try {
       eventsStore.setLoading(true);
       const [events, eventTypes, locations] = await Promise.all([
-        EventsService.getUpcomingEvents(),
+        EventsService.getAllEvents(),
         EventsService.getEventTypes(),
         EventsService.getLocations(),
       ]);

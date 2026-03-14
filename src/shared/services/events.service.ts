@@ -19,6 +19,20 @@ export class EventsService {
     return data as EventWithDetails[];
   }
 
+  static async getAllEvents(): Promise<EventWithDetails[]> {
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        event_type:event_types(*),
+        location_details:locations(*)
+      `)
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+    return data as EventWithDetails[];
+  }
+
   static async getEventsByDateRange(startDate: string, endDate: string): Promise<EventWithDetails[]> {
     const { data, error } = await supabase
       .from('events')
