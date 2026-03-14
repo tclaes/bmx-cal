@@ -9,7 +9,7 @@ export class EventsService {
       .from('events')
       .select(`
         *,
-        event_type:event_types(*),
+        event_type:event_types!events_event_type_id_fkey(*),
         location_details:locations(*)
       `)
       .gte('date', today)
@@ -24,7 +24,7 @@ export class EventsService {
       .from('events')
       .select(`
         *,
-        event_type:event_types(*),
+        event_type:event_types!events_event_type_id_fkey(*),
         location_details:locations(*)
       `)
       .order('date', { ascending: true });
@@ -38,7 +38,7 @@ export class EventsService {
       .from('events')
       .select(`
         *,
-        event_type:event_types(*),
+        event_type:event_types!events_event_type_id_fkey(*),
         location_details:locations(*)
       `)
       .gte('date', startDate)
@@ -54,7 +54,7 @@ export class EventsService {
       .from('events')
       .select(`
         *,
-        event_type:event_types(*),
+        event_type:event_types!events_event_type_id_fkey(*),
         location_details:locations(*)
       `)
       .eq('id', id)
