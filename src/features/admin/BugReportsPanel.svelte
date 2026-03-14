@@ -165,10 +165,11 @@
 
   .panel-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: var(--spacing-md);
     flex-wrap: wrap;
+    padding-top: var(--spacing-xs);
   }
 
   .panel-desc {
