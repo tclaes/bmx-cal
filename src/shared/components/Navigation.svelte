@@ -31,7 +31,7 @@
 <nav class="navigation" aria-label="Main navigation">
   <div class="nav-container">
     <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label="BMX Calendar home">
-      <img src="/bmx-calendar.png" alt="BMX Calendar" />
+      <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
     </a>
 
     <ul class="nav-links" role="list">
