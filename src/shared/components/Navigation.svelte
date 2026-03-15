@@ -150,6 +150,7 @@
     top: 0;
     z-index: 100;
     box-shadow: var(--shadow-sm);
+    overflow: visible;
   }
 
   .nav-container {
@@ -162,7 +163,7 @@
   }
 
   .nav-brand img {
-    height: 8rem;
+    height: 11rem;
     width: auto;
     display: block;
   }
