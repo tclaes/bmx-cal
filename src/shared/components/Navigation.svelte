@@ -155,25 +155,25 @@
   .nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-md) 0;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
   }
 
   .nav-brand img {
-    height: 3rem;
+    height: 5rem;
     width: auto;
     display: block;
   }
 
   .nav-links {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: var(--spacing-md);
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 0 var(--spacing-sm);
   }
 
   .nav-link {
