@@ -13,19 +13,17 @@
   let sessionError = '';
 
   onMount(async () => {
-    const hash = window.location.hash;
-    const params = hash ? new URLSearchParams(hash.substring(1)) : new URLSearchParams();
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token') || '';
-    const type = params.get('type');
+    const searchParams = new URLSearchParams(window.location.search);
+    const tokenHash = searchParams.get('token_hash');
+    const type = searchParams.get('type');
 
-    if (accessToken && type === 'recovery') {
-      const { error: sessionErr } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
+    if (tokenHash && type === 'recovery') {
+      const { error: verifyErr } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'recovery',
       });
 
-      if (sessionErr) {
+      if (verifyErr) {
         sessionError = 'This reset link has expired. Please request a new one.';
         return;
       }
@@ -34,18 +32,30 @@
       return;
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' && session) {
-        sessionReady = true;
-      }
-    });
+    const hash = window.location.hash;
+    if (hash) {
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token') || '';
+      const hashType = hashParams.get('type');
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      sessionReady = true;
-    } else if (!hash) {
-      sessionError = 'Invalid or expired reset link.';
+      if (accessToken && hashType === 'recovery') {
+        const { error: sessionErr } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (sessionErr) {
+          sessionError = 'This reset link has expired. Please request a new one.';
+          return;
+        }
+
+        sessionReady = true;
+        return;
+      }
     }
+
+    sessionError = 'Invalid or expired reset link.';
   });
 
   async function handleSubmit() {

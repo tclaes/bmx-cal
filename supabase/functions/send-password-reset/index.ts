@@ -38,13 +38,13 @@ Deno.serve(async (req: Request) => {
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "recovery",
       email: email.trim(),
-      options: {
-        redirectTo: `${appUrl || req.headers.get("origin") || supabaseUrl}/reset-password`,
-      },
     });
 
     if (linkError) {
-      if (linkError.message?.includes("not found") || linkError.message?.includes("User not found")) {
+      if (
+        linkError.message?.toLowerCase().includes("not found") ||
+        linkError.message?.toLowerCase().includes("user not found")
+      ) {
         return new Response(
           JSON.stringify({ success: true }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -53,11 +53,14 @@ Deno.serve(async (req: Request) => {
       throw linkError;
     }
 
-    const resetUrl = linkData.properties?.action_link;
+    const tokenHash = linkData.properties?.hashed_token;
+    const origin = appUrl || req.headers.get("origin") || supabaseUrl;
 
-    if (!resetUrl) {
-      throw new Error("Failed to generate reset link");
+    if (!tokenHash) {
+      throw new Error("Failed to generate reset token");
     }
+
+    const resetUrl = `${origin}/reset-password?token_hash=${tokenHash}&type=recovery`;
 
     const htmlBody = `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
