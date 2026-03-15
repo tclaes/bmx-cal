@@ -7,7 +7,26 @@ const app = new App({
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        navigator.serviceWorker.addEventListener('message', event => {
+          if (event.data?.type === 'SW_UPDATED') {
+            window.location.reload();
+          }
+        });
+
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          }
+        });
+      })
+      .catch(() => {});
   });
 }
 

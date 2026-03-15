@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bmx-calendar-v1';
+const CACHE_NAME = 'bmx-calendar-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -36,6 +36,12 @@ self.addEventListener('fetch', event => {
   );
 });
 
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -46,7 +52,12 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      return self.clients.claim();
+    }).then(() => {
+      return self.clients.matchAll({ type: 'window' });
+    }).then(clients => {
+      clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
     })
   );
-  self.clients.claim();
 });
