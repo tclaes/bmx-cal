@@ -161,6 +161,10 @@
     justify-content: space-between;
   }
 
+  .nav-brand {
+    padding: var(--spacing-sm) 0 var(--spacing-sm);
+  }
+
   .nav-brand img {
     height: 5rem;
     width: auto;
