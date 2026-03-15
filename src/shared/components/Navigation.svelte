@@ -155,14 +155,14 @@
   .nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
   .nav-brand img {
-    height: 8rem;
+    height: 3rem;
     width: auto;
     display: block;
   }
