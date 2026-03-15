@@ -184,7 +184,7 @@
     display: block;
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-bold);
     color: var(--color-text-secondary);
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
@@ -194,7 +194,7 @@
   .nav-link:hover,
   .nav-link.active {
     color: var(--color-primary);
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-primary-light);
   }
 
   .nav-link--signin {
@@ -272,7 +272,7 @@
     display: block;
     padding: 0.75rem var(--spacing-sm);
     font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-bold);
     color: var(--color-text-secondary);
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
@@ -282,7 +282,7 @@
   .mobile-link:hover,
   .mobile-link.active {
     color: var(--color-primary);
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-primary-light);
   }
 
   .mobile-link--signin {
