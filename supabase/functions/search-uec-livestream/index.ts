@@ -26,14 +26,25 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+    const testEventId: string | undefined = body.event_id;
+
     const today = new Date().toISOString().split("T")[0];
 
-    const { data: events, error: eventsError } = await supabase
+    let query = supabase
       .from("events")
-      .select("id, title, date")
-      .gte("date", today)
-      .lte("date", today)
-      .or("title.ilike.%UEC%,title.ilike.%European Cup%,title.ilike.%European Championships%");
+      .select("id, title, date");
+
+    if (testEventId) {
+      query = query.eq("id", testEventId);
+    } else {
+      query = query
+        .gte("date", today)
+        .lte("date", today)
+        .or("title.ilike.%UEC%,title.ilike.%European Cup%,title.ilike.%European Championships%");
+    }
+
+    const { data: events, error: eventsError } = await query;
 
     if (eventsError) {
       throw new Error(`Failed to fetch events: ${eventsError.message}`);
