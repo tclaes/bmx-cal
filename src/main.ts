@@ -1,5 +1,6 @@
 import './app.css'
 import App from './App.svelte'
+import { updateAvailable } from '@shared/stores/pwa.store';
 
 const app = new App({
   target: document.getElementById('app')!,
@@ -11,7 +12,7 @@ if ('serviceWorker' in navigator) {
       .then(registration => {
         navigator.serviceWorker.addEventListener('message', event => {
           if (event.data?.type === 'SW_UPDATED') {
-            window.location.reload();
+            updateAvailable.set(true);
           }
         });
 

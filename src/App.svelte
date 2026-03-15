@@ -4,6 +4,7 @@
   import { authStore } from '@shared/stores';
   import { AuthService } from '@shared/services';
   import Navigation from '@shared/components/Navigation.svelte';
+  import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
   import CalendarView from '@features/calendar/CalendarView.svelte';
   import AdminDashboard from '@features/admin/AdminDashboard.svelte';
   import Login from '@features/admin/Login.svelte';
@@ -40,6 +41,8 @@
   $: isAdmin = $authStore.user?.role === 'admin';
   $: isTeamManager = isAdmin || ($authStore.user?.managedTeams?.length ?? 0) > 0;
 </script>
+
+<UpdatePrompt />
 
 <div class="app">
   {#if !loading}
