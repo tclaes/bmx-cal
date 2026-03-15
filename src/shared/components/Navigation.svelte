@@ -150,7 +150,6 @@
     top: 0;
     z-index: 100;
     box-shadow: var(--shadow-sm);
-    overflow: visible;
   }
 
   .nav-container {
@@ -162,20 +161,10 @@
     justify-content: space-between;
   }
 
-  .nav-brand {
-    overflow: hidden;
-    width: 8rem;
-    height: 5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   .nav-brand img {
-    height: 9rem;
+    height: 8rem;
     width: auto;
     display: block;
-    margin-top: 1rem;
   }
 
   .nav-links {
