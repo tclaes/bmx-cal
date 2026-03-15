@@ -303,6 +303,10 @@
   }
 
   @media (max-width: 767px) {
+    .nav-container {
+      align-items: center;
+    }
+
     .nav-links {
       display: none;
     }
