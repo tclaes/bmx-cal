@@ -1,5 +1,7 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
+  import { AuthService } from '@shared/services';
+  import { authStore } from '@shared/stores';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
 
@@ -7,7 +9,6 @@
   let password = '';
   let confirmPassword = '';
   let error = '';
-  let success = false;
   let loading = false;
 
   async function handleSubmit() {
@@ -32,7 +33,10 @@
       loading = true;
       const { error: signUpError } = await supabase.auth.signUp({ email, password });
       if (signUpError) throw signUpError;
-      success = true;
+      await AuthService.login(email, password);
+      const user = await AuthService.getCurrentUser();
+      authStore.setUser(user);
+      navigate('/my-events');
     } catch (err) {
       error = err instanceof Error ? err.message : 'Registration failed';
     } finally {
@@ -48,61 +52,47 @@
       <h1 class="register-title">Create an account</h1>
       <p class="register-subtitle">Save your event selections across devices</p>
 
-      {#if success}
-        <div class="success-state">
-          <div class="success-icon">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="24" fill="#dcfce7"/>
-              <path d="M14 24L21 31L34 17" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h2 class="success-title">Account created!</h2>
-          <p class="success-message">Check your email to confirm your account, then you can sign in.</p>
-          <Button variant="secondary" on:click={() => navigate('/')}>Back to calendar</Button>
-        </div>
-      {:else}
-        {#if error}
-          <Alert type="danger" message={error} />
-        {/if}
-
-        <form on:submit|preventDefault={handleSubmit} class="register-form">
-          <Input
-            type="email"
-            id="email"
-            label="Email"
-            placeholder="you@example.com"
-            bind:value={email}
-            required
-          />
-
-          <Input
-            type="password"
-            id="password"
-            label="Password"
-            placeholder="At least 8 characters"
-            bind:value={password}
-            required
-          />
-
-          <Input
-            type="password"
-            id="confirm-password"
-            label="Confirm password"
-            placeholder="Repeat your password"
-            bind:value={confirmPassword}
-            required
-          />
-
-          <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
-            {loading ? 'Creating account...' : 'Create account'}
-          </Button>
-        </form>
-
-        <p class="login-hint">
-          Already have an account?
-          <button class="link-btn" on:click={() => navigate('/admin/login')}>Sign in</button>
-        </p>
+      {#if error}
+        <Alert type="danger" message={error} />
       {/if}
+
+      <form on:submit|preventDefault={handleSubmit} class="register-form">
+        <Input
+          type="email"
+          id="email"
+          label="Email"
+          placeholder="you@example.com"
+          bind:value={email}
+          required
+        />
+
+        <Input
+          type="password"
+          id="password"
+          label="Password"
+          placeholder="At least 8 characters"
+          bind:value={password}
+          required
+        />
+
+        <Input
+          type="password"
+          id="confirm-password"
+          label="Confirm password"
+          placeholder="Repeat your password"
+          bind:value={confirmPassword}
+          required
+        />
+
+        <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
+          {loading ? 'Creating account...' : 'Create account'}
+        </Button>
+      </form>
+
+      <p class="login-hint">
+        Already have an account?
+        <button class="link-btn" on:click={() => navigate('/admin/login')}>Sign in</button>
+      </p>
     </div>
   </Card>
 </div>
@@ -181,32 +171,5 @@
     opacity: 0.8;
   }
 
-  .success-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-md);
-    text-align: center;
-    padding: var(--spacing-lg) 0;
-  }
 
-  .success-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .success-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-
-  .success-message {
-    font-size: var(--font-size-base);
-    color: var(--color-text-secondary);
-    margin: 0;
-    line-height: 1.6;
-  }
 </style>
