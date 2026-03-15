@@ -65,6 +65,10 @@
         </Button>
       </form>
 
+      <p class="forgot-hint">
+        <button class="link-btn" on:click={() => navigate('/forgot-password')}>Forgot password?</button>
+      </p>
+
       <p class="register-hint">
         No account yet?
         <button class="link-btn" on:click={() => navigate('/register')}>Create one</button>
@@ -110,6 +114,12 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+  }
+
+  .forgot-hint {
+    font-size: 0.875rem;
+    text-align: center;
+    margin: 0;
   }
 
   .register-hint {

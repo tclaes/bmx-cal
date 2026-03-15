@@ -32,6 +32,12 @@ router
   .on('/login', () => {
     currentRoute.set('/login');
   })
+  .on('/forgot-password', () => {
+    currentRoute.set('/forgot-password');
+  })
+  .on('/reset-password', () => {
+    currentRoute.set('/reset-password');
+  })
   .on('/profile', () => {
     currentRoute.set('/profile');
   })

@@ -11,6 +11,8 @@
   import MyEventsPage from './features/my-events/MyEventsPage.svelte';
   import RegisterPage from './features/auth/RegisterPage.svelte';
   import LoginPage from './features/auth/LoginPage.svelte';
+  import ForgotPasswordPage from './features/auth/ForgotPasswordPage.svelte';
+  import ResetPasswordPage from './features/auth/ResetPasswordPage.svelte';
   import ProfilePage from './features/profile/ProfilePage.svelte';
   import TeamManagerDashboard from './features/team-manager/TeamManagerDashboard.svelte';
   import BugReportPage from './features/bug-report/BugReportPage.svelte';
@@ -57,6 +59,10 @@
         <LoginPage />
       {:else if $currentRoute === '/register'}
         <RegisterPage />
+      {:else if $currentRoute === '/forgot-password'}
+        <ForgotPasswordPage />
+      {:else if $currentRoute === '/reset-password'}
+        <ResetPasswordPage />
       {:else if $currentRoute === '/admin/login'}
         <Login on:loginSuccess={handleLoginSuccess} />
       {:else if $currentRoute === '/admin'}
