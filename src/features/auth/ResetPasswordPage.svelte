@@ -14,31 +14,38 @@
 
   onMount(async () => {
     const hash = window.location.hash;
-    if (!hash) {
-      sessionError = 'Invalid or expired reset link.';
-      return;
-    }
-
-    const params = new URLSearchParams(hash.substring(1));
+    const params = hash ? new URLSearchParams(hash.substring(1)) : new URLSearchParams();
     const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token') || '';
     const type = params.get('type');
 
-    if (!accessToken || type !== 'recovery') {
-      sessionError = 'Invalid or expired reset link.';
+    if (accessToken && type === 'recovery') {
+      const { error: sessionErr } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (sessionErr) {
+        sessionError = 'This reset link has expired. Please request a new one.';
+        return;
+      }
+
+      sessionReady = true;
       return;
     }
 
-    const { error: sessionErr } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: params.get('refresh_token') || '',
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        sessionReady = true;
+      }
     });
 
-    if (sessionErr) {
-      sessionError = 'This reset link has expired. Please request a new one.';
-      return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      sessionReady = true;
+    } else if (!hash) {
+      sessionError = 'Invalid or expired reset link.';
     }
-
-    sessionReady = true;
   });
 
   async function handleSubmit() {

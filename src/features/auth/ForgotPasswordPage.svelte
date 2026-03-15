@@ -27,7 +27,7 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${anonKey}`,
         },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), appUrl: window.location.origin }),
       });
 
       if (!response.ok) {
