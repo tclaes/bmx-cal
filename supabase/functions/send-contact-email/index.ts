@@ -61,7 +61,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "BMX Calendar <onboarding@resend.dev>",
+        from: "BMX Calendar <bmxcalendar@tcla.be>",
         to: ["tom.claes82@gmail.com"],
         reply_to: email,
         subject: `Team features inquiry from ${clubName || name}`,
