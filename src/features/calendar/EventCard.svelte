@@ -185,7 +185,7 @@
           class="location-link"
           title="View on Google Maps"
         >
-          {event.location}
+          {event.location}{#if event.location_details?.city && !event.location.includes(event.location_details.city)}, {event.location_details.city}{/if}
         </a>
       </div>
     </div>

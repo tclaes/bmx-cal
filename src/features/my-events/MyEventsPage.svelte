@@ -234,7 +234,12 @@
 
           <div class="event-info">
             <span class="event-name">{event.title}</span>
-            <span class="event-date">{formatDate(event.date)}</span>
+            <div class="event-meta">
+              <span class="event-date">{formatDate(event.date)}</span>
+              {#if event.location_details?.city}
+                <span class="event-city">{event.location_details.city}</span>
+              {/if}
+            </div>
           </div>
         </button>
       {/each}
@@ -452,9 +457,8 @@
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
   .event-name {
@@ -466,10 +470,29 @@
     text-overflow: ellipsis;
   }
 
+  .event-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
   .event-date {
     font-size: 0.8rem;
     color: var(--text-secondary);
     white-space: nowrap;
+  }
+
+  .event-city {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .event-city::before {
+    content: '•';
+    margin-right: 0.5rem;
+    color: var(--border-color);
   }
 
   @media (max-width: 640px) {
