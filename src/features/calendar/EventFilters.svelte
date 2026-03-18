@@ -81,7 +81,7 @@
     id="search-filter"
     label="Search Location"
     placeholder="Search by city or country..."
-    bind:value={searchQuery}
+    value={searchQuery}
     on:input={handleSearchChange}
   />
 
