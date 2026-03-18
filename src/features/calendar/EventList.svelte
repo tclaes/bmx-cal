@@ -6,6 +6,7 @@
   import { eventsStore, filtersStore, authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
   import { canEditEvent } from '@shared/utils/permissions';
+  import { searchEvents } from '@shared/utils/event-search';
   import type { EventWithDetails, Event } from '@types';
 
   let filteredEvents: EventWithDetails[] = [];
@@ -17,37 +18,34 @@
     const events = $eventsStore.events;
     const today = new Date().toISOString().split('T')[0];
 
-    filteredEvents = events.filter(event => {
-      if (!filters.showPastEvents) {
+    let result = events;
+
+    if (!filters.showPastEvents) {
+      result = result.filter(event => {
         const eventEnd = event.end_date || event.date;
-        if (eventEnd < today) {
-          return false;
-        }
-      }
+        return eventEnd >= today;
+      });
+    }
 
-      if (filters.selectedEventTypes.length > 0 && !filters.selectedEventTypes.includes(event.event_type_id)) {
-        return false;
-      }
+    if (filters.selectedEventTypes.length > 0) {
+      result = result.filter(event =>
+        filters.selectedEventTypes.includes(event.event_type_id)
+      );
+    }
 
-      if (filters.startDate && event.date < filters.startDate) {
-        return false;
-      }
+    if (filters.startDate) {
+      result = result.filter(event => event.date >= filters.startDate!);
+    }
 
-      if (filters.endDate && event.date > filters.endDate) {
-        return false;
-      }
+    if (filters.endDate) {
+      result = result.filter(event => event.date <= filters.endDate!);
+    }
 
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        return (
-          event.title.toLowerCase().includes(query) ||
-          event.location.toLowerCase().includes(query) ||
-          event.description.toLowerCase().includes(query)
-        );
-      }
+    if (filters.searchQuery) {
+      result = searchEvents(result, filters.searchQuery);
+    }
 
-      return true;
-    });
+    filteredEvents = result;
   }
 
   let previousUserId: string | null | undefined = undefined;

@@ -6,3 +6,4 @@ export { parsePDF } from './pdf-parser';
 export { generateICalContent, downloadICalFile } from './ical-exporter';
 export { canEditEvent, getInitialTeamExpandedState } from './permissions';
 export { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
+export { searchEvents } from './event-search';

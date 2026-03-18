@@ -8,12 +8,14 @@
   let selectedTypes: string[] = [];
   let startDate = '';
   let endDate = '';
+  let searchQuery = '';
   let dropdownOpen = false;
   let filtersExpanded = false;
 
   $: eventTypes = $eventsStore.eventTypes;
   $: selectedTypes = $filtersStore.selectedEventTypes;
   $: showPastEvents = $filtersStore.showPastEvents;
+  $: searchQuery = $filtersStore.searchQuery;
 
   function handleTypeToggle(typeId: string) {
     filtersStore.toggleEventType(typeId);
@@ -31,10 +33,17 @@
     filtersStore.setDateRange(startDate || null, endDate || null);
   }
 
+  function handleSearchChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    searchQuery = target.value;
+    filtersStore.setSearchQuery(searchQuery);
+  }
+
   function resetFilters() {
     selectedTypes = [];
     startDate = '';
     endDate = '';
+    searchQuery = '';
     filtersStore.reset();
   }
 
@@ -60,13 +69,22 @@
     aria-expanded={filtersExpanded}
   >
     <span>Filters</span>
-    {#if selectedTypes.length > 0 || startDate || endDate || $filtersStore.showPastEvents}
-      <span class="filter-badge">{selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}</span>
+    {#if selectedTypes.length > 0 || startDate || endDate || searchQuery || $filtersStore.showPastEvents}
+      <span class="filter-badge">{selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + (searchQuery ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}</span>
     {/if}
     <span class="toggle-chevron" class:rotated={filtersExpanded}>▼</span>
   </button>
 
 <div class="filters" class:collapsed={!filtersExpanded}>
+  <Input
+    type="text"
+    id="search-filter"
+    label="Search Location"
+    placeholder="Search by city or country..."
+    bind:value={searchQuery}
+    on:input={handleSearchChange}
+  />
+
   <div class="event-type-dropdown">
     <label class="dropdown-label" for="event-type-dropdown-btn">Event Types</label>
     <button
