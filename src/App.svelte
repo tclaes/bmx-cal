@@ -5,6 +5,7 @@
   import { AuthService } from '@shared/services';
   import Navigation from '@shared/components/Navigation.svelte';
   import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
+  import InstallPrompt from '@shared/components/InstallPrompt.svelte';
   import CalendarView from '@features/calendar/CalendarView.svelte';
   import AdminDashboard from '@features/admin/AdminDashboard.svelte';
   import Login from '@features/admin/Login.svelte';
@@ -45,6 +46,7 @@
 </script>
 
 <UpdatePrompt />
+<InstallPrompt />
 
 <div class="app">
   {#if !loading}
