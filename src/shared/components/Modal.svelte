@@ -1,10 +1,16 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount, tick } from 'svelte';
 
   export let open = false;
   export let title = '';
 
   const dispatch = createEventDispatcher();
+
+  let modalContent: HTMLDivElement;
+  let previousActiveElement: HTMLElement | null = null;
+  let focusableElements: HTMLElement[] = [];
+  let firstFocusable: HTMLElement | null = null;
+  let lastFocusable: HTMLElement | null = null;
 
   function close() {
     dispatch('close');
@@ -15,6 +21,63 @@
       close();
     }
   }
+
+  function getFocusableElements(): HTMLElement[] {
+    if (!modalContent) return [];
+
+    const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    return Array.from(modalContent.querySelectorAll(selector));
+  }
+
+  function trapFocus(event: KeyboardEvent) {
+    if (event.key !== 'Tab') return;
+
+    if (focusableElements.length === 0) {
+      event.preventDefault();
+      return;
+    }
+
+    if (event.shiftKey) {
+      if (document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable?.focus();
+      }
+    } else {
+      if (document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable?.focus();
+      }
+    }
+  }
+
+  async function setupFocusTrap() {
+    await tick();
+
+    previousActiveElement = document.activeElement as HTMLElement;
+
+    focusableElements = getFocusableElements();
+    firstFocusable = focusableElements[0] || null;
+    lastFocusable = focusableElements[focusableElements.length - 1] || null;
+
+    if (firstFocusable) {
+      firstFocusable.focus();
+    } else if (modalContent) {
+      modalContent.focus();
+    }
+  }
+
+  function restoreFocus() {
+    if (previousActiveElement) {
+      previousActiveElement.focus();
+      previousActiveElement = null;
+    }
+  }
+
+  $: if (open) {
+    setupFocusTrap();
+  } else {
+    restoreFocus();
+  }
 </script>
 
 {#if open}
@@ -22,12 +85,20 @@
     class="modal-backdrop"
     role="presentation"
     on:click={handleBackdropClick}
-    on:keydown={(e) => { if (e.key === 'Escape') close(); }}
   >
-    <div class="modal-content">
+    <div
+      class="modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      tabindex="-1"
+      bind:this={modalContent}
+      on:keydown={(e) => { if (e.key === 'Escape') close(); }}
+      on:keydown={trapFocus}
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{title}</h2>
-        <button class="close-button" on:click={close}>×</button>
+        <h2 id="modal-title" class="modal-title">{title}</h2>
+        <button class="close-button" on:click={close} aria-label="Close modal" type="button">×</button>
       </div>
       <div class="modal-body">
         <slot />
@@ -76,8 +147,8 @@
   }
 
   .close-button {
-    width: 32px;
-    height: 32px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: var(--border-radius-full);
     display: flex;
     align-items: center;
@@ -90,6 +161,11 @@
 
   .close-button:hover {
     background-color: var(--color-bg-secondary);
+  }
+
+  .close-button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   .modal-body {

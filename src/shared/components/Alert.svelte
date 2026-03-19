@@ -6,10 +6,14 @@
 </script>
 
 {#if message}
-  <div class="alert alert-{type}">
+  <div
+    class="alert alert-{type}"
+    role="alert"
+    aria-live={type === 'danger' ? 'assertive' : 'polite'}
+  >
     <span class="alert-message">{message}</span>
     {#if dismissible && onDismiss}
-      <button class="dismiss-button" on:click={onDismiss}>×</button>
+      <button class="dismiss-button" on:click={onDismiss} aria-label="Dismiss alert" type="button">×</button>
     {/if}
   </div>
 {/if}
@@ -55,8 +59,8 @@
   }
 
   .dismiss-button {
-    width: 24px;
-    height: 24px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: var(--border-radius-full);
     display: flex;
     align-items: center;
@@ -68,6 +72,12 @@
   }
 
   .dismiss-button:hover {
+    opacity: 1;
+  }
+
+  .dismiss-button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
     opacity: 1;
   }
 </style>
