@@ -9,3 +9,5 @@ export { default as Badge } from './Badge.svelte';
 export { default as FileUpload } from './FileUpload.svelte';
 export { default as InstallPrompt } from './InstallPrompt.svelte';
 export { default as LocationPicker } from './LocationPicker.svelte';
+export { default as Dropdown } from './Dropdown.svelte';
+export { default as CheckboxItem } from './CheckboxItem.svelte';
