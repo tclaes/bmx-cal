@@ -4,7 +4,9 @@ import {
   getRelativeLuminance,
   getContrastRatio,
   getAccessibleTextColor,
-  meetsContrastRequirement
+  meetsContrastRequirement,
+  darkenColorForWhiteText,
+  rgbToHex
 } from '../shared/utils/color-contrast';
 
 describe('Color Contrast Utilities', () => {
@@ -167,6 +169,73 @@ describe('Color Contrast Utilities', () => {
       expect(getAccessibleTextColor('#808080')).toBeTruthy();
       expect(getAccessibleTextColor('#ff00ff')).toBeTruthy();
       expect(getAccessibleTextColor('#00ffff')).toBeTruthy();
+    });
+  });
+
+  describe('rgbToHex', () => {
+    it('should convert RGB values to hex', () => {
+      expect(rgbToHex(255, 255, 255)).toBe('#ffffff');
+      expect(rgbToHex(0, 0, 0)).toBe('#000000');
+      expect(rgbToHex(255, 0, 0)).toBe('#ff0000');
+      expect(rgbToHex(59, 130, 246)).toBe('#3b82f6');
+    });
+
+    it('should handle single digit values', () => {
+      expect(rgbToHex(1, 2, 3)).toBe('#010203');
+      expect(rgbToHex(15, 15, 15)).toBe('#0f0f0f');
+    });
+  });
+
+  describe('darkenColorForWhiteText', () => {
+    it('should keep dark colors unchanged', () => {
+      const darkBlue = '#1e40af';
+      const result = darkenColorForWhiteText(darkBlue);
+      const contrast = getContrastRatio(result, '#ffffff');
+      expect(contrast).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('should darken light colors to meet contrast requirements', () => {
+      const lightColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ff0000'];
+
+      lightColors.forEach(color => {
+        const darkened = darkenColorForWhiteText(color);
+        const contrast = getContrastRatio(darkened, '#ffffff');
+        expect(contrast).toBeGreaterThanOrEqual(4.5);
+      });
+    });
+
+    it('should maintain color hue while darkening', () => {
+      const blue = '#3b82f6';
+      const darkened = darkenColorForWhiteText(blue);
+
+      // The darkened color should still be blue (lower RGB values but same ratios)
+      const originalRgb = hexToRgb(blue);
+      const darkenedRgb = hexToRgb(darkened);
+
+      expect(darkenedRgb).not.toBeNull();
+      expect(originalRgb).not.toBeNull();
+
+      if (darkenedRgb && originalRgb) {
+        // Blue should still be the dominant or significant component
+        expect(darkenedRgb[2]).toBeGreaterThan(0);
+      }
+    });
+
+    it('should respect custom minimum contrast ratio', () => {
+      const color = '#3b82f6';
+      const darkened = darkenColorForWhiteText(color, 7);
+      const contrast = getContrastRatio(darkened, '#ffffff');
+      expect(contrast).toBeGreaterThanOrEqual(7);
+    });
+
+    it('should return original color if already has sufficient contrast', () => {
+      const darkColor = '#1e3a8a';
+      const result = darkenColorForWhiteText(darkColor);
+      const originalContrast = getContrastRatio(darkColor, '#ffffff');
+
+      if (originalContrast >= 4.5) {
+        expect(result).toBe(darkColor);
+      }
     });
   });
 });

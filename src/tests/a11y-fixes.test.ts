@@ -294,14 +294,17 @@ describe('Badge Accessibility', () => {
     expect(badge.style.color).toBe('rgb(255, 255, 255)');
   });
 
-  it('should use black text on light background', () => {
+  it('should use white text on darkened background', () => {
     const { container } = render(Badge, {
       props: { label: 'Light Badge', color: '#ffffff' }
     });
 
     const badge = container.querySelector('.badge') as HTMLElement;
 
-    expect(badge.style.color).toBe('rgb(0, 0, 0)');
+    // Badge now always uses white text and darkens the background if needed
+    expect(badge.style.color).toBe('rgb(255, 255, 255)');
+    // Background should be darkened from white to ensure contrast
+    expect(badge.style.backgroundColor).not.toBe('rgb(255, 255, 255)');
   });
 
   it('should calculate text color for custom colors', () => {

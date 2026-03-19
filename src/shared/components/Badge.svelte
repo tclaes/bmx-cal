@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { getAccessibleTextColor } from '../utils/color-contrast';
+  import { darkenColorForWhiteText } from '../utils/color-contrast';
 
   export let color = '#3b82f6';
   export let label = '';
 
-  $: textColor = getAccessibleTextColor(color);
+  $: adjustedBgColor = darkenColorForWhiteText(color);
 </script>
 
-<span class="badge" style="background-color: {color}; color: {textColor};">
+<span class="badge" style="background-color: {adjustedBgColor}; color: #ffffff;">
   {label}
 </span>
 
