@@ -13,7 +13,7 @@
   >
     <span class="alert-message">{message}</span>
     {#if dismissible && onDismiss}
-      <button class="dismiss-button" on:click={onDismiss} aria-label="Dismiss alert" type="button">×</button>
+      <button class="dismiss-button" on:click={onDismiss} aria-label="Dismiss alert" type="button" style="width: 44px; height: 44px;">×</button>
     {/if}
   </div>
 {/if}

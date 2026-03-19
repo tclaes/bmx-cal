@@ -98,7 +98,7 @@
     >
       <div class="modal-header">
         <h2 id="modal-title" class="modal-title">{title}</h2>
-        <button class="close-button" on:click={close} aria-label="Close modal" type="button">×</button>
+        <button class="close-button" on:click={close} aria-label="Close modal" type="button" style="width: 44px; height: 44px;">×</button>
       </div>
       <div class="modal-body">
         <slot />
