@@ -9,6 +9,7 @@
 
 <style>
   .spinner {
+    position: relative;
     border-radius: var(--border-radius-full);
     border: 3px solid var(--color-border);
     border-top-color: var(--color-primary);

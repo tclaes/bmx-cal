@@ -59,6 +59,8 @@
   }
 
   .dismiss-button {
+    width: 44px;
+    height: 44px;
     min-width: 44px;
     min-height: 44px;
     border-radius: var(--border-radius-full);
@@ -69,6 +71,10 @@
     transition: background-color var(--transition-base);
     line-height: 1;
     opacity: 0.7;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
   }
 
   .dismiss-button:hover {

@@ -78,8 +78,11 @@ describe('Modal Accessibility', () => {
     const closeButton = screen.getByRole('button', { name: /close modal/i });
     const styles = window.getComputedStyle(closeButton);
 
-    expect(parseInt(styles.minWidth)).toBeGreaterThanOrEqual(44);
-    expect(parseInt(styles.minHeight)).toBeGreaterThanOrEqual(44);
+    const width = parseFloat(styles.width);
+    const height = parseFloat(styles.height);
+
+    expect(width).toBeGreaterThanOrEqual(44);
+    expect(height).toBeGreaterThanOrEqual(44);
   });
 });
 
@@ -150,8 +153,11 @@ describe('Alert Accessibility', () => {
     const dismissButton = screen.getByRole('button', { name: /dismiss alert/i });
     const styles = window.getComputedStyle(dismissButton);
 
-    expect(parseInt(styles.minWidth)).toBeGreaterThanOrEqual(44);
-    expect(parseInt(styles.minHeight)).toBeGreaterThanOrEqual(44);
+    const width = parseFloat(styles.width);
+    const height = parseFloat(styles.height);
+
+    expect(width).toBeGreaterThanOrEqual(44);
+    expect(height).toBeGreaterThanOrEqual(44);
   });
 });
 
