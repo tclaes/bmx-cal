@@ -363,8 +363,11 @@
 
   .type-btn.fully-selected {
     border-color: var(--type-color);
-    background: color-mix(in srgb, var(--type-color) 12%, white);
-    color: var(--text-primary);
+    background: var(--type-color);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
   }
 
   .type-btn.partially-selected {
@@ -397,9 +400,18 @@
     line-height: 1.4;
   }
 
+  .type-btn.fully-selected .type-count {
+    color: white;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
   .type-check {
     color: var(--type-color);
     flex-shrink: 0;
+  }
+
+  .type-btn.fully-selected .type-check {
+    color: white;
   }
 
   .events-list {
