@@ -343,12 +343,13 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    padding: 0.3rem 0.6rem;
+    padding: 0.6rem 0.9rem;
+    min-height: 44px;
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 22px;
     background: white;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-secondary);
     transition: all 0.15s ease;
@@ -366,8 +367,8 @@
     background: color-mix(in srgb, var(--type-color) 85%, white);
     color: white;
     font-weight: 700;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.7rem;
+    font-size: 0.9rem;
+    padding: 0.65rem 1rem;
   }
 
   .type-btn.partially-selected {

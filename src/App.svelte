@@ -50,9 +50,12 @@
 
 <div class="app">
   {#if !loading}
-    <Navigation />
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header>
+      <Navigation />
+    </header>
 
-    <main class="main-content">
+    <main id="main-content" class="main-content">
       {#if $currentRoute === '/'}
         <CalendarView />
       {:else if $currentRoute === '/my-events'}
@@ -117,6 +120,22 @@
 </div>
 
 <style>
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--color-primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 10000;
+    border-radius: 0 0 4px 0;
+  }
+
+  .skip-link:focus {
+    top: 0;
+  }
+
   .app {
     min-height: 100vh;
     display: flex;

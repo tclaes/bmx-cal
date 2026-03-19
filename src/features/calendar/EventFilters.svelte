@@ -92,6 +92,8 @@
       class="dropdown-button"
       on:click|stopPropagation={toggleDropdown}
       type="button"
+      aria-haspopup="listbox"
+      aria-expanded={dropdownOpen}
     >
       <span class="dropdown-text">
         {selectedTypes.length === 0
@@ -142,6 +144,7 @@
       on:click={() => filtersStore.toggleShowPastEvents()}
       type="button"
       aria-pressed={showPastEvents}
+      aria-label="Show Past Events"
     >
       <span class="toggle-thumb" />
     </button>
@@ -311,11 +314,11 @@
 
   .toggle-btn {
     position: relative;
-    width: 44px;
-    height: 24px;
+    width: 64px;
+    height: 44px;
     background-color: var(--color-border);
     border: none;
-    border-radius: 12px;
+    border-radius: 22px;
     cursor: pointer;
     transition: background-color 0.2s;
     padding: 0;
@@ -328,10 +331,10 @@
 
   .toggle-thumb {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
+    top: 4px;
+    left: 4px;
+    width: 36px;
+    height: 36px;
     background-color: white;
     border-radius: 50%;
     transition: transform 0.2s;

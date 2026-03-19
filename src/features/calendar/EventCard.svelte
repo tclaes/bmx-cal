@@ -96,11 +96,11 @@
     }
 
     if (event.registration_status === 'open') {
-      return { label: 'Registration Open', color: '#10b981' };
+      return { label: 'Registration Open', color: '#047857' };
     } else if (event.registration_status === 'closed') {
       return { label: 'Registration Closed', color: '#6b7280' };
     } else if (event.registration_status === 'upcoming') {
-      return { label: 'Registration Opens Soon', color: '#f59e0b' };
+      return { label: 'Registration Opens Soon', color: '#b45309' };
     }
 
     if (event.registration_deadline) {
@@ -110,7 +110,7 @@
       }
     }
 
-    return { label: 'Register Now', color: '#3b82f6' };
+    return { label: 'Register Now', color: '#1d4ed8' };
   }
 
   $: registrationStatus = getRegistrationStatus();
