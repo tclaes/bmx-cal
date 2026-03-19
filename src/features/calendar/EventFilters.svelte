@@ -315,17 +315,15 @@
   }
 
   .toggle-btn {
-    position: relative;
     min-width: 44px;
     min-height: 44px;
     background-color: transparent;
     border: none;
     cursor: pointer;
-    padding: var(--spacing-sm-plus);
+    padding-block: var(--spacing-sm-plus);
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
   }
 
   .toggle-track {
