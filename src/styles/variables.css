@@ -28,12 +28,15 @@
   --color-border: #e2e8f0;
   --color-border-light: #f1f5f9;
 
+  --spacing-xxs: 2px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
+  --spacing-sm-plus: 12px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
 
   --font-family: 'Barlow', 'Arial Narrow', Arial, sans-serif;
   --font-family-heading: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;

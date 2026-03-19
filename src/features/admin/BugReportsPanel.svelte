@@ -274,13 +274,13 @@
   .github-link {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--spacing-xs);
     font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
     text-decoration: none;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm, 4px);
-    padding: 2px 6px;
+    padding: var(--spacing-xxs) var(--spacing-sm);
     transition: color 0.15s ease, border-color 0.15s ease;
   }
 

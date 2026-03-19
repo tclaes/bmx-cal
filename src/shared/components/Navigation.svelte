@@ -216,10 +216,10 @@
     display: none;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
+    gap: var(--spacing-xs);
     width: 36px;
     height: 36px;
-    padding: 6px;
+    padding: var(--spacing-sm);
     cursor: pointer;
     border-radius: var(--border-radius-md);
     transition: background-color var(--transition-base);

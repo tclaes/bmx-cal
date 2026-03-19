@@ -1,0 +1,12 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "rules": {
+    "declaration-property-value-disallowed-list": {
+      "/^(padding|margin)$/": ["/^\\d+px$/", "/^\\d+\\.\\d+px$/"],
+      "/^(padding|margin)-(top|right|bottom|left|block|inline|block-start|block-end|inline-start|inline-end)$/": ["/^\\d+px$/", "/^\\d+\\.\\d+px$/"]
+    },
+    "custom-property-pattern": null,
+    "selector-class-pattern": null
+  },
+  "ignoreFiles": ["dist/**/*", "node_modules/**/*"]
+}

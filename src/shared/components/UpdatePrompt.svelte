@@ -51,7 +51,7 @@
     color: white;
     background-color: var(--color-primary);
     border-radius: var(--border-radius-md);
-    padding: 4px var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
     cursor: pointer;
     transition: opacity var(--transition-base);
   }
@@ -65,7 +65,7 @@
     line-height: 1;
     color: var(--color-text-muted);
     cursor: pointer;
-    padding: 2px 4px;
+    padding: var(--spacing-xxs) var(--spacing-xs);
     border-radius: var(--border-radius-sm);
     transition: color var(--transition-base);
   }

@@ -2,3 +2,4 @@ Write test for all new feature requests
 Update test for bug fixes or updates if there is no test create one
 Avoid to much logic in the components use utility functions instead
 Always keep a11y in mind when creating components or pages
+Use logical properties in CSS as much as possible

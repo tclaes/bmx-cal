@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
     "sheriff": "sheriff verify",
+    "stylelint": "stylelint \"src/**/*.{css,svelte}\"",
+    "stylelint:fix": "stylelint \"src/**/*.{css,svelte}\" --fix",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -20,6 +22,9 @@
     "@tsconfig/svelte": "^5.0.4",
     "@vitest/coverage-v8": "^4.1.0",
     "jsdom": "^28.1.0",
+    "stylelint": "^17.5.0",
+    "stylelint-config-recommended": "^18.0.0",
+    "stylelint-config-standard": "^40.0.0",
     "svelte": "^4.2.19",
     "svelte-check": "^3.8.6",
     "tslib": "^2.7.0",

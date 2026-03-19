@@ -258,22 +258,22 @@
   .my-events-page {
     max-width: 800px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: var(--spacing-xl) var(--spacing-md);
   }
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 2rem;
-    margin-bottom: 1.5rem;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
     flex-wrap: wrap;
   }
 
   h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 var(--spacing-sm) 0;
     color: var(--text-primary);
   }
 
@@ -284,30 +284,30 @@
 
   .header-actions {
     display: flex;
-    gap: 1rem;
+    gap: var(--spacing-md);
     align-items: center;
     flex-wrap: wrap;
   }
 
   .count {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
-    padding: 0.5rem 1rem;
+    padding: var(--spacing-sm) var(--spacing-md);
     background: var(--background-secondary);
-    border-radius: 8px;
+    border-radius: var(--border-radius-md);
   }
 
   .loading-container {
     display: flex;
     justify-content: center;
-    padding: 4rem 0;
+    padding: var(--spacing-3xl) 0;
   }
 
   .error-container {
     background: white;
     border: 2px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
   }
 
   .error {

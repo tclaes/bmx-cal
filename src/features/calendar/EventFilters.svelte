@@ -321,11 +321,11 @@
     background-color: transparent;
     border: none;
     cursor: pointer;
-    padding-block: 10px;
+    padding: var(--spacing-sm-plus);
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: start;
+    justify-content: center;
   }
 
   .toggle-track {

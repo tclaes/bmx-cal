@@ -126,10 +126,10 @@
     left: 0;
     background: var(--color-primary);
     color: white;
-    padding: 8px;
+    padding: var(--spacing-sm);
     text-decoration: none;
     z-index: 10000;
-    border-radius: 0 0 4px 0;
+    border-radius: 0 0 var(--border-radius-sm) 0;
   }
 
   .skip-link:focus {
@@ -181,7 +181,7 @@
     font-weight: var(--font-weight-medium);
     border: 1px solid var(--color-primary);
     border-radius: var(--border-radius-full);
-    padding: 2px var(--spacing-sm);
+    padding: var(--spacing-xxs) var(--spacing-sm);
     transition: all var(--transition-base);
   }
 
