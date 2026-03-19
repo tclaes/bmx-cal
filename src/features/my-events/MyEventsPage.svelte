@@ -363,7 +363,7 @@
 
   .type-btn.fully-selected {
     border-color: var(--type-color);
-    background: var(--type-color);
+    background: color-mix(in srgb, var(--type-color) 85%, white);
     color: white;
     font-weight: 700;
     font-size: 0.85rem;
