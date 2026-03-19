@@ -146,7 +146,9 @@
       aria-pressed={showPastEvents}
       aria-label="Show Past Events"
     >
-      <span class="toggle-thumb" />
+      <span class="toggle-track">
+        <span class="toggle-thumb" />
+      </span>
     </button>
   </div>
 
@@ -314,27 +316,38 @@
 
   .toggle-btn {
     position: relative;
-    width: 64px;
-    height: 44px;
-    background-color: var(--color-border);
+    min-width: 44px;
+    min-height: 44px;
+    background-color: transparent;
     border: none;
-    border-radius: 22px;
     cursor: pointer;
-    transition: background-color 0.2s;
-    padding: 0;
+    padding: 10px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .toggle-btn.active {
+  .toggle-track {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: var(--color-border);
+    border-radius: 12px;
+    transition: background-color 0.2s;
+    display: block;
+  }
+
+  .toggle-btn.active .toggle-track {
     background-color: var(--color-primary);
   }
 
   .toggle-thumb {
     position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 36px;
-    height: 36px;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
     background-color: white;
     border-radius: 50%;
     transition: transform 0.2s;
