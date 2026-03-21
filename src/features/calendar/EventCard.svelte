@@ -48,10 +48,10 @@
   function getEventTypeAbbreviation(name: string): string {
     const abbreviations: Record<string, string> = {
       '3 Nations Cup': '3NC',
-      'Belgian Cycling': 'BC',
+      'Belgian Cycling': 'TC',
       'Cycling Vlaanderen': 'CV',
       'European Cup': 'EC',
-      'Wallonie Cycling': 'WAL',
+      'Wallonie Cycling': 'CW',
       'World Cup': 'WC',
     };
     return abbreviations[name] || name.substring(0, 3).toUpperCase();
