@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { currentRoute, startRouter, navigate } from './router';
-  import { authStore } from '@shared/stores';
+  import { authStore, updateStore } from '@shared/stores';
   import { AuthService } from '@shared/services';
   import Navigation from '@shared/components/Navigation.svelte';
   import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
@@ -19,8 +19,11 @@
   import BugReportPage from './features/bug-report/BugReportPage.svelte';
   import AboutPage from './features/about/AboutPage.svelte';
   import GetInTouchPage from './features/about/GetInTouchPage.svelte';
+  import { APP_VERSION } from '@shared/config/version';
 
   let loading = true;
+  let updateCheckMessage = '';
+  let showUpdateMessage = false;
 
   onMount(() => {
     startRouter();
@@ -43,6 +46,27 @@
   $: isAuthenticated = $authStore.user !== null;
   $: isAdmin = $authStore.user?.role === 'admin';
   $: isTeamManager = isAdmin || ($authStore.user?.managedTeams?.length ?? 0) > 0;
+
+  async function handleCheckForUpdates() {
+    showUpdateMessage = false;
+
+    try {
+      const versionInfo = await updateStore.checkForUpdates();
+
+      if (versionInfo.hasUpdate || $updateStore.available) {
+        updateCheckMessage = 'Update available! Please reload.';
+      } else {
+        updateCheckMessage = 'You are on the latest version.';
+      }
+    } catch {
+      updateCheckMessage = 'Failed to check for updates.';
+    }
+
+    showUpdateMessage = true;
+    setTimeout(() => {
+      showUpdateMessage = false;
+    }, 5000);
+  }
 </script>
 
 <UpdatePrompt />
@@ -108,6 +132,17 @@
         <button class="footer-link" on:click={() => navigate('/about')}>About</button>
         <button class="footer-link" on:click={() => navigate('/get-in-touch')}>Get in touch</button>
         <button class="footer-link" on:click={() => navigate('/report-bug')}>Report a bug</button>
+        <button
+          class="footer-link footer-link--version"
+          on:click={handleCheckForUpdates}
+          disabled={$updateStore.checking}
+          title="Current version: {APP_VERSION}"
+        >
+          {$updateStore.checking ? 'Checking...' : `v${APP_VERSION}`}
+        </button>
+        {#if showUpdateMessage}
+          <span class="update-message">{updateCheckMessage}</span>
+        {/if}
         <a
           class="footer-link footer-link--kofi"
           href="https://ko-fi.com/bmxcalendar"
@@ -188,6 +223,42 @@
   .footer-link--kofi:hover {
     background-color: var(--color-primary);
     color: white;
+  }
+
+  .footer-link--version {
+    font-family: monospace;
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    font-weight: var(--font-weight-normal);
+    transition: all var(--transition-base);
+  }
+
+  .footer-link--version:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+  }
+
+  .footer-link--version:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .update-message {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-xxs) var(--spacing-sm);
+    background-color: var(--color-primary-light);
+    border-radius: var(--border-radius-sm);
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .main-content {
