@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bmx-calendar-v2';
+const CACHE_NAME = 'bmx-calendar-v3';
 const urlsToCache = [
   '/',
   '/index.html',
