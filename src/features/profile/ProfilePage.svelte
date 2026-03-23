@@ -1,9 +1,10 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
-  import { authStore } from '@shared/stores';
+  import { authStore, updateStore } from '@shared/stores';
   import { AuthService } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
+  import { APP_VERSION } from '@shared/config/version';
 
   let currentPassword = '';
   let newPassword = '';
@@ -17,7 +18,34 @@
   let deleteLoading = false;
   let showDeleteConfirm = false;
 
+  let updateCheckMessage = '';
+  let updateCheckSuccess = false;
+
   $: user = $authStore.user;
+
+  async function handleCheckForUpdates() {
+    updateCheckMessage = '';
+    updateCheckSuccess = false;
+
+    try {
+      const versionInfo = await updateStore.checkForUpdates();
+
+      if (versionInfo.hasUpdate || $updateStore.available) {
+        updateCheckMessage = 'Update available! Please reload the app.';
+        updateCheckSuccess = true;
+      } else {
+        updateCheckMessage = 'You are running the latest version.';
+        updateCheckSuccess = true;
+      }
+    } catch (err) {
+      updateCheckMessage = 'Failed to check for updates. Please try again.';
+      updateCheckSuccess = false;
+    }
+
+    setTimeout(() => {
+      updateCheckMessage = '';
+    }, 5000);
+  }
 
   async function handleChangePassword() {
     passwordError = '';
@@ -94,6 +122,19 @@
       <h1 class="profile-title">Profile</h1>
       <p class="profile-email">{user?.email}</p>
     </div>
+
+    <Card padding="lg" shadow="md">
+      <h2 class="section-title">App version</h2>
+      <p class="version-info">Current version: {APP_VERSION}</p>
+
+      {#if updateCheckMessage}
+        <Alert type={updateCheckSuccess ? 'success' : 'danger'} message={updateCheckMessage} />
+      {/if}
+
+      <Button variant="secondary" on:click={handleCheckForUpdates} disabled={$updateStore.checking}>
+        {$updateStore.checking ? 'Checking...' : 'Check for updates'}
+      </Button>
+    </Card>
 
     <Card padding="lg" shadow="md">
       <h2 class="section-title">Change password</h2>
@@ -233,5 +274,11 @@
     display: flex;
     gap: var(--spacing-sm);
     flex-wrap: wrap;
+  }
+
+  .version-info {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-lg);
   }
 </style>

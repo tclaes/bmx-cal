@@ -1,18 +1,35 @@
 <script lang="ts">
-  import { updateAvailable } from '@shared/stores/pwa.store';
+  import { updateStore } from '@shared/stores/pwa.store';
 
   function reload() {
+    updateStore.confirmUpdate();
     window.location.reload();
+  }
+
+  function dismiss() {
+    if (!$updateStore.forceUpdate) {
+      updateStore.dismiss();
+    }
   }
 </script>
 
-{#if $updateAvailable}
-  <div class="update-banner" role="alert" aria-live="polite">
-    <span class="update-text">A new version is available.</span>
-    <button class="update-btn" on:click={reload}>Reload</button>
-    <button class="dismiss-btn" aria-label="Dismiss" on:click={() => updateAvailable.set(false)}>
-      &times;
+{#if $updateStore.available}
+  <div class="update-banner" class:force={$updateStore.forceUpdate} role="alert" aria-live="assertive">
+    <span class="update-text">
+      {#if $updateStore.forceUpdate}
+        Critical update required. Please update to continue using the app.
+      {:else}
+        A new version is available.
+      {/if}
+    </span>
+    <button class="update-btn" on:click={reload}>
+      {$updateStore.forceUpdate ? 'Update Now' : 'Reload'}
     </button>
+    {#if !$updateStore.forceUpdate}
+      <button class="dismiss-btn" aria-label="Dismiss" on:click={dismiss}>
+        &times;
+      </button>
+    {/if}
   </div>
 {/if}
 
@@ -33,6 +50,17 @@
     padding: var(--spacing-sm) var(--spacing-md);
     white-space: nowrap;
     animation: slideUp 0.2s ease;
+  }
+
+  .update-banner.force {
+    background-color: #fee;
+    border-color: #fcc;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+  }
+
+  .update-banner.force .update-text {
+    color: #991b1b;
+    font-weight: var(--font-weight-medium);
   }
 
   @keyframes slideUp {
