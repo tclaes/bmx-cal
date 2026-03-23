@@ -14,7 +14,7 @@ describe('Footer version check', () => {
     await waitFor(() => {
       const versionButton = screen.getByTitle(/Current version:/);
       expect(versionButton).toBeInTheDocument();
-      expect(versionButton).toHaveTextContent('v1.0.0');
+      expect(versionButton).toHaveTextContent('v0.0.2');
     });
   });
 

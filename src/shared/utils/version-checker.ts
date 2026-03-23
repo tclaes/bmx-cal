@@ -63,7 +63,7 @@ export function storeCurrentVersion(): void {
  */
 export function checkForUpdate(): VersionInfo {
   const storedVersion = getStoredVersion();
-  const hasUpdate = storedVersion !== null && storedVersion !== APP_VERSION;
+  const hasUpdate = storedVersion !== null && compareVersions(APP_VERSION, storedVersion) > 0;
 
   return {
     current: APP_VERSION,

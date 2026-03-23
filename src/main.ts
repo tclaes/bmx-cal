@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     const versionInfo = checkForUpdate();
 
-    if (versionInfo.hasUpdate || versionInfo.forceUpdate) {
+    if (versionInfo.hasUpdate) {
       updateStore.setAvailable(true, versionInfo.forceUpdate);
     } else {
       storeCurrentVersion();
