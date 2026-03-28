@@ -1,9 +1,29 @@
 <script lang="ts">
   import { updateStore } from '@shared/stores/pwa.store';
 
-  function reload() {
+  async function reload() {
     updateStore.confirmUpdate();
-    window.location.reload();
+
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration();
+
+      if (registration) {
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            window.location.reload();
+          }, { once: true });
+        } else {
+          await registration.update();
+          window.location.reload();
+        }
+      } else {
+        window.location.reload();
+      }
+    } else {
+      window.location.reload();
+    }
   }
 
   function dismiss() {
