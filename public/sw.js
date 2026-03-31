@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bmx-calendar-v4';
+const CACHE_NAME = 'bmx-calendar-v5';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,11 +10,20 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
+      .catch(err => {
+        console.warn('Cache addAll failed:', err);
+      })
   );
   self.skipWaiting();
 });
 
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  if (url.origin !== location.origin) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

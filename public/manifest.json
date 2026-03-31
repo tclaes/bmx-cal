@@ -3,6 +3,7 @@
   "short_name": "BMX Calendar",
   "description": "View and manage BMX events, competitions, and shows",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
@@ -22,5 +23,6 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
