@@ -4,7 +4,7 @@
   import { AuthService } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
-  import { APP_VERSION } from '@shared/config/version';
+  import { APP_VERSION } from '@config/version';
 
   let currentPassword = '';
   let newPassword = '';

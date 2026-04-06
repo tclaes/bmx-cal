@@ -19,7 +19,7 @@
   import BugReportPage from './features/bug-report/BugReportPage.svelte';
   import AboutPage from './features/about/AboutPage.svelte';
   import GetInTouchPage from './features/about/GetInTouchPage.svelte';
-  import { APP_VERSION } from '@shared/config/version';
+  import { APP_VERSION } from '@config/version';
 
   let loading = true;
   let updateCheckMessage = '';

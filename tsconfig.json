@@ -14,7 +14,8 @@
       "@features/*": ["src/features/*"],
       "@shared/*": ["src/shared/*"],
       "@data/*": ["src/data/*"],
-      "@types/*": ["src/types/*"]
+      "@types/*": ["src/types/*"],
+      "@config/*": ["src/config/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],

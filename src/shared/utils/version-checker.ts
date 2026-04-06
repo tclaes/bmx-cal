@@ -1,4 +1,4 @@
-import { APP_VERSION, MIN_VERSION, FORCE_UPDATE } from '@shared/config/version';
+import { APP_VERSION, MIN_VERSION, FORCE_UPDATE } from '@config/version';
 
 const VERSION_KEY = 'app_version';
 
