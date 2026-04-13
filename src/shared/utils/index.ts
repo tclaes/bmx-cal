@@ -1,4 +1,5 @@
 export { parseFile, getSupportedFileTypes } from './file-parser';
+export { trackPageView, trackEvent } from './analytics';
 export { parseCSV } from './csv-parser';
 export { parseExcel } from './excel-parser';
 export { parseICalendar } from './ical-parser';
