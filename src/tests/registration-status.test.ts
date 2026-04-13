@@ -89,6 +89,18 @@ describe('getRegistrationStatus', () => {
     expect(result!.label).toBe('Registration Open');
   });
 
+  it('returns Registration Open when registration_opens is in the past but status is still upcoming', () => {
+    const result = getRegistrationStatus({
+      registration_url: 'https://example.com',
+      registration_status: 'upcoming',
+      registration_deadline: makeFutureDeadline(10),
+      registration_opens: '2026-03-26',
+      date: FUTURE_EVENT_DATE,
+    });
+    expect(result!.label).toBe('Registration Open');
+    expect(result!.color).toBe('#047857');
+  });
+
   it('returns Registration Opens Soon when status is upcoming', () => {
     const result = getRegistrationStatus({
       registration_url: 'https://example.com',

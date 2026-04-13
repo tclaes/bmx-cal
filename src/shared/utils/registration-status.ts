@@ -40,6 +40,10 @@ export function getRegistrationStatus(event: Pick<EventWithDetails, 'registratio
     if (opens > today) {
       return { label: 'Registration Opens Soon', color: '#b45309' };
     }
+    if (event.registration_status === 'closed') {
+      return { label: 'Registration Closed', color: '#6b7280' };
+    }
+    return { label: 'Registration Open', color: '#047857' };
   }
 
   if (event.registration_status === 'closed') {
