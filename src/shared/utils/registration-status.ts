@@ -15,7 +15,7 @@ export function getFridayBefore(dateStr: string): Date {
   return friday;
 }
 
-export function getRegistrationStatus(event: Pick<EventWithDetails, 'registration_url' | 'registration_status' | 'registration_deadline' | 'date'>): RegistrationStatus | null {
+export function getRegistrationStatus(event: Pick<EventWithDetails, 'registration_url' | 'registration_status' | 'registration_deadline' | 'registration_opens' | 'date'>): RegistrationStatus | null {
   if (!event.registration_url) return null;
 
   const today = new Date();
@@ -31,6 +31,14 @@ export function getRegistrationStatus(event: Pick<EventWithDetails, 'registratio
     deadline.setHours(0, 0, 0, 0);
     if (deadline < today) {
       return { label: 'Registration Closed', color: '#6b7280' };
+    }
+  }
+
+  if (event.registration_opens) {
+    const opens = new Date(event.registration_opens);
+    opens.setHours(0, 0, 0, 0);
+    if (opens > today) {
+      return { label: 'Registration Opens Soon', color: '#b45309' };
     }
   }
 

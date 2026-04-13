@@ -24,6 +24,7 @@ describe('getRegistrationStatus', () => {
       registration_url: null,
       registration_status: 'open',
       registration_deadline: null,
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result).toBeNull();
@@ -35,6 +36,7 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: 'open',
       registration_deadline: null,
+      registration_opens: null,
       date: pastDate,
     });
     expect(result).toBeNull();
@@ -45,6 +47,7 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: 'open',
       registration_deadline: PAST_DEADLINE,
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result).not.toBeNull();
@@ -57,9 +60,33 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: 'closed',
       registration_deadline: makeFutureDeadline(5),
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Closed');
+  });
+
+  it('returns Registration Opens Soon when registration_opens is in the future, even if status is open', () => {
+    const result = getRegistrationStatus({
+      registration_url: 'https://example.com',
+      registration_status: 'open',
+      registration_deadline: makeFutureDeadline(10),
+      registration_opens: makeFutureDeadline(3),
+      date: FUTURE_EVENT_DATE,
+    });
+    expect(result!.label).toBe('Registration Opens Soon');
+    expect(result!.color).toBe('#b45309');
+  });
+
+  it('returns Registration Open when registration_opens is today or in the past', () => {
+    const result = getRegistrationStatus({
+      registration_url: 'https://example.com',
+      registration_status: 'open',
+      registration_deadline: makeFutureDeadline(10),
+      registration_opens: makeFutureDeadline(0),
+      date: FUTURE_EVENT_DATE,
+    });
+    expect(result!.label).toBe('Registration Open');
   });
 
   it('returns Registration Opens Soon when status is upcoming', () => {
@@ -67,6 +94,7 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: 'upcoming',
       registration_deadline: null,
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Opens Soon');
@@ -78,6 +106,7 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: 'open',
       registration_deadline: makeFutureDeadline(5),
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Open');
@@ -89,6 +118,7 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: null,
       registration_deadline: null,
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Register Now');
@@ -100,6 +130,7 @@ describe('getRegistrationStatus', () => {
       registration_url: 'https://example.com',
       registration_status: null,
       registration_deadline: PAST_DEADLINE,
+      registration_opens: null,
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Closed');
