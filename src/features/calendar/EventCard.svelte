@@ -4,14 +4,17 @@
   import type { EventWithDetails } from '@types';
   import { filtersStore } from '@shared/stores';
   import { getRegistrationStatus, getFridayBefore } from '@shared/utils/registration-status';
+  import { t, locale, interpolate } from '../../i18n';
 
   export let event: EventWithDetails;
   export let canEdit = false;
 
   const dispatch = createEventDispatcher();
 
+  const localeMap: Record<string, string> = { en: 'en-US', nl: 'nl-BE', fr: 'fr-BE' };
+
   function formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString(localeMap[$locale] ?? 'en-US', {
       weekday: 'short',
       year: 'numeric',
       month: 'short',
@@ -27,9 +30,10 @@
     }
 
     const end = new Date(endDate);
+    const lang = localeMap[$locale] ?? 'en-US';
 
-    const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
-    const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
+    const startMonth = start.toLocaleDateString(lang, { month: 'short' });
+    const endMonth = end.toLocaleDateString(lang, { month: 'short' });
     const startDay = start.getDate();
     const endDay = end.getDate();
     const year = start.getFullYear();
@@ -75,7 +79,17 @@
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   }
 
-  $: registrationStatus = getRegistrationStatus(event);
+  const registrationLabelMap: Record<string, keyof typeof $t.registration> = {
+    'Registration Open': 'open',
+    'Registration Closed': 'closed',
+    'Registration Opens Soon': 'opensSoon',
+    'Register Now': 'registerNow',
+  };
+
+  $: rawStatus = getRegistrationStatus(event);
+  $: registrationStatus = rawStatus
+    ? { ...rawStatus, label: $t.registration[registrationLabelMap[rawStatus.label] ?? 'registerNow'] }
+    : null;
 
   $: isEventOngoing = (() => {
     const today = new Date();
@@ -97,14 +111,14 @@
           <button
             class="badge-button"
             on:click={() => handleEventTypeClick(event.event_type.id)}
-            title="Filter by {event.event_type.name}"
-            aria-label="Filter by {event.event_type.name}"
+            title={interpolate($t.calendar.filterByType, { name: event.event_type.name })}
+            aria-label={interpolate($t.calendar.filterByType, { name: event.event_type.name })}
           >
             <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
           </button>
         {/if}
         {#if canEdit}
-          <button class="edit-btn" on:click={handleEdit} aria-label="Edit event">
+          <button class="edit-btn" on:click={handleEdit} aria-label={$t.calendar.editEvent}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -145,7 +159,7 @@
           target="_blank"
           rel="noopener noreferrer"
           class="location-link"
-          title="View on Google Maps"
+          title={$t.calendar.viewOnMaps}
         >
           {event.location}{#if event.location_details?.city && !event.location.includes(event.location_details.city)}, {event.location_details.city}{/if}
         </a>
@@ -168,7 +182,7 @@
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span>Registration opens: {formatDate(event.registration_opens)}</span>
+            <span>{interpolate($t.calendar.registrationOpens, { date: formatDate(event.registration_opens) })}</span>
           </div>
         {/if}
         {#if event.registration_deadline}
@@ -177,7 +191,7 @@
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            <span>Registration deadline: {formatDate(event.registration_deadline)}</span>
+            <span>{interpolate($t.calendar.registrationDeadline, { date: formatDate(event.registration_deadline) })}</span>
           </div>
         {/if}
         <a
@@ -208,7 +222,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
           </svg>
-          Watch Livestream
+          {$t.calendar.watchLivestream}
         </a>
       </div>
     {/if}

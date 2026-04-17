@@ -8,6 +8,7 @@
   import { canEditEvent } from '@shared/utils/permissions';
   import { searchEvents } from '@shared/utils/event-search';
   import type { EventWithDetails, Event } from '@types';
+  import { t } from '../../i18n';
 
   let filteredEvents: EventWithDetails[] = [];
   let editingEvent: Event | null = null;
@@ -126,8 +127,8 @@
     <Alert type="danger" message={$eventsStore.error} />
   {:else if filteredEvents.length === 0}
     <div class="empty-state">
-      <h3>No events found</h3>
-      <p>There are no upcoming events matching your criteria.</p>
+      <h3>{$t.calendar.noEventsTitle}</h3>
+      <p>{$t.calendar.noEventsDescription}</p>
     </div>
   {:else}
     <div class="events-grid">

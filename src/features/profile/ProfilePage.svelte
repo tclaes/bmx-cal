@@ -5,6 +5,7 @@
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
   import { APP_VERSION } from '@config/version';
+  import { t, interpolate } from '../../i18n';
 
   let currentPassword = '';
   let newPassword = '';
@@ -31,14 +32,14 @@
       const versionInfo = await updateStore.checkForUpdates();
 
       if (versionInfo.hasUpdate || $updateStore.available) {
-        updateCheckMessage = 'Update available! Please reload the app.';
+        updateCheckMessage = $t.profile.updateAvailable;
         updateCheckSuccess = true;
       } else {
-        updateCheckMessage = 'You are running the latest version.';
+        updateCheckMessage = $t.profile.latestVersion;
         updateCheckSuccess = true;
       }
     } catch (err) {
-      updateCheckMessage = 'Failed to check for updates. Please try again.';
+      updateCheckMessage = $t.profile.updateFailed;
       updateCheckSuccess = false;
     }
 
@@ -52,17 +53,17 @@
     passwordSuccess = '';
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      passwordError = 'Please fill in all fields';
+      passwordError = $t.common.fillAllFields;
       return;
     }
 
     if (newPassword.length < 8) {
-      passwordError = 'New password must be at least 8 characters';
+      passwordError = $t.profile.newPasswordMinLength;
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      passwordError = 'New passwords do not match';
+      passwordError = $t.profile.newPasswordsDoNotMatch;
       return;
     }
 
@@ -74,19 +75,19 @@
       });
 
       if (signInError) {
-        passwordError = 'Current password is incorrect';
+        passwordError = $t.profile.incorrectPassword;
         return;
       }
 
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
 
-      passwordSuccess = 'Password updated successfully';
+      passwordSuccess = $t.profile.passwordUpdatedSuccess;
       currentPassword = '';
       newPassword = '';
       confirmPassword = '';
     } catch (err) {
-      passwordError = err instanceof Error ? err.message : 'Failed to update password';
+      passwordError = err instanceof Error ? err.message : $t.profile.failedToUpdate;
     } finally {
       passwordLoading = false;
     }
@@ -96,7 +97,7 @@
     deleteError = '';
 
     if (deleteConfirmEmail !== user?.email) {
-      deleteError = 'Email does not match your account email';
+      deleteError = $t.profile.emailDoesNotMatch;
       return;
     }
 
@@ -109,7 +110,7 @@
       authStore.logout();
       navigate('/');
     } catch (err) {
-      deleteError = err instanceof Error ? err.message : 'Failed to delete account';
+      deleteError = err instanceof Error ? err.message : $t.profile.failedToDelete;
     } finally {
       deleteLoading = false;
     }
@@ -119,25 +120,25 @@
 <div class="profile-container">
   <div class="profile-content">
     <div class="profile-header">
-      <h1 class="profile-title">Profile</h1>
+      <h1 class="profile-title">{$t.profile.title}</h1>
       <p class="profile-email">{user?.email}</p>
     </div>
 
     <Card padding="lg" shadow="md">
-      <h2 class="section-title">App version</h2>
-      <p class="version-info">Current version: {APP_VERSION}</p>
+      <h2 class="section-title">{$t.profile.appVersion}</h2>
+      <p class="version-info">{interpolate($t.profile.currentVersion, { version: APP_VERSION })}</p>
 
       {#if updateCheckMessage}
         <Alert type={updateCheckSuccess ? 'success' : 'danger'} message={updateCheckMessage} />
       {/if}
 
       <Button variant="secondary" on:click={handleCheckForUpdates} disabled={$updateStore.checking}>
-        {$updateStore.checking ? 'Checking...' : 'Check for updates'}
+        {$updateStore.checking ? $t.common.checking : $t.profile.checkForUpdates}
       </Button>
     </Card>
 
     <Card padding="lg" shadow="md">
-      <h2 class="section-title">Change password</h2>
+      <h2 class="section-title">{$t.profile.changePassword}</h2>
 
       {#if passwordError}
         <Alert type="danger" message={passwordError} />
@@ -150,42 +151,42 @@
         <Input
           type="password"
           id="current-password"
-          label="Current password"
-          placeholder="Enter current password"
+          label={$t.profile.currentPassword}
+          placeholder={$t.profile.currentPasswordPlaceholder}
           bind:value={currentPassword}
           required
         />
         <Input
           type="password"
           id="new-password"
-          label="New password"
-          placeholder="At least 8 characters"
+          label={$t.auth.newPassword}
+          placeholder={$t.profile.newPasswordPlaceholder}
           bind:value={newPassword}
           required
         />
         <Input
           type="password"
           id="confirm-password"
-          label="Confirm new password"
-          placeholder="Repeat new password"
+          label={$t.profile.repeatNewPassword}
+          placeholder={$t.auth.confirmNewPasswordPlaceholder}
           bind:value={confirmPassword}
           required
         />
         <Button type="submit" variant="primary" disabled={passwordLoading}>
-          {passwordLoading ? 'Updating...' : 'Update password'}
+          {passwordLoading ? $t.common.updating : $t.common.updatePassword}
         </Button>
       </form>
     </Card>
 
     <Card padding="lg" shadow="md">
-      <h2 class="section-title section-title--danger">Delete account</h2>
+      <h2 class="section-title section-title--danger">{$t.profile.deleteAccount}</h2>
       <p class="delete-warning">
-        This action is permanent and cannot be undone. All your data, including saved calendars and event selections, will be deleted.
+        {$t.profile.deleteWarning}
       </p>
 
       {#if !showDeleteConfirm}
         <Button variant="danger" on:click={() => (showDeleteConfirm = true)}>
-          Delete my account
+          {$t.profile.deleteMyAccount}
         </Button>
       {:else}
         {#if deleteError}
@@ -195,17 +196,17 @@
           <Input
             type="email"
             id="delete-confirm-email"
-            label="Type your email address to confirm"
+            label={$t.profile.typeEmailToConfirm}
             placeholder={user?.email}
             bind:value={deleteConfirmEmail}
             required
           />
           <div class="delete-actions">
             <Button variant="ghost" on:click={() => { showDeleteConfirm = false; deleteConfirmEmail = ''; deleteError = ''; }}>
-              Cancel
+              {$t.common.cancel}
             </Button>
             <Button type="submit" variant="danger" disabled={deleteLoading}>
-              {deleteLoading ? 'Deleting...' : 'Permanently delete account'}
+              {deleteLoading ? $t.profile.deleting : $t.profile.permanentlyDelete}
             </Button>
           </div>
         </form>

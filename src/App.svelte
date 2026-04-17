@@ -20,12 +20,14 @@
   import AboutPage from './features/about/AboutPage.svelte';
   import GetInTouchPage from './features/about/GetInTouchPage.svelte';
   import { APP_VERSION } from '@config/version';
+  import { locale, t, interpolate } from './i18n';
 
   let loading = true;
   let updateCheckMessage = '';
   let showUpdateMessage = false;
 
   onMount(() => {
+    locale.init();
     startRouter();
 
     AuthService.onAuthStateChange((user) => {
@@ -54,12 +56,12 @@
       const versionInfo = await updateStore.checkForUpdates();
 
       if (versionInfo.hasUpdate || $updateStore.available) {
-        updateCheckMessage = 'Update available! Please reload.';
+        updateCheckMessage = $t.footer.updateAvailable;
       } else {
-        updateCheckMessage = 'You are on the latest version.';
+        updateCheckMessage = $t.footer.latestVersion;
       }
     } catch {
-      updateCheckMessage = 'Failed to check for updates.';
+      updateCheckMessage = $t.footer.updateFailed;
     }
 
     showUpdateMessage = true;
@@ -120,25 +122,25 @@
         <GetInTouchPage />
       {:else}
         <div class="not-found">
-          <h1>404 - Page Not Found</h1>
-          <p>The page you are looking for does not exist.</p>
+          <h1>{$t.notFound.title}</h1>
+          <p>{$t.notFound.description}</p>
         </div>
       {/if}
     </main>
 
     <footer class="footer">
       <div class="footer-inner">
-        <span>&copy; {new Date().getFullYear()} BMX Calendar. All rights reserved.</span>
-        <button class="footer-link" on:click={() => navigate('/about')}>About</button>
-        <button class="footer-link" on:click={() => navigate('/get-in-touch')}>Get in touch</button>
-        <button class="footer-link" on:click={() => navigate('/report-bug')}>Report a bug</button>
+        <span>{interpolate($t.footer.copyright, { year: new Date().getFullYear() })}</span>
+        <button class="footer-link" on:click={() => navigate('/about')}>{$t.footer.about}</button>
+        <button class="footer-link" on:click={() => navigate('/get-in-touch')}>{$t.footer.getInTouch}</button>
+        <button class="footer-link" on:click={() => navigate('/report-bug')}>{$t.footer.reportBug}</button>
         <button
           class="footer-link footer-link--version"
           on:click={handleCheckForUpdates}
           disabled={$updateStore.checking}
-          title="Current version: {APP_VERSION}"
+          title={interpolate($t.profile.currentVersion, { version: APP_VERSION })}
         >
-          {$updateStore.checking ? 'Checking...' : `v${APP_VERSION}`}
+          {$updateStore.checking ? $t.common.checking : `v${APP_VERSION}`}
         </button>
         {#if showUpdateMessage}
           <span class="update-message">{updateCheckMessage}</span>
@@ -148,7 +150,7 @@
           href="https://ko-fi.com/bmxcalendar"
           target="_blank"
           rel="noopener noreferrer"
-        >Support this project</a>
+        >{$t.footer.support}</a>
       </div>
     </footer>
   {/if}

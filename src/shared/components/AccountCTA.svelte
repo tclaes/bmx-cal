@@ -1,19 +1,20 @@
 <script lang="ts">
   import { navigate } from '../../router';
+  import { t } from '../../i18n';
 </script>
 
-<aside class="account-cta" aria-label="Create a free account">
-  <div class="cta-badge">Free</div>
-  <h2 class="cta-title">Your personal BMX calendar</h2>
+<aside class="account-cta" aria-label={$t.cta.title}>
+  <div class="cta-badge">{$t.cta.badge}</div>
+  <h2 class="cta-title">{$t.cta.title}</h2>
   <p class="cta-description">
-    Create a free account to save your favourite events, build a custom calendar and export it to your phone.
+    {$t.cta.description}
   </p>
 
   <ul class="cta-benefits" aria-label="Account benefits">
-    <li>Save &amp; track your events</li>
-    <li>Export to Google, Apple &amp; Outlook</li>
-    <li>Personalised event reminders</li>
-    <li>Support your local clubs</li>
+    <li>{$t.cta.benefit1}</li>
+    <li>{$t.cta.benefit2}</li>
+    <li>{$t.cta.benefit3}</li>
+    <li>{$t.cta.benefit4}</li>
   </ul>
 
   <div class="cta-actions">
@@ -21,18 +22,18 @@
       class="cta-btn cta-btn--primary"
       on:click={() => navigate('/register')}
     >
-      Create free account
+      {$t.cta.createAccount}
     </button>
     <button
       class="cta-btn cta-btn--ghost"
       on:click={() => navigate('/login')}
     >
-      Sign in
+      {$t.cta.signIn}
     </button>
   </div>
 
   <p class="cta-future">
-    Ad-free experience coming soon for supporters.
+    {$t.cta.future}
   </p>
 </aside>
 

@@ -2,6 +2,7 @@
   import { Card, Input, Button, Alert } from '@shared/components';
   import { navigate } from '../../router';
   import { supabase } from '@data/supabase';
+  import { t, interpolate } from '../../i18n';
 
   let email = '';
   let error = '';
@@ -12,7 +13,7 @@
     error = '';
 
     if (!email.trim()) {
-      error = 'Please enter your email address';
+      error = $t.auth.enterEmail;
       return;
     }
 
@@ -47,8 +48,8 @@
 <div class="forgot-container">
   <Card padding="lg" shadow="lg">
     <div class="forgot-content">
-      <h1 class="forgot-title">Forgot password</h1>
-      <p class="forgot-subtitle">Enter your email and we'll send you a reset link</p>
+      <h1 class="forgot-title">{$t.auth.forgotPasswordTitle}</h1>
+      <p class="forgot-subtitle">{$t.auth.forgotPasswordSubtitle}</p>
 
       {#if success}
         <div class="success-state">
@@ -58,9 +59,9 @@
               <path d="M14 24L21 31L34 17" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h2 class="success-title">Check your email</h2>
-          <p class="success-message">If an account exists for <strong>{email}</strong>, a reset link has been sent.</p>
-          <Button variant="secondary" on:click={() => navigate('/login')}>Back to sign in</Button>
+          <h2 class="success-title">{$t.auth.checkEmail}</h2>
+          <p class="success-message">{@html interpolate($t.auth.resetLinkSent, { email: `<strong>${email}</strong>` })}</p>
+          <Button variant="secondary" on:click={() => navigate('/login')}>{$t.auth.backToSignIn}</Button>
         </div>
       {:else}
         {#if error}
@@ -71,20 +72,20 @@
           <Input
             type="email"
             id="email"
-            label="Email"
-            placeholder="you@example.com"
+            label={$t.common.email}
+            placeholder={$t.common.emailPlaceholder}
             bind:value={email}
             required
           />
 
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
-            {loading ? 'Sending...' : 'Send reset link'}
+            {loading ? $t.auth.sending : $t.auth.sendResetLink}
           </Button>
         </form>
 
         <p class="back-hint">
-          Remember your password?
-          <button class="link-btn" on:click={() => navigate('/login')}>Sign in</button>
+          {$t.auth.rememberPassword}
+          <button class="link-btn" on:click={() => navigate('/login')}>{$t.auth.signInTitle}</button>
         </p>
       {/if}
     </div>

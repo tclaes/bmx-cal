@@ -1,38 +1,31 @@
 <script lang="ts">
   import { navigate } from '../../router';
+  import { t } from '../../i18n';
 </script>
 
 <div class="about-page">
   <div class="container">
     <section class="hero">
-      <h1>About BMX Calendar</h1>
+      <h1>{$t.about.title}</h1>
       <p class="lead">
-        Your central hub for BMX racing events — keeping riders, parents, and clubs informed and organised throughout the season.
+        {$t.about.lead}
       </p>
     </section>
 
     <section class="section">
-      <h2>What is BMX Calendar?</h2>
-      <p>
-        BMX Calendar brings together race schedules from multiple organisations into one clear, easy-to-use overview. No more hunting across different websites or missing a registration deadline — everything is in one place.
-      </p>
-      <p>
-        Browse upcoming events, filter by category or organiser, export your selection to your personal calendar app, and stay on top of registration windows.
-      </p>
+      <h2>{$t.about.whatIsTitle}</h2>
+      <p>{$t.about.whatIsPara1}</p>
+      <p>{$t.about.whatIsPara2}</p>
     </section>
 
     <section class="section section--highlight">
       <div class="highlight-content">
         <div class="highlight-text">
-          <h2>Built for teams too</h2>
-          <p>
-            BMX Calendar offers extended features specifically designed for clubs and teams. Team managers get dedicated tools to manage their event schedule, coordinate with members, and keep everyone aligned — all within the same platform.
-          </p>
-          <p>
-            These team features are available as a paid add-on. If your club is interested in streamlining how you organise and communicate events, we'd love to hear from you.
-          </p>
+          <h2>{$t.about.builtForTeamsTitle}</h2>
+          <p>{$t.about.builtForTeamsPara1}</p>
+          <p>{$t.about.builtForTeamsPara2}</p>
           <button class="btn-primary" on:click={() => navigate('/get-in-touch')}>
-            Get in touch for team features
+            {$t.about.getInTouchCta}
           </button>
         </div>
         <div class="highlight-visual">
@@ -40,22 +33,22 @@
             <div class="feature-item">
               <span class="feature-icon">&#9711;</span>
               <div>
-                <strong>Team event management</strong>
-                <span>Create and manage your club's own events</span>
+                <strong>{$t.about.teamEventManagement}</strong>
+                <span>{$t.about.teamEventManagementDesc}</span>
               </div>
             </div>
             <div class="feature-item">
               <span class="feature-icon">&#9711;</span>
               <div>
-                <strong>Member coordination</strong>
-                <span>Keep your team informed in one place</span>
+                <strong>{$t.about.memberCoordination}</strong>
+                <span>{$t.about.memberCoordinationDesc}</span>
               </div>
             </div>
             <div class="feature-item">
               <span class="feature-icon">&#9711;</span>
               <div>
-                <strong>Dedicated dashboard</strong>
-                <span>A manager view built around your workflow</span>
+                <strong>{$t.about.dedicatedDashboard}</strong>
+                <span>{$t.about.dedicatedDashboardDesc}</span>
               </div>
             </div>
           </div>
@@ -64,16 +57,14 @@
     </section>
 
     <section class="section">
-      <h2>Questions or feedback?</h2>
-      <p>
-        Found a bug, have a suggestion, or want to know more about what BMX Calendar can do for your club? Reach out — we're always happy to hear from the community.
-      </p>
+      <h2>{$t.about.questionsTitle}</h2>
+      <p>{$t.about.questionsPara}</p>
       <div class="cta-row">
         <button class="btn-primary" on:click={() => navigate('/get-in-touch')}>
-          Contact us
+          {$t.about.contactUs}
         </button>
         <button class="btn-secondary" on:click={() => navigate('/report-bug')}>
-          Report a bug
+          {$t.about.reportBug}
         </button>
       </div>
     </section>

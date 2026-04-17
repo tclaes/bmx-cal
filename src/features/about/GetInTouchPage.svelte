@@ -1,5 +1,6 @@
 <script lang="ts">
   import { navigate } from '../../router';
+  import { t, interpolate } from '../../i18n';
 
   let name = '';
   let email = '';
@@ -14,7 +15,7 @@
     error = '';
 
     if (!name.trim() || !email.trim() || !message.trim()) {
-      error = 'Please fill in all required fields.';
+      error = $t.getInTouch.fillRequired;
       return;
     }
 
@@ -52,31 +53,27 @@
     {#if !submitted}
       <div class="header">
         <button class="back-link" on:click={() => navigate('/about')}>
-          &larr; About
+          &larr; {$t.getInTouch.backToAbout}
         </button>
-        <h1>Get in touch</h1>
+        <h1>{$t.getInTouch.title}</h1>
         <p class="lead">
-          Interested in team features for your club? Fill in the form below and we'll get back to you with more information. There's no commitment required.
+          {$t.getInTouch.lead}
         </p>
       </div>
 
       <div class="content">
         <div class="info-panel">
-          <h2>What to expect</h2>
-          <p>
-            Team features are a paid add-on to BMX Calendar. We don't have fixed pricing yet — we're talking to clubs to understand what works best.
-          </p>
-          <p>
-            Getting in touch is completely free and non-binding. We'll discuss your club's needs and give you a clear picture of what's included before anything else.
-          </p>
+          <h2>{$t.getInTouch.whatToExpectTitle}</h2>
+          <p>{$t.getInTouch.whatToExpectPara1}</p>
+          <p>{$t.getInTouch.whatToExpectPara2}</p>
 
           <div class="what-included">
-            <h3>Team features include</h3>
+            <h3>{$t.getInTouch.teamFeaturesTitle}</h3>
             <ul>
-              <li>Create and manage your club's own events</li>
-              <li>Dedicated team manager dashboard</li>
-              <li>Member management tools</li>
-              <li>Team-specific event visibility controls</li>
+              <li>{$t.getInTouch.feature1}</li>
+              <li>{$t.getInTouch.feature2}</li>
+              <li>{$t.getInTouch.feature3}</li>
+              <li>{$t.getInTouch.feature4}</li>
             </ul>
           </div>
         </div>
@@ -87,70 +84,68 @@
           {/if}
 
           <div class="field">
-            <label for="name">Your name <span class="required">*</span></label>
+            <label for="name">{$t.getInTouch.nameLabelRequired} <span class="required">*</span></label>
             <input
               id="name"
               type="text"
               bind:value={name}
-              placeholder="Jan De Smedt"
+              placeholder={$t.getInTouch.namePlaceholder}
               required
             />
           </div>
 
           <div class="field">
-            <label for="email">Email address <span class="required">*</span></label>
+            <label for="email">{$t.getInTouch.emailLabelRequired} <span class="required">*</span></label>
             <input
               id="email"
               type="email"
               bind:value={email}
-              placeholder="jan@example.com"
+              placeholder={$t.getInTouch.emailPlaceholder}
               required
             />
           </div>
 
           <div class="field">
-            <label for="clubName">Club or team name</label>
+            <label for="clubName">{$t.getInTouch.clubLabel}</label>
             <input
               id="clubName"
               type="text"
               bind:value={clubName}
-              placeholder="BMX Antwerp"
+              placeholder={$t.getInTouch.clubPlaceholder}
             />
           </div>
 
           <div class="field">
-            <label for="message">Your message <span class="required">*</span></label>
+            <label for="message">{$t.getInTouch.messageLabelRequired} <span class="required">*</span></label>
             <textarea
               id="message"
               bind:value={message}
               rows="5"
-              placeholder="Tell us a bit about your club and what you're looking for..."
+              placeholder={$t.getInTouch.messagePlaceholder}
               required
             ></textarea>
           </div>
 
           <button type="submit" class="btn-submit" disabled={submitting}>
-            {submitting ? 'Opening email...' : 'Send message'}
+            {submitting ? $t.getInTouch.submitting : $t.getInTouch.sendMessage}
           </button>
 
           <p class="note">
-            We'll reply to the email address you provide above.
+            {$t.getInTouch.replyNote}
           </p>
         </form>
       </div>
     {:else}
       <div class="success">
         <div class="success-icon">&#10003;</div>
-        <h2>Message sent!</h2>
-        <p>
-          Thanks for reaching out. We'll get back to you at {email} as soon as we can.
-        </p>
+        <h2>{$t.getInTouch.successTitle}</h2>
+        <p>{interpolate($t.getInTouch.successMessage, { email })}</p>
         <div class="success-actions">
           <button class="btn-primary" on:click={() => navigate('/')}>
-            Back to calendar
+            {$t.getInTouch.backToCalendar}
           </button>
           <button class="btn-secondary" on:click={() => { submitted = false; }}>
-            Send another message
+            {$t.getInTouch.sendAnother}
           </button>
         </div>
       </div>

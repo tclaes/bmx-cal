@@ -3,6 +3,7 @@
   import { filtersStore } from '@shared/stores';
   import { eventsStore } from '@shared/stores';
   import type { EventType } from '@types';
+  import { t } from '../../i18n';
 
   let eventTypes: EventType[] = [];
   let selectedTypes: string[] = [];
@@ -59,7 +60,7 @@
     on:click={() => (filtersExpanded = !filtersExpanded)}
     aria-expanded={filtersExpanded}
   >
-    <span>Filters</span>
+    <span>{$t.filters.title}</span>
     {#if selectedTypes.length > 0 || startDate || endDate || searchQuery || $filtersStore.showPastEvents}
       <span class="filter-badge">{selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + (searchQuery ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}</span>
     {/if}
@@ -70,16 +71,16 @@
   <Input
     type="text"
     id="search-filter"
-    label="Search Location"
-    placeholder="Search by city or country..."
+    label={$t.filters.searchLocation}
+    placeholder={$t.filters.searchPlaceholder}
     value={searchQuery}
     on:input={handleSearchChange}
   />
 
   <Dropdown
     id="event-type-dropdown"
-    label="Event Types"
-    placeholder="All Types"
+    label={$t.filters.eventTypes}
+    placeholder={$t.filters.allTypes}
     selectedCount={selectedTypes.length}
     open={dropdownOpen}
     on:toggle={toggleDropdown}
@@ -97,7 +98,7 @@
   <Input
     type="date"
     id="start-date-filter"
-    label="Start Date"
+    label={$t.filters.startDate}
     bind:value={startDate}
     on:change={handleStartDateChange}
   />
@@ -105,13 +106,13 @@
   <Input
     type="date"
     id="end-date-filter"
-    label="End Date"
+    label={$t.filters.endDate}
     bind:value={endDate}
     on:change={handleEndDateChange}
   />
 
   <div class="past-events-toggle">
-    <label class="toggle-label" for="show-past-events-btn">Show Past Events</label>
+    <label class="toggle-label" for="show-past-events-btn">{$t.filters.showPastEvents}</label>
     <button
       id="show-past-events-btn"
       class="toggle-btn"
@@ -119,7 +120,7 @@
       on:click={() => filtersStore.toggleShowPastEvents()}
       type="button"
       aria-pressed={showPastEvents}
-      aria-label="Show Past Events"
+      aria-label={$t.filters.showPastEvents}
     >
       <span class="toggle-track">
         <span class="toggle-thumb" />
@@ -127,7 +128,7 @@
     </button>
   </div>
 
-  <button class="reset-button" on:click={resetFilters}>Reset Filters</button>
+  <button class="reset-button" on:click={resetFilters}>{$t.filters.resetFilters}</button>
 </div>
 </div>
 

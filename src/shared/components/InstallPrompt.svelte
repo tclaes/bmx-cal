@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { installPromptStore } from '@shared/stores';
   import Button from './Button.svelte';
+  import { t } from '../../i18n';
 
   let showPrompt = false;
   let deferredPrompt: any = null;
@@ -70,7 +71,7 @@
 {#if showPrompt}
   <div class="install-prompt-overlay" on:click={handleDismiss} on:keydown={(e) => e.key === 'Escape' && handleDismiss()} role="presentation">
     <div class="install-prompt" role="dialog" aria-labelledby="install-title">
-      <button class="close-button" on:click={handleDismiss} aria-label="Close" type="button">
+      <button class="close-button" on:click={handleDismiss} aria-label={$t.pwa.close} type="button">
         &times;
       </button>
 
@@ -79,15 +80,15 @@
           <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
         </div>
 
-        <h3 id="install-title">Install BMX Calendar</h3>
-        <p>Install our app for quick access and offline support!</p>
+        <h3 id="install-title">{$t.pwa.installTitle}</h3>
+        <p>{$t.pwa.installDescription}</p>
 
         <div class="prompt-actions">
           <Button variant="primary" on:click={handleInstall}>
-            Install
+            {$t.pwa.install}
           </Button>
           <Button variant="secondary" on:click={handleDismiss}>
-            Not Now
+            {$t.pwa.notNow}
           </Button>
         </div>
       </div>

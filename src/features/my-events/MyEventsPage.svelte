@@ -9,6 +9,7 @@
   import SaveCalendarModal from './SaveCalendarModal.svelte';
   import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';
+  import { t, locale, interpolate } from '../../i18n';
 
   let events: EventWithDetails[] = [];
   let loading = true;
@@ -58,7 +59,7 @@
       events = await EventsService.getAllEvents();
       await loadUserSelections();
     } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to load events';
+      error = e instanceof Error ? e.message : $t.myEvents.failedToLoad;
     } finally {
       loading = false;
     }
@@ -82,9 +83,11 @@
     }
   }
 
+  const localeMap: Record<string, string> = { en: 'en-US', nl: 'nl-BE', fr: 'fr-BE' };
+
   function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('nl-BE', {
+    return date.toLocaleDateString(localeMap[$locale] ?? 'nl-BE', {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
@@ -94,7 +97,7 @@
 
   function handleSaveCalendar() {
     if ($selectedCount === 0) {
-      error = 'Please select at least one event before saving';
+      error = $t.myEvents.selectAtLeastOneSave;
       return;
     }
     showSaveModal = true;
@@ -109,7 +112,7 @@
 
   function exportToCalendar() {
     if ($selectedCount === 0) {
-      error = 'Please select at least one event';
+      error = $t.myEvents.selectAtLeastOne;
       return;
     }
 
@@ -123,7 +126,7 @@
       downloadICalFile(content, 'bmx-events.ics');
       error = '';
     } catch (e) {
-      error = e instanceof Error ? e.message : 'Export failed';
+      error = e instanceof Error ? e.message : $t.myEvents.exportFailed;
     } finally {
       exporting = false;
     }
@@ -133,23 +136,23 @@
 <div class="my-events-page">
   <div class="header">
     <div>
-      <h1>Create my calendar</h1>
-      <p class="subtitle">Select events you want to attend</p>
+      <h1>{$t.myEvents.title}</h1>
+      <p class="subtitle">{$t.myEvents.subtitle}</p>
     </div>
 
     {#if $selectedCount > 0}
       <div class="header-actions">
-        <span class="count">{$selectedCount} selected</span>
+        <span class="count">{interpolate($t.myEvents.selected, { count: $selectedCount })}</span>
         <Button variant="secondary" size="sm" on:click={handleClearAll}>
-          Clear All
+          {$t.myEvents.clearAll}
         </Button>
         {#if isLoggedIn}
           <Button variant="secondary" on:click={handleSaveCalendar}>
-            Save calendar
+            {$t.myEvents.saveCalendar}
           </Button>
         {/if}
         <Button on:click={exportToCalendar} disabled={exporting}>
-          {exporting ? 'Exporting...' : 'Export to Calendar (.ics)'}
+          {exporting ? $t.myEvents.exporting : $t.myEvents.exportToCalendar}
         </Button>
       </div>
     {/if}
@@ -173,7 +176,7 @@
   {:else}
     {#if eventTypes.length > 0}
       <div class="type-selector">
-        <span class="type-selector-label">Select by type:</span>
+        <span class="type-selector-label">{$t.myEvents.selectByType}</span>
         <div class="type-buttons">
           {#each eventTypes as { type, ids } (type.id)}
             {@const fully = isTypeFullySelected(ids, $selectedEventIds)}
@@ -184,7 +187,7 @@
               class:partially-selected={partial}
               style="--type-color: {type.color_code}"
               on:click={() => handleTypeToggle(ids)}
-              title="{fully ? 'Deselect' : 'Select'} all {type.name} events ({ids.length})"
+              title="{fully ? $t.myEvents.deselectAll : $t.myEvents.selectAll} all {type.name} {$t.myEvents.events} ({ids.length})"
             >
               <span class="type-dot"></span>
               <span class="type-name">{type.name}</span>

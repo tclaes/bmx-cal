@@ -3,8 +3,12 @@
   import { AuthService } from '@shared/services';
   import { selectionService } from '@shared/services/selection.service';
   import { currentRoute, navigate } from '../../router';
+  import { locale, t } from '../../i18n';
+  import type { Locale } from '../../i18n';
 
   let menuOpen = false;
+
+  const locales: Locale[] = ['en', 'nl', 'fr'];
 
   function handleNav(e: MouseEvent, path: string) {
     e.preventDefault();
@@ -22,27 +26,32 @@
     navigate('/');
   }
 
+  function setLocale(l: Locale) {
+    locale.setLocale(l);
+  }
+
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
   $: isTeamManager = isAdmin || (user?.managedTeams?.length ?? 0) > 0;
   $: route = $currentRoute;
+  $: currentLocale = $locale;
 </script>
 
 <nav class="navigation" aria-label="Main navigation">
   <div class="nav-container">
-    <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label="BMX Calendar home">
+    <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label={$t.nav.home}>
       <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
     </a>
 
     <ul class="nav-links" role="list">
       <li>
         <a class="nav-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
-          Events
+          {$t.nav.events}
         </a>
       </li>
       <li>
         <a class="nav-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
-          Create my calendar
+          {$t.nav.myCalendar}
         </a>
       </li>
 
@@ -50,39 +59,53 @@
         {#if isAdmin}
           <li>
             <a class="nav-link" class:active={route === '/admin'} href="/admin" on:click={(e) => handleNav(e, '/admin')}>
-              Admin
+              {$t.nav.admin}
             </a>
           </li>
         {/if}
         {#if isTeamManager}
           <li>
             <a class="nav-link" class:active={route === '/team-manager'} href="/team-manager" on:click={(e) => handleNav(e, '/team-manager')}>
-              Team Manager
+              {$t.nav.teamManager}
             </a>
           </li>
         {/if}
         <li>
           <a class="nav-link" class:active={route === '/profile'} href="/profile" on:click={(e) => handleNav(e, '/profile')}>
-            Profile
+            {$t.nav.profile}
           </a>
         </li>
         <li>
           <a class="nav-link nav-link--signout" href="/" on:click={handleLogout}>
-            Sign out
+            {$t.nav.signOut}
           </a>
         </li>
       {:else}
         <li>
           <a class="nav-link nav-link--signin" href="/login" on:click={(e) => handleNav(e, '/login')}>
-            Sign in
+            {$t.nav.signIn}
           </a>
         </li>
       {/if}
+
+      <li class="locale-switcher" aria-label="Language switcher">
+        {#each locales as l}
+          <button
+            class="locale-btn"
+            class:active={currentLocale === l}
+            on:click={() => setLocale(l)}
+            aria-pressed={currentLocale === l}
+            aria-label={l.toUpperCase()}
+          >
+            {l.toUpperCase()}
+          </button>
+        {/each}
+      </li>
     </ul>
 
     <button
       class="hamburger"
-      aria-label="Toggle menu"
+      aria-label={$t.nav.toggleMenu}
       aria-expanded={menuOpen}
       aria-controls="mobile-menu"
       on:click={() => (menuOpen = !menuOpen)}
@@ -97,12 +120,12 @@
     <ul class="mobile-menu" id="mobile-menu" role="list">
       <li>
         <a class="mobile-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
-          Events
+          {$t.nav.events}
         </a>
       </li>
       <li>
         <a class="mobile-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
-          Create my calendar
+          {$t.nav.myCalendar}
         </a>
       </li>
 
@@ -110,34 +133,48 @@
         {#if isAdmin}
           <li>
             <a class="mobile-link" class:active={route === '/admin'} href="/admin" on:click={(e) => handleNav(e, '/admin')}>
-              Admin
+              {$t.nav.admin}
             </a>
           </li>
         {/if}
         {#if isTeamManager}
           <li>
             <a class="mobile-link" class:active={route === '/team-manager'} href="/team-manager" on:click={(e) => handleNav(e, '/team-manager')}>
-              Team Manager
+              {$t.nav.teamManager}
             </a>
           </li>
         {/if}
         <li>
           <a class="mobile-link" class:active={route === '/profile'} href="/profile" on:click={(e) => handleNav(e, '/profile')}>
-            Profile
+            {$t.nav.profile}
           </a>
         </li>
         <li>
           <a class="mobile-link mobile-link--signout" href="/" on:click={handleLogout}>
-            Sign out
+            {$t.nav.signOut}
           </a>
         </li>
       {:else}
         <li>
           <a class="mobile-link mobile-link--signin" href="/login" on:click={(e) => handleNav(e, '/login')}>
-            Sign in
+            {$t.nav.signIn}
           </a>
         </li>
       {/if}
+
+      <li class="mobile-locale-switcher" aria-label="Language switcher">
+        {#each locales as l}
+          <button
+            class="locale-btn"
+            class:active={currentLocale === l}
+            on:click={() => setLocale(l)}
+            aria-pressed={currentLocale === l}
+            aria-label={l.toUpperCase()}
+          >
+            {l.toUpperCase()}
+          </button>
+        {/each}
+      </li>
     </ul>
   {/if}
 </nav>
@@ -210,6 +247,41 @@
   .nav-link--signout:hover {
     color: var(--color-error, #dc2626);
     background-color: var(--color-error-bg, #fef2f2);
+  }
+
+  .locale-switcher {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding-block-end: var(--spacing-sm);
+    border-inline-start: 1px solid var(--color-border);
+    padding-inline-start: var(--spacing-md);
+    margin-inline-start: var(--spacing-xs);
+  }
+
+  .locale-btn {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    line-height: 1;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .locale-btn:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+  }
+
+  .locale-btn.active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+    font-weight: var(--font-weight-bold);
   }
 
   .hamburger {
@@ -300,6 +372,15 @@
   .mobile-link--signout:hover {
     color: var(--color-error, #dc2626);
     background-color: var(--color-error-bg, #fef2f2);
+  }
+
+  .mobile-locale-switcher {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md) var(--spacing-sm) var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--spacing-sm);
   }
 
   @media (max-width: 767px) {

@@ -3,6 +3,7 @@
   import { AuthService } from '@shared/services';
   import { authStore } from '@shared/stores';
   import { navigate } from '../../router';
+  import { t } from '../../i18n';
 
   let email = '';
   let password = '';
@@ -13,7 +14,7 @@
     error = '';
 
     if (!email || !password) {
-      error = 'Please fill in all fields';
+      error = $t.common.fillAllFields;
       return;
     }
 
@@ -34,8 +35,8 @@
 <div class="login-container">
   <Card padding="lg" shadow="lg">
     <div class="login-content">
-      <h1 class="login-title">Sign in</h1>
-      <p class="login-subtitle">Access your personal BMX calendar</p>
+      <h1 class="login-title">{$t.auth.signInTitle}</h1>
+      <p class="login-subtitle">{$t.auth.signInSubtitle}</p>
 
       {#if error}
         <Alert type="danger" message={error} />
@@ -45,8 +46,8 @@
         <Input
           type="email"
           id="email"
-          label="Email"
-          placeholder="you@example.com"
+          label={$t.common.email}
+          placeholder={$t.common.emailPlaceholder}
           bind:value={email}
           required
         />
@@ -54,24 +55,24 @@
         <Input
           type="password"
           id="password"
-          label="Password"
-          placeholder="Your password"
+          label={$t.common.password}
+          placeholder={$t.auth.passwordPlaceholder}
           bind:value={password}
           required
         />
 
         <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? $t.auth.signingIn : $t.auth.signInTitle}
         </Button>
       </form>
 
       <p class="forgot-hint">
-        <button class="link-btn" on:click={() => navigate('/forgot-password')}>Forgot password?</button>
+        <button class="link-btn" on:click={() => navigate('/forgot-password')}>{$t.auth.forgotPassword}</button>
       </p>
 
       <p class="register-hint">
-        No account yet?
-        <button class="link-btn" on:click={() => navigate('/register')}>Create one</button>
+        {$t.auth.noAccount}
+        <button class="link-btn" on:click={() => navigate('/register')}>{$t.auth.createOne}</button>
       </p>
     </div>
   </Card>

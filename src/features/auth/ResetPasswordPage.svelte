@@ -3,6 +3,7 @@
   import { Card, Input, Button, Alert } from '@shared/components';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
+  import { t } from '../../i18n';
 
   let password = '';
   let confirmPassword = '';
@@ -24,7 +25,7 @@
       });
 
       if (verifyErr) {
-        sessionError = 'This reset link has expired. Please request a new one.';
+        sessionError = $t.auth.expiredLink;
         return;
       }
 
@@ -46,7 +47,7 @@
         });
 
         if (sessionErr) {
-          sessionError = 'This reset link has expired. Please request a new one.';
+          sessionError = $t.auth.expiredLink;
           return;
         }
 
@@ -55,24 +56,24 @@
       }
     }
 
-    sessionError = 'Invalid or expired reset link.';
+    sessionError = $t.auth.invalidLink;
   });
 
   async function handleSubmit() {
     error = '';
 
     if (!password || !confirmPassword) {
-      error = 'Please fill in all fields';
+      error = $t.common.fillAllFields;
       return;
     }
 
     if (password !== confirmPassword) {
-      error = 'Passwords do not match';
+      error = $t.common.passwordsDoNotMatch;
       return;
     }
 
     if (password.length < 8) {
-      error = 'Password must be at least 8 characters';
+      error = $t.common.passwordMinLength;
       return;
     }
 
@@ -83,7 +84,7 @@
       await supabase.auth.signOut();
       success = true;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to update password';
+      error = err instanceof Error ? err.message : $t.profile.failedToUpdate;
     } finally {
       loading = false;
     }
@@ -93,13 +94,13 @@
 <div class="reset-container">
   <Card padding="lg" shadow="lg">
     <div class="reset-content">
-      <h1 class="reset-title">Set new password</h1>
-      <p class="reset-subtitle">Choose a strong password for your account</p>
+      <h1 class="reset-title">{$t.auth.setNewPassword}</h1>
+      <p class="reset-subtitle">{$t.auth.setNewPasswordSubtitle}</p>
 
       {#if sessionError}
         <div class="error-state">
           <Alert type="danger" message={sessionError} />
-          <Button variant="secondary" on:click={() => navigate('/forgot-password')}>Request new link</Button>
+          <Button variant="secondary" on:click={() => navigate('/forgot-password')}>{$t.auth.requestNewLink}</Button>
         </div>
       {:else if success}
         <div class="success-state">
@@ -109,9 +110,9 @@
               <path d="M14 24L21 31L34 17" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h2 class="success-title">Password updated!</h2>
-          <p class="success-message">Your password has been changed. You can now sign in with your new password.</p>
-          <Button variant="primary" on:click={() => navigate('/login')}>Sign in</Button>
+          <h2 class="success-title">{$t.auth.passwordUpdated}</h2>
+          <p class="success-message">{$t.auth.passwordUpdatedMessage}</p>
+          <Button variant="primary" on:click={() => navigate('/login')}>{$t.auth.signInTitle}</Button>
         </div>
       {:else if sessionReady}
         {#if error}
@@ -122,8 +123,8 @@
           <Input
             type="password"
             id="password"
-            label="New password"
-            placeholder="At least 8 characters"
+            label={$t.auth.newPassword}
+            placeholder={$t.auth.newPasswordPlaceholder}
             bind:value={password}
             required
           />
@@ -131,19 +132,19 @@
           <Input
             type="password"
             id="confirm-password"
-            label="Confirm new password"
-            placeholder="Repeat your new password"
+            label={$t.auth.confirmNewPassword}
+            placeholder={$t.auth.confirmNewPasswordPlaceholder}
             bind:value={confirmPassword}
             required
           />
 
           <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
-            {loading ? 'Updating...' : 'Update password'}
+            {loading ? $t.common.updating : $t.common.updatePassword}
           </Button>
         </form>
       {:else}
         <div class="loading-state">
-          <p class="loading-text">Verifying reset link...</p>
+          <p class="loading-text">{$t.auth.verifyingLink}</p>
         </div>
       {/if}
     </div>

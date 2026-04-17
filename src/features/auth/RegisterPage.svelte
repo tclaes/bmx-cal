@@ -4,6 +4,7 @@
   import { authStore } from '@shared/stores';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
+  import { t } from '../../i18n';
 
   let email = '';
   let password = '';
@@ -15,17 +16,17 @@
     error = '';
 
     if (!email || !password || !confirmPassword) {
-      error = 'Please fill in all fields';
+      error = $t.common.fillAllFields;
       return;
     }
 
     if (password !== confirmPassword) {
-      error = 'Passwords do not match';
+      error = $t.common.passwordsDoNotMatch;
       return;
     }
 
     if (password.length < 8) {
-      error = 'Password must be at least 8 characters';
+      error = $t.common.passwordMinLength;
       return;
     }
 
@@ -38,7 +39,7 @@
       authStore.setUser(user);
       navigate('/my-events');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Registration failed';
+      error = err instanceof Error ? err.message : $t.auth.registrationFailed;
     } finally {
       loading = false;
     }
@@ -49,8 +50,8 @@
   <Card padding="lg" shadow="lg">
     <div class="register-content">
       <div class="beta-badge">Beta</div>
-      <h1 class="register-title">Create an account</h1>
-      <p class="register-subtitle">Save your event selections across devices</p>
+      <h1 class="register-title">{$t.auth.createAccountTitle}</h1>
+      <p class="register-subtitle">{$t.auth.createAccountSubtitle}</p>
 
       {#if error}
         <Alert type="danger" message={error} />
@@ -60,8 +61,8 @@
         <Input
           type="email"
           id="email"
-          label="Email"
-          placeholder="you@example.com"
+          label={$t.common.email}
+          placeholder={$t.common.emailPlaceholder}
           bind:value={email}
           required
         />
@@ -69,8 +70,8 @@
         <Input
           type="password"
           id="password"
-          label="Password"
-          placeholder="At least 8 characters"
+          label={$t.common.password}
+          placeholder={$t.auth.newPasswordPlaceholder}
           bind:value={password}
           required
         />
@@ -78,20 +79,20 @@
         <Input
           type="password"
           id="confirm-password"
-          label="Confirm password"
-          placeholder="Repeat your password"
+          label={$t.common.confirmPassword}
+          placeholder={$t.auth.confirmPasswordPlaceholder}
           bind:value={confirmPassword}
           required
         />
 
         <Button type="submit" variant="primary" size="lg" fullWidth disabled={loading}>
-          {loading ? 'Creating account...' : 'Create account'}
+          {loading ? $t.auth.creatingAccount : $t.auth.createAccount}
         </Button>
       </form>
 
       <p class="login-hint">
-        Already have an account?
-        <button class="link-btn" on:click={() => navigate('/admin/login')}>Sign in</button>
+        {$t.auth.alreadyHaveAccount}
+        <button class="link-btn" on:click={() => navigate('/admin/login')}>{$t.auth.signInTitle}</button>
       </p>
     </div>
   </Card>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { updateStore } from '@shared/stores/pwa.store';
+  import { t } from '../../i18n';
 
   async function reload() {
     updateStore.confirmUpdate();
@@ -37,16 +38,16 @@
   <div class="update-banner" class:force={$updateStore.forceUpdate} role="alert" aria-live="assertive">
     <span class="update-text">
       {#if $updateStore.forceUpdate}
-        Critical update required. Please update to continue using the app.
+        {$t.pwa.criticalUpdate}
       {:else}
-        A new version is available.
+        {$t.pwa.newVersion}
       {/if}
     </span>
     <button class="update-btn" on:click={reload}>
-      {$updateStore.forceUpdate ? 'Update Now' : 'Reload'}
+      {$updateStore.forceUpdate ? $t.pwa.updateNow : $t.pwa.reload}
     </button>
     {#if !$updateStore.forceUpdate}
-      <button class="dismiss-btn" aria-label="Dismiss" on:click={dismiss}>
+      <button class="dismiss-btn" aria-label={$t.pwa.dismiss} on:click={dismiss}>
         &times;
       </button>
     {/if}

@@ -5,6 +5,7 @@
   import AdBanner from '@shared/components/AdBanner.svelte';
   import AccountCTA from '@shared/components/AccountCTA.svelte';
   import { authStore } from '@shared/stores';
+  import { t } from '../../i18n';
 
   $: isAuthenticated = $authStore.user !== null;
 </script>
@@ -21,8 +22,8 @@
       <div class="calendar-header">
         <div class="header-content">
           <div>
-            <h1 class="calendar-title">BMX Events Calendar</h1>
-            <p class="calendar-subtitle">Upcoming BMX events, competitions, and shows</p>
+            <h1 class="calendar-title">{$t.calendar.title}</h1>
+            <p class="calendar-subtitle">{$t.calendar.subtitle}</p>
           </div>
           <ExportButton />
         </div>
@@ -36,7 +37,7 @@
     </div>
 
     {#if !isAuthenticated}
-      <aside class="calendar-sidebar" aria-label="Sidebar">
+      <aside class="calendar-sidebar" aria-label={$t.calendar.sidebar}>
         <AccountCTA />
         <div class="sidebar-ad">
           <AdBanner slot="0987654321" format="vertical" />
