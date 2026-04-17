@@ -11,3 +11,5 @@ export { default as InstallPrompt } from './InstallPrompt.svelte';
 export { default as LocationPicker } from './LocationPicker.svelte';
 export { default as Dropdown } from './Dropdown.svelte';
 export { default as CheckboxItem } from './CheckboxItem.svelte';
+export { default as AdBanner } from './AdBanner.svelte';
+export { default as AccountCTA } from './AccountCTA.svelte';
