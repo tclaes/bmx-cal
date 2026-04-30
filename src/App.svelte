@@ -23,6 +23,7 @@
   import TermsPage from './features/legal/TermsPage.svelte';
   import CookieConsent from '@shared/components/CookieConsent.svelte';
   import { APP_VERSION } from '@config/version';
+  import { canAccessMyCalendar } from '@shared/utils/permissions';
   import { locale, t, interpolate } from './i18n';
 
   const routeMeta: Record<string, { title: string; description: string }> = {
@@ -139,7 +140,11 @@
       {#if $currentRoute === '/'}
         <CalendarView />
       {:else if $currentRoute === '/my-events'}
-        <MyEventsPage />
+        {#if canAccessMyCalendar($authStore.user)}
+          <MyEventsPage />
+        {:else}
+          <LoginPage />
+        {/if}
       {:else if $currentRoute === '/login'}
         <LoginPage />
       {:else if $currentRoute === '/register'}

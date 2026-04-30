@@ -16,11 +16,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bmxkalender.be/my-events</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://bmxkalender.be/privacy-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

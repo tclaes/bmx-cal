@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canEditEvent } from '../shared/utils/permissions';
+import { canAccessMyCalendar, canEditEvent } from '../shared/utils/permissions';
 import type { AdminUser, EventWithDetails, Team } from '../types';
 
 const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };
@@ -43,6 +43,26 @@ function makeUser(overrides: Partial<AdminUser>): AdminUser {
     ...overrides,
   };
 }
+
+describe('canAccessMyCalendar', () => {
+  it('denies anonymous users', () => {
+    expect(canAccessMyCalendar(null)).toBe(false);
+  });
+
+  it('allows any authenticated user (role: user)', () => {
+    expect(canAccessMyCalendar(makeUser({ role: 'user' }))).toBe(true);
+  });
+
+  it('allows admin users', () => {
+    expect(canAccessMyCalendar(makeUser({ role: 'admin' }))).toBe(true);
+  });
+
+  it('allows team managers', () => {
+    expect(
+      canAccessMyCalendar(makeUser({ role: 'user', managedTeams: [team1] })),
+    ).toBe(true);
+  });
+});
 
 describe('canEditEvent', () => {
   describe('unauthenticated (null user)', () => {
