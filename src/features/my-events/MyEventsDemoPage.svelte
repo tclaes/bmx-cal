@@ -1,27 +1,29 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { navigate } from '../../router';
-  import { t } from '../../i18n';
+  import { t, interpolate } from '../../i18n';
+
+  $: demoEvents = [
+    { date: 'Apr 12', title: $t.myEventsDemo.demoEvent1Title, location: $t.myEventsDemo.demoEvent1Location, type: $t.myEventsDemo.demoEvent1Type, selected: true },
+    { date: 'May 03', title: $t.myEventsDemo.demoEvent2Title, location: $t.myEventsDemo.demoEvent2Location, type: $t.myEventsDemo.demoEvent2Type, selected: true },
+    { date: 'May 17', title: $t.myEventsDemo.demoEvent3Title, location: $t.myEventsDemo.demoEvent3Location, type: $t.myEventsDemo.demoEvent3Type, selected: false },
+    { date: 'Jun 07', title: $t.myEventsDemo.demoEvent4Title, location: $t.myEventsDemo.demoEvent4Location, type: $t.myEventsDemo.demoEvent4Type, selected: true },
+    { date: 'Jun 21', title: $t.myEventsDemo.demoEvent5Title, location: $t.myEventsDemo.demoEvent5Location, type: $t.myEventsDemo.demoEvent5Type, selected: false },
+    { date: 'Jul 05', title: $t.myEventsDemo.demoEvent6Title, location: $t.myEventsDemo.demoEvent6Location, type: $t.myEventsDemo.demoEvent6Type, selected: true },
+  ];
+
+  $: benefits = [
+    $t.myEventsDemo.benefit1,
+    $t.myEventsDemo.benefit2,
+    $t.myEventsDemo.benefit3,
+    $t.myEventsDemo.benefit4,
+  ];
+
+  $: selectedCount = demoEvents.filter(e => e.selected).length;
 
   onMount(() => {
-    document.title = 'Create my calendar - BMX Calendar';
+    document.title = $t.myEventsDemo.docTitle;
   });
-
-  const demoEvents = [
-    { date: 'Apr 12', title: 'Belgian Cup - Round 1', location: 'Zolder', type: 'Belgian Cup', selected: true },
-    { date: 'May 03', title: 'UEC European Cup', location: 'Verona (IT)', type: 'UEC Cup', selected: true },
-    { date: 'May 17', title: 'Flanders Classic', location: 'Dessel', type: 'Regional', selected: false },
-    { date: 'Jun 07', title: 'Belgian Championship', location: 'Keerbergen', type: 'Championship', selected: true },
-    { date: 'Jun 21', title: 'UCI World Cup', location: 'Papendal (NL)', type: 'World Cup', selected: false },
-    { date: 'Jul 05', title: 'Summer Classic', location: 'Gent', type: 'Regional', selected: true },
-  ];
-
-  const benefits = [
-    'Pick only the races you care about',
-    'Export to Apple, Google or Outlook Calendar in one click',
-    'Save multiple calendars (e.g. one per rider in your family)',
-    'Get reminders when registration opens or closes',
-  ];
 
   function goRegister() {
     navigate('/register');
@@ -35,13 +37,9 @@
 <div class="demo-page">
   <section class="hero">
     <div class="hero-inner">
-      <span class="eyebrow">Free personal calendar</span>
-      <h1>Build your own BMX season calendar</h1>
-      <p class="lead">
-        Cherry-pick the races you plan to ride, and export them to your
-        favourite calendar app. Create a free account to unlock it - no credit
-        card, no spam.
-      </p>
+      <span class="eyebrow">{$t.myEventsDemo.eyebrow}</span>
+      <h1>{$t.myEventsDemo.heading}</h1>
+      <p class="lead">{$t.myEventsDemo.lead}</p>
       <div class="hero-actions">
         <button class="btn btn--primary" on:click={goRegister}>
           {$t.cta.createAccount}
@@ -50,21 +48,21 @@
           {$t.cta.signIn}
         </button>
       </div>
-      <p class="reassure">Takes 20 seconds. Your data stays yours.</p>
+      <p class="reassure">{$t.myEventsDemo.reassure}</p>
     </div>
   </section>
 
-  <section class="preview" aria-label="Demo preview">
+  <section class="preview" aria-label={$t.myEventsDemo.previewLabel}>
     <div class="preview-label">
       <span class="dot" aria-hidden="true"></span>
-      Live preview - sign in to make it yours
+      {$t.myEventsDemo.previewLabel}
     </div>
 
     <div class="preview-grid">
       <div class="preview-card">
         <header class="preview-card__header">
-          <h2>Select your events</h2>
-          <span class="counter">{demoEvents.filter(e => e.selected).length} selected</span>
+          <h2>{$t.myEventsDemo.selectYourEvents}</h2>
+          <span class="counter">{interpolate($t.myEventsDemo.selectedCount, { count: selectedCount })}</span>
         </header>
         <ul class="event-list">
           {#each demoEvents as event}
@@ -85,11 +83,11 @@
       </div>
 
       <div class="preview-card preview-card--cta">
-        <h2>Ready in two clicks</h2>
+        <h2>{$t.myEventsDemo.readyTitle}</h2>
         <ol class="steps">
-          <li><span class="step-num">1</span>Tick the races you want to ride</li>
-          <li><span class="step-num">2</span>Click "Export to calendar"</li>
-          <li><span class="step-num">3</span>Open the file in your calendar app</li>
+          <li><span class="step-num">1</span>{$t.myEventsDemo.step1}</li>
+          <li><span class="step-num">2</span>{$t.myEventsDemo.step2}</li>
+          <li><span class="step-num">3</span>{$t.myEventsDemo.step3}</li>
         </ol>
 
         <ul class="benefits">
@@ -99,23 +97,18 @@
         </ul>
 
         <button class="btn btn--primary btn--full" on:click={goRegister}>
-          Create your free calendar
+          {$t.myEventsDemo.createCalendarCta}
         </button>
         <button class="btn btn--link" on:click={goLogin}>
-          Already have an account? Sign in
+          {$t.myEventsDemo.signInPrompt}
         </button>
       </div>
     </div>
   </section>
 
-  <section class="faq" aria-label="Frequently asked questions">
-    <h2>Why do I need an account?</h2>
-    <p>
-      An account lets us save your selection across devices, keep multiple
-      calendars (perfect for families with more than one rider), and notify
-      you when registration opens for a race you picked. Everything stays
-      private to you and can be deleted at any time from your profile.
-    </p>
+  <section class="faq" aria-label={$t.myEventsDemo.faqTitle}>
+    <h2>{$t.myEventsDemo.faqTitle}</h2>
+    <p>{$t.myEventsDemo.faqBody}</p>
   </section>
 </div>
 
