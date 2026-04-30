@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /profile
+Disallow: /team-manager
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://bmxkalender.be/sitemap.xml

@@ -19,8 +19,61 @@
   import BugReportPage from './features/bug-report/BugReportPage.svelte';
   import AboutPage from './features/about/AboutPage.svelte';
   import GetInTouchPage from './features/about/GetInTouchPage.svelte';
+  import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage.svelte';
+  import TermsPage from './features/legal/TermsPage.svelte';
+  import CookieConsent from '@shared/components/CookieConsent.svelte';
   import { APP_VERSION } from '@config/version';
   import { locale, t, interpolate } from './i18n';
+
+  const routeMeta: Record<string, { title: string; description: string }> = {
+    '/': {
+      title: 'BMX Calendar - BMX events, races and competitions in Belgium',
+      description: 'Discover upcoming BMX races, cups and shows across Belgium. Browse the shared calendar by date, club or type, build a personal schedule and export it to your calendar app.',
+    },
+    '/my-events': {
+      title: 'My Calendar - BMX Calendar',
+      description: 'Select your BMX events and export them to your personal calendar app.',
+    },
+    '/about': {
+      title: 'About - BMX Calendar',
+      description: 'Learn about BMX Calendar, a community project for Belgian BMX events.',
+    },
+    '/get-in-touch': {
+      title: 'Get in touch - BMX Calendar',
+      description: 'Contact the BMX Calendar team for questions, feedback or partnerships.',
+    },
+    '/privacy-policy': {
+      title: 'Privacy Policy - BMX Calendar',
+      description: 'How BMX Calendar handles your personal data, cookies and advertising.',
+    },
+    '/terms': {
+      title: 'Terms of Service - BMX Calendar',
+      description: 'The terms and conditions for using BMX Calendar.',
+    },
+    '/report-bug': {
+      title: 'Report a bug - BMX Calendar',
+      description: 'Report an issue or suggest improvements for BMX Calendar.',
+    },
+  };
+
+  function updateDocumentMeta(path: string) {
+    const meta = routeMeta[path];
+    if (!meta) return;
+    document.title = meta.title;
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute('content', meta.description);
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute('href', `https://bmxkalender.be${path === '/' ? '/' : path}`);
+  }
+
+  function openCookieSettings() {
+    window.dispatchEvent(new Event('open-cookie-settings'));
+  }
+
+  $: updateDocumentMeta($currentRoute);
+  $: if (typeof document !== 'undefined') {
+    document.documentElement.lang = $locale;
+  }
 
   let loading = true;
   let updateCheckMessage = '';
@@ -73,6 +126,7 @@
 
 <UpdatePrompt />
 <InstallPrompt />
+<CookieConsent />
 
 <div class="app">
   {#if !loading}
@@ -120,6 +174,10 @@
         <AboutPage />
       {:else if $currentRoute === '/get-in-touch'}
         <GetInTouchPage />
+      {:else if $currentRoute === '/privacy-policy'}
+        <PrivacyPolicyPage />
+      {:else if $currentRoute === '/terms'}
+        <TermsPage />
       {:else}
         <div class="not-found">
           <h1>{$t.notFound.title}</h1>
@@ -134,6 +192,9 @@
         <button class="footer-link" on:click={() => navigate('/about')}>{$t.footer.about}</button>
         <button class="footer-link" on:click={() => navigate('/get-in-touch')}>{$t.footer.getInTouch}</button>
         <button class="footer-link" on:click={() => navigate('/report-bug')}>{$t.footer.reportBug}</button>
+        <button class="footer-link" on:click={() => navigate('/privacy-policy')}>{$t.footer.privacy}</button>
+        <button class="footer-link" on:click={() => navigate('/terms')}>{$t.footer.terms}</button>
+        <button class="footer-link" on:click={openCookieSettings}>{$t.footer.cookieSettings}</button>
         <button
           class="footer-link footer-link--version"
           on:click={handleCheckForUpdates}

@@ -10,24 +10,53 @@
     <meta name="apple-mobile-web-app-title" content="BMX Calendar" />
     <link rel="apple-touch-icon" href="/bmx-calendar.png" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="canonical" href="https://bmxkalender.be/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QWPG5J24KY"></script>
+
+    <title>BMX Calendar - BMX events, races and competitions in Belgium</title>
+    <meta name="description" content="Discover upcoming BMX races, cups and shows across Belgium. Browse the shared calendar by date, club or type, build a personal schedule and export it to your calendar app." />
+    <meta name="keywords" content="BMX, BMX calendar, BMX Belgium, BMX races, Belgian Cycling, UEC BMX, BMX kalender, calendrier BMX" />
+    <meta name="author" content="BMX Calendar" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="BMX Calendar" />
+    <meta property="og:title" content="BMX Calendar - BMX events in Belgium" />
+    <meta property="og:description" content="The shared BMX events calendar for Belgium. Browse races, cups and shows, then export a personal schedule." />
+    <meta property="og:image" content="https://bmxkalender.be/bmx-calendar.png" />
+    <meta property="og:url" content="https://bmxkalender.be/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BMX Calendar" />
+    <meta name="twitter:description" content="The shared BMX events calendar for Belgium." />
+    <meta name="twitter:image" content="https://bmxkalender.be/bmx-calendar.png" />
+
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500
+      });
       gtag('js', new Date());
       gtag('config', 'G-QWPG5J24KY', { send_page_view: false });
     </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QWPG5J24KY"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4950654000854684" crossorigin="anonymous"></script>
-    <title>BMX Events Calendar</title>
-    <meta name="description" content="View and manage BMX events, competitions, and shows" />
-    <meta property="og:title" content="BMX Events Calendar" />
-    <meta property="og:description" content="View and manage BMX events, competitions, and shows" />
-    <meta property="og:image" content="/bmx-calendar.png">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="/bmx-calendar.png">
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "BMX Calendar",
+        "url": "https://bmxkalender.be/",
+        "description": "The shared BMX events calendar for Belgium.",
+        "inLanguage": ["en", "nl", "fr"]
+      }
+    </script>
 </head>
   <body>
     <div id="app"></div>

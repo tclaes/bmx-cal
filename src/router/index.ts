@@ -32,7 +32,9 @@ router
   .on('/team-manager', () => setRoute('/team-manager'))
   .on('/report-bug', () => setRoute('/report-bug'))
   .on('/about', () => setRoute('/about'))
-  .on('/get-in-touch', () => setRoute('/get-in-touch'));
+  .on('/get-in-touch', () => setRoute('/get-in-touch'))
+  .on('/privacy-policy', () => setRoute('/privacy-policy'))
+  .on('/terms', () => setRoute('/terms'));
 
 export function navigate(path: string) {
   router.route(path);

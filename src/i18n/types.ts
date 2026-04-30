@@ -34,6 +34,9 @@ export interface Translations {
     getInTouch: string;
     reportBug: string;
     support: string;
+    privacy: string;
+    terms: string;
+    cookieSettings: string;
     updateAvailable: string;
     latestVersion: string;
     updateFailed: string;
