@@ -68,6 +68,22 @@
     if (canonical) canonical.setAttribute('href', `https://bmxkalender.be${path === '/' ? '/' : path}`);
   }
 
+  // Routes that are utility/auth screens with no publisher content.
+  // AdSense must not serve ads on these pages.
+  const NO_AD_ROUTES = new Set([
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/profile',
+    '/my-events',
+    '/team-manager',
+    '/admin',
+    '/admin/login',
+  ]);
+
+  $: suppressAds = NO_AD_ROUTES.has($currentRoute);
+
   function openCookieSettings() {
     window.dispatchEvent(new Event('open-cookie-settings'));
   }
@@ -125,6 +141,13 @@
     }, 5000);
   }
 </script>
+
+<svelte:head>
+  {#if suppressAds}
+    <!-- Tell AdSense not to serve ads on utility/auth screens that have no publisher content -->
+    <meta name="google" content="noad" />
+  {/if}
+</svelte:head>
 
 <UpdatePrompt />
 <InstallPrompt />

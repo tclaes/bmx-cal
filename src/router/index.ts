@@ -34,6 +34,11 @@ router
   .on('/about', () => setRoute('/about'))
   .on('/get-in-touch', () => setRoute('/get-in-touch'))
   .on('/privacy-policy', () => setRoute('/privacy-policy'))
+  .on('/privacy', () => {
+    // Canonical URL is /privacy-policy; redirect so AdSense crawlers always land on the real page
+    history.replaceState(null, '', '/privacy-policy');
+    setRoute('/privacy-policy');
+  })
   .on('/terms', () => setRoute('/terms'));
 
 export function navigate(path: string) {
