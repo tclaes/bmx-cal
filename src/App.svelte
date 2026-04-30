@@ -10,6 +10,7 @@
   import AdminDashboard from '@features/admin/AdminDashboard.svelte';
   import Login from '@features/admin/Login.svelte';
   import MyEventsPage from './features/my-events/MyEventsPage.svelte';
+  import MyEventsDemoPage from './features/my-events/MyEventsDemoPage.svelte';
   import RegisterPage from './features/auth/RegisterPage.svelte';
   import LoginPage from './features/auth/LoginPage.svelte';
   import ForgotPasswordPage from './features/auth/ForgotPasswordPage.svelte';
@@ -32,8 +33,8 @@
       description: 'Discover upcoming BMX races, cups and shows across Belgium. Browse the shared calendar by date, club or type, build a personal schedule and export it to your calendar app.',
     },
     '/my-events': {
-      title: 'My Calendar - BMX Calendar',
-      description: 'Select your BMX events and export them to your personal calendar app.',
+      title: 'Create my BMX calendar - BMX Calendar',
+      description: 'Build a personal BMX season calendar: pick your races, export to Apple, Google or Outlook, and never miss a registration deadline.',
     },
     '/about': {
       title: 'About - BMX Calendar',
@@ -143,7 +144,7 @@
         {#if canAccessMyCalendar($authStore.user)}
           <MyEventsPage />
         {:else}
-          <LoginPage />
+          <MyEventsDemoPage />
         {/if}
       {:else if $currentRoute === '/login'}
         <LoginPage />

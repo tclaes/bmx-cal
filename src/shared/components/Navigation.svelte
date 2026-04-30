@@ -2,7 +2,6 @@
   import { authStore, selectedEventIds } from '@shared/stores';
   import { AuthService } from '@shared/services';
   import { selectionService } from '@shared/services/selection.service';
-  import { canAccessMyCalendar } from '@shared/utils/permissions';
   import { currentRoute, navigate } from '../../router';
   import { locale, t } from '../../i18n';
   import type { Locale } from '../../i18n';
@@ -34,7 +33,6 @@
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
   $: isTeamManager = isAdmin || (user?.managedTeams?.length ?? 0) > 0;
-  $: showMyCalendar = canAccessMyCalendar(user);
   $: route = $currentRoute;
   $: currentLocale = $locale;
 </script>
@@ -51,13 +49,11 @@
           {$t.nav.events}
         </a>
       </li>
-      {#if showMyCalendar}
-        <li>
-          <a class="nav-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
-            {$t.nav.myCalendar}
-          </a>
-        </li>
-      {/if}
+      <li>
+        <a class="nav-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
+          {$t.nav.myCalendar}
+        </a>
+      </li>
 
       {#if user}
         {#if isAdmin}
@@ -127,13 +123,11 @@
           {$t.nav.events}
         </a>
       </li>
-      {#if showMyCalendar}
-        <li>
-          <a class="mobile-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
-            {$t.nav.myCalendar}
-          </a>
-        </li>
-      {/if}
+      <li>
+        <a class="mobile-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
+          {$t.nav.myCalendar}
+        </a>
+      </li>
 
       {#if user}
         {#if isAdmin}

@@ -4,7 +4,6 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /profile
 Disallow: /team-manager
-Disallow: /my-events
 Disallow: /reset-password
 Disallow: /forgot-password
 
