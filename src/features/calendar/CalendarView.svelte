@@ -2,7 +2,6 @@
   import EventFilters from './EventFilters.svelte';
   import EventList from './EventList.svelte';
   import ExportButton from './ExportButton.svelte';
-  import AdBanner from '@shared/components/AdBanner.svelte';
   import AccountCTA from '@shared/components/AccountCTA.svelte';
   import { authStore } from '@shared/stores';
   import { t } from '../../i18n';
@@ -13,12 +12,6 @@
 <div class="calendar-view">
   <div class="calendar-layout">
     <div class="calendar-main">
-      {#if !isAuthenticated}
-        <div class="ad-top">
-          <AdBanner slot="1234567890" format="auto" />
-        </div>
-      {/if}
-
       <div class="calendar-header">
         <div class="header-content">
           <div>
@@ -39,9 +32,6 @@
     {#if !isAuthenticated}
       <aside class="calendar-sidebar" aria-label={$t.calendar.sidebar}>
         <AccountCTA />
-        <div class="sidebar-ad">
-          <AdBanner slot="0987654321" format="vertical" />
-        </div>
       </aside>
     {/if}
   </div>
@@ -64,16 +54,6 @@
 
   .calendar-main {
     min-width: 0;
-  }
-
-  .ad-top {
-    display: none;
-    margin-bottom: var(--spacing-lg);
-    background-color: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-sm);
-    min-height: 100px;
   }
 
   .calendar-header {
@@ -112,14 +92,6 @@
     gap: var(--spacing-lg);
   }
 
-  .sidebar-ad {
-    background-color: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-sm);
-    min-height: 250px;
-  }
-
   @media (max-width: 1024px) {
     .calendar-layout {
       grid-template-columns: 1fr 260px;
@@ -133,10 +105,6 @@
 
     .calendar-sidebar {
       display: none;
-    }
-
-    .ad-top {
-      display: block;
     }
 
     .header-content {

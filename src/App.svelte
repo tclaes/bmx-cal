@@ -20,6 +20,7 @@
   import BugReportPage from './features/bug-report/BugReportPage.svelte';
   import AboutPage from './features/about/AboutPage.svelte';
   import GetInTouchPage from './features/about/GetInTouchPage.svelte';
+  import GuidePage from './features/guide/GuidePage.svelte';
   import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage.svelte';
   import TermsPage from './features/legal/TermsPage.svelte';
   import CookieConsent from '@shared/components/CookieConsent.svelte';
@@ -39,6 +40,10 @@
     '/about': {
       title: 'About - BMX Calendar',
       description: 'Learn about BMX Calendar, a community project for Belgian BMX events.',
+    },
+    '/guide': {
+      title: 'BMX Racing Guide - BMX Calendar',
+      description: 'A complete beginner guide to BMX racing in Belgium: event types, categories, registration, equipment, and useful links.',
     },
     '/get-in-touch': {
       title: 'Get in touch - BMX Calendar',
@@ -201,6 +206,8 @@
         <BugReportPage />
       {:else if $currentRoute === '/about'}
         <AboutPage />
+      {:else if $currentRoute === '/guide'}
+        <GuidePage />
       {:else if $currentRoute === '/get-in-touch'}
         <GetInTouchPage />
       {:else if $currentRoute === '/privacy-policy'}

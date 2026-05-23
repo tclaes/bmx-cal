@@ -40,15 +40,17 @@ export function hasDecided(state: ConsentState): boolean {
 }
 
 /**
- * Push a Google Consent Mode v2 update.
+ * Push a Google Consent Mode v2 update via gtag().
  * Called on load (default denied) and after the user chooses.
  */
 export function applyConsentToGoogle(state: ConsentState): void {
   if (typeof window === 'undefined') return;
-  const w = window as unknown as { dataLayer?: unknown[] };
-  w.dataLayer = w.dataLayer || [];
-  w.dataLayer.push({
-    event: 'consent_update',
+  const w = window as unknown as { gtag?: (...args: unknown[]) => void; dataLayer?: unknown[] };
+  if (!w.gtag) {
+    w.dataLayer = w.dataLayer || [];
+    w.gtag = function () { w.dataLayer!.push(arguments); };
+  }
+  w.gtag('consent', 'update', {
     analytics_storage: state.analytics,
     ad_storage: state.ads,
     ad_user_data: state.ads,

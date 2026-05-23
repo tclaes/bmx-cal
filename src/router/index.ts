@@ -32,6 +32,7 @@ router
   .on('/team-manager', () => setRoute('/team-manager'))
   .on('/report-bug', () => setRoute('/report-bug'))
   .on('/about', () => setRoute('/about'))
+  .on('/guide', () => setRoute('/guide'))
   .on('/get-in-touch', () => setRoute('/get-in-touch'))
   .on('/privacy-policy', () => setRoute('/privacy-policy'))
   .on('/privacy', () => {

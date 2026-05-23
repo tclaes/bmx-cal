@@ -54,6 +54,16 @@
           {$t.nav.myCalendar}
         </a>
       </li>
+      <li>
+        <a class="nav-link" class:active={route === '/about'} href="/about" on:click={(e) => handleNav(e, '/about')}>
+          {$t.nav.about}
+        </a>
+      </li>
+      <li>
+        <a class="nav-link" class:active={route === '/guide'} href="/guide" on:click={(e) => handleNav(e, '/guide')}>
+          {$t.nav.guide}
+        </a>
+      </li>
 
       {#if user}
         {#if isAdmin}
@@ -126,6 +136,16 @@
       <li>
         <a class="mobile-link" class:active={route === '/my-events'} href="/my-events" on:click={(e) => handleNav(e, '/my-events')}>
           {$t.nav.myCalendar}
+        </a>
+      </li>
+      <li>
+        <a class="mobile-link" class:active={route === '/about'} href="/about" on:click={(e) => handleNav(e, '/about')}>
+          {$t.nav.about}
+        </a>
+      </li>
+      <li>
+        <a class="mobile-link" class:active={route === '/guide'} href="/guide" on:click={(e) => handleNav(e, '/guide')}>
+          {$t.nav.guide}
         </a>
       </li>
 
