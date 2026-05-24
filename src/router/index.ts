@@ -33,6 +33,9 @@ router
   .on('/report-bug', () => setRoute('/report-bug'))
   .on('/about', () => setRoute('/about'))
   .on('/guide', () => setRoute('/guide'))
+  .on('/faq', () => setRoute('/faq'))
+  .on('/race-day', () => setRoute('/race-day'))
+  .on('/tracks', () => setRoute('/tracks'))
   .on('/get-in-touch', () => setRoute('/get-in-touch'))
   .on('/privacy-policy', () => setRoute('/privacy-policy'))
   .on('/privacy', () => {

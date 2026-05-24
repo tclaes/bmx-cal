@@ -21,6 +21,9 @@
   import AboutPage from './features/about/AboutPage.svelte';
   import GetInTouchPage from './features/about/GetInTouchPage.svelte';
   import GuidePage from './features/guide/GuidePage.svelte';
+  import FaqPage from './features/guide/FaqPage.svelte';
+  import RaceDayPage from './features/guide/RaceDayPage.svelte';
+  import TracksPage from './features/guide/TracksPage.svelte';
   import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage.svelte';
   import TermsPage from './features/legal/TermsPage.svelte';
   import CookieConsent from '@shared/components/CookieConsent.svelte';
@@ -44,6 +47,18 @@
     '/guide': {
       title: 'BMX Racing Guide - BMX Calendar',
       description: 'A complete beginner guide to BMX racing in Belgium: event types, categories, registration, equipment, and useful links.',
+    },
+    '/faq': {
+      title: 'BMX Racing FAQ - BMX Calendar',
+      description: 'Frequently asked questions about BMX racing in Belgium: age requirements, costs, licensing, race format, and rankings.',
+    },
+    '/race-day': {
+      title: 'Race Day Checklist - BMX Calendar',
+      description: 'Everything you need for a BMX race day: preparation checklist, race format, nutrition tips, and weather advice.',
+    },
+    '/tracks': {
+      title: 'BMX Tracks in Belgium - BMX Calendar',
+      description: 'Discover BMX tracks across Belgium: locations, track features, and club information for over 15 circuits.',
     },
     '/get-in-touch': {
       title: 'Get in touch - BMX Calendar',
@@ -208,6 +223,12 @@
         <AboutPage />
       {:else if $currentRoute === '/guide'}
         <GuidePage />
+      {:else if $currentRoute === '/faq'}
+        <FaqPage />
+      {:else if $currentRoute === '/race-day'}
+        <RaceDayPage />
+      {:else if $currentRoute === '/tracks'}
+        <TracksPage />
       {:else if $currentRoute === '/get-in-touch'}
         <GetInTouchPage />
       {:else if $currentRoute === '/privacy-policy'}

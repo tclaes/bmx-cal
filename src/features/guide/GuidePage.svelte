@@ -117,6 +117,24 @@
       </ul>
     </section>
 
+    <section class="related-section">
+      <h2>{$t.guide.relatedTitle}</h2>
+      <div class="related-links">
+        <a href="/faq" class="related-card" on:click|preventDefault={() => navigate('/faq')}>
+          <strong>{$t.guide.relatedFaq}</strong>
+          <span>{$t.guide.relatedFaqDesc}</span>
+        </a>
+        <a href="/race-day" class="related-card" on:click|preventDefault={() => navigate('/race-day')}>
+          <strong>{$t.guide.relatedRaceDay}</strong>
+          <span>{$t.guide.relatedRaceDayDesc}</span>
+        </a>
+        <a href="/tracks" class="related-card" on:click|preventDefault={() => navigate('/tracks')}>
+          <strong>{$t.guide.relatedTracks}</strong>
+          <span>{$t.guide.relatedTracksDesc}</span>
+        </a>
+      </div>
+    </section>
+
     <section class="cta-section">
       <h2>{$t.guide.ctaTitle}</h2>
       <p>{$t.guide.ctaBody}</p>
@@ -275,6 +293,48 @@
 
   .links-list a:hover {
     color: var(--color-primary-dark, #1d4ed8);
+  }
+
+  .related-section h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-block-end: var(--spacing-md);
+  }
+
+  .related-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .related-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-lg);
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .related-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+  }
+
+  .related-card strong {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+  }
+
+  .related-card span {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
   }
 
   .cta-section {
