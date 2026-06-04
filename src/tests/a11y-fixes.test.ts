@@ -58,11 +58,9 @@ describe('Modal Accessibility', () => {
 
   it('should close on Escape key', async () => {
     const handleClose = vi.fn();
-    const { component } = render(Modal, {
-      props: { open: true, title: 'Test Modal' }
+    render(Modal, {
+      props: { open: true, title: 'Test Modal', $$events: { close: handleClose } }
     });
-
-    component.$on('close', handleClose);
 
     const dialog = screen.getByRole('dialog');
     await fireEvent.keyDown(dialog, { key: 'Escape' });
@@ -173,12 +171,9 @@ describe('FileUpload Accessibility', () => {
   });
 
   it('should handle Enter key press', async () => {
-    const handleFileSelected = vi.fn();
-    const { component } = render(FileUpload, {
+    render(FileUpload, {
       props: { label: 'Upload File' }
     });
-
-    component.$on('fileSelected', handleFileSelected);
 
     const uploadButton = screen.getByRole('button', { name: /upload file/i });
     await fireEvent.keyDown(uploadButton, { key: 'Enter' });
@@ -187,12 +182,9 @@ describe('FileUpload Accessibility', () => {
   });
 
   it('should handle Space key press', async () => {
-    const handleFileSelected = vi.fn();
-    const { component } = render(FileUpload, {
+    render(FileUpload, {
       props: { label: 'Upload File' }
     });
-
-    component.$on('fileSelected', handleFileSelected);
 
     const uploadButton = screen.getByRole('button', { name: /upload file/i });
     await fireEvent.keyDown(uploadButton, { key: ' ' });

@@ -30,15 +30,14 @@ describe('Dropdown Component', () => {
 
   it('toggles dropdown menu on button click', async () => {
     const mockHandler = vi.fn();
-    const { component, getByRole, container } = render(Dropdown, {
+    const { getByRole, container } = render(Dropdown, {
       props: {
         label: 'Test Label',
         id: 'test-dropdown',
         open: false,
+        $$events: { toggle: mockHandler },
       },
     });
-
-    component.$on('toggle', mockHandler);
 
     const button = getByRole('button');
 
@@ -52,14 +51,13 @@ describe('Dropdown Component', () => {
 
   it('dispatches toggle event when button is clicked', async () => {
     const mockHandler = vi.fn();
-    const { component, getByRole } = render(Dropdown, {
+    const { getByRole } = render(Dropdown, {
       props: {
         label: 'Test Label',
         id: 'test-dropdown',
+        $$events: { toggle: mockHandler },
       },
     });
-
-    component.$on('toggle', mockHandler);
 
     const button = getByRole('button');
     await fireEvent.click(button);
@@ -93,15 +91,14 @@ describe('Dropdown Component', () => {
 
   it('closes dropdown when clicking outside', async () => {
     const mockHandler = vi.fn();
-    const { component, container } = render(Dropdown, {
+    render(Dropdown, {
       props: {
         label: 'Test Label',
         id: 'test-dropdown',
         open: true,
+        $$events: { toggle: mockHandler },
       },
     });
-
-    component.$on('toggle', mockHandler);
 
     await fireEvent.click(document.body);
 
@@ -110,15 +107,14 @@ describe('Dropdown Component', () => {
 
   it('does not close dropdown when clicking inside', async () => {
     const mockHandler = vi.fn();
-    const { component, getByRole } = render(Dropdown, {
+    const { getByRole } = render(Dropdown, {
       props: {
         label: 'Test Label',
         id: 'test-dropdown',
         open: true,
+        $$events: { toggle: mockHandler },
       },
     });
-
-    component.$on('toggle', mockHandler);
 
     const button = getByRole('button');
     await fireEvent.click(button);

@@ -41,14 +41,13 @@ describe('CheckboxItem Component', () => {
 
   it('dispatches change event with value when checkbox is clicked', async () => {
     const mockHandler = vi.fn();
-    const { component, getByRole } = render(CheckboxItem, {
+    const { getByRole } = render(CheckboxItem, {
       props: {
         label: 'Test Option',
         value: 'test-value',
+        $$events: { change: mockHandler },
       },
     });
-
-    component.$on('change', mockHandler);
 
     const checkbox = getByRole('checkbox');
     await fireEvent.click(checkbox);
@@ -63,14 +62,13 @@ describe('CheckboxItem Component', () => {
 
   it('dispatches change event when label is clicked', async () => {
     const mockHandler = vi.fn();
-    const { component, getByText } = render(CheckboxItem, {
+    const { getByText } = render(CheckboxItem, {
       props: {
         label: 'Test Option',
         value: 'test-value',
+        $$events: { change: mockHandler },
       },
     });
-
-    component.$on('change', mockHandler);
 
     const label = getByText('Test Option');
     await fireEvent.click(label);

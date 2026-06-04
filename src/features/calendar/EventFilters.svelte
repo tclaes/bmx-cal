@@ -123,7 +123,7 @@
       aria-label={$t.filters.showPastEvents}
     >
       <span class="toggle-track">
-        <span class="toggle-thumb" />
+        <span class="toggle-thumb"></span>
       </span>
     </button>
   </div>

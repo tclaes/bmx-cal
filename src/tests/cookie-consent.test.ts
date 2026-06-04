@@ -47,11 +47,14 @@ describe('cookie-consent', () => {
 
   it('applyConsentToGoogle pushes a consent_update to dataLayer', () => {
     const dataLayer: unknown[] = [];
-    (window as unknown as { dataLayer: unknown[] }).dataLayer = dataLayer;
+    (window as unknown as { dataLayer: unknown[]; gtag: undefined }).dataLayer = dataLayer;
+    (window as unknown as { gtag: undefined }).gtag = undefined as unknown as typeof window.gtag;
     applyConsentToGoogle({ analytics: 'granted', ads: 'denied', decidedAt: null });
     expect(dataLayer).toHaveLength(1);
-    expect(dataLayer[0]).toMatchObject({
-      event: 'consent_update',
+    const call = dataLayer[0] as IArguments;
+    expect(call[0]).toBe('consent');
+    expect(call[1]).toBe('update');
+    expect(call[2]).toMatchObject({
       analytics_storage: 'granted',
       ad_storage: 'denied',
       ad_user_data: 'denied',
