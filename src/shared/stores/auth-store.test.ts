@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { authStore, isAdmin, isTeamManager, userTeams, userManagedTeams } from '../shared/stores/auth.store';
-import type { AdminUser, Team } from '../types';
+import { authStore, isAdmin, isTeamManager, userTeams, userManagedTeams } from './auth.store';
+import type { AdminUser, Team } from '../../types';
 
 const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };
 const team2: Team = { id: 'team-2', name: 'Team Beta', created_at: '2026-01-01T00:00:00Z' };

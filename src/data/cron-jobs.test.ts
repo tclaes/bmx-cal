@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { supabase } from '../data/supabase';
+import { supabase } from './supabase';
 
 describe('Cron Jobs Configuration', () => {
   let isConnected = false;

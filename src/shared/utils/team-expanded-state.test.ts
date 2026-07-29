@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getInitialTeamExpandedState } from '../shared/utils/permissions';
-import type { AdminUser, Team } from '../types';
+import { getInitialTeamExpandedState } from './permissions';
+import type { AdminUser, Team } from '../../types';
 
 const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };
 const team2: Team = { id: 'team-2', name: 'Team Beta', created_at: '2026-01-01T00:00:00Z' };

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Team } from '../types';
+import type { Team } from '../../types';
 
 const { mockGetUser, mockSignInWithPassword, mockSignOut, mockOnAuthStateChange, mockFrom } = vi.hoisted(() => ({
   mockGetUser: vi.fn(),
@@ -9,7 +9,7 @@ const { mockGetUser, mockSignInWithPassword, mockSignOut, mockOnAuthStateChange,
   mockFrom: vi.fn(),
 }));
 
-vi.mock('../data/supabase', () => ({
+vi.mock('../../data/supabase', () => ({
   supabase: {
     auth: {
       getUser: mockGetUser,
@@ -21,7 +21,7 @@ vi.mock('../data/supabase', () => ({
   },
 }));
 
-import { AuthService } from '../shared/services/auth.service';
+import { AuthService } from './auth.service';
 
 const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };
 const team2: Team = { id: 'team-2', name: 'Team Beta', created_at: '2026-01-01T00:00:00Z' };

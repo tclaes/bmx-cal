@@ -6,7 +6,7 @@ import {
   acceptAll,
   rejectAll,
   applyConsentToGoogle,
-} from '../shared/utils/cookie-consent';
+} from './cookie-consent';
 
 describe('cookie-consent', () => {
   beforeEach(() => {

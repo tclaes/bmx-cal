@@ -7,7 +7,7 @@ import {
   meetsContrastRequirement,
   darkenColorForWhiteText,
   rgbToHex
-} from '../shared/utils/color-contrast';
+} from './color-contrast';
 
 describe('Color Contrast Utilities', () => {
   describe('hexToRgb', () => {

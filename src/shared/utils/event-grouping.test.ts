@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { groupEventsByYear, getDefaultOpenYears } from '../shared/utils/event-grouping';
-import type { EventWithType } from '../types';
+import { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
+import type { EventWithType } from '../../types';
 
 function makeEvent(id: string, date: string): EventWithType {
   return { id, date, title: `Event ${id}` } as EventWithType;

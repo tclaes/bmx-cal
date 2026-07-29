@@ -2,17 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/svelte';
 import { axe } from 'vitest-axe';
 
-import Modal from '../shared/components/Modal.svelte';
-import Alert from '../shared/components/Alert.svelte';
-import Button from '../shared/components/Button.svelte';
-import Input from '../shared/components/Input.svelte';
-import Select from '../shared/components/Select.svelte';
-import Dropdown from '../shared/components/Dropdown.svelte';
-import CheckboxItem from '../shared/components/CheckboxItem.svelte';
-import Badge from '../shared/components/Badge.svelte';
-import FileUpload from '../shared/components/FileUpload.svelte';
-import LoadingSpinner from '../shared/components/LoadingSpinner.svelte';
-import Card from '../shared/components/Card.svelte';
+import Modal from './Modal.svelte';
+import Alert from './Alert.svelte';
+import Button from './Button.svelte';
+import Input from './Input.svelte';
+import Select from './Select.svelte';
+import Dropdown from './Dropdown.svelte';
+import CheckboxItem from './CheckboxItem.svelte';
+import Badge from './Badge.svelte';
+import FileUpload from './FileUpload.svelte';
+import LoadingSpinner from './LoadingSpinner.svelte';
+import Card from './Card.svelte';
 
 describe('axe: Modal', () => {
   it('has no violations when open', async () => {

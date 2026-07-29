@@ -4,7 +4,7 @@ import path from 'path';
 
 describe('PWA Configuration', () => {
   it('should have valid manifest.json structure', () => {
-    const manifestPath = path.resolve(__dirname, '../../public/manifest.json');
+    const manifestPath = path.resolve(__dirname, '../../../public/manifest.json');
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 
@@ -18,7 +18,7 @@ describe('PWA Configuration', () => {
   });
 
   it('should have relative paths in manifest', () => {
-    const manifestPath = path.resolve(__dirname, '../../public/manifest.json');
+    const manifestPath = path.resolve(__dirname, '../../../public/manifest.json');
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 
@@ -117,7 +117,7 @@ describe('PWA Install Prompt', () => {
 
 describe('Multi-domain Support', () => {
   it('should work with relative URLs for cross-domain compatibility', () => {
-    const manifestPath = path.resolve(__dirname, '../../public/manifest.json');
+    const manifestPath = path.resolve(__dirname, '../../../public/manifest.json');
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 
@@ -130,7 +130,7 @@ describe('Multi-domain Support', () => {
   });
 
   it('should use theme color from manifest', () => {
-    const manifestPath = path.resolve(__dirname, '../../public/manifest.json');
+    const manifestPath = path.resolve(__dirname, '../../../public/manifest.json');
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 
@@ -139,7 +139,7 @@ describe('Multi-domain Support', () => {
   });
 
   it('should not use prefer_related_applications by default', () => {
-    const manifestPath = path.resolve(__dirname, '../../public/manifest.json');
+    const manifestPath = path.resolve(__dirname, '../../../public/manifest.json');
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 

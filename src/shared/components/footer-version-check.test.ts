@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
-import Footer from '../shared/components/Footer.svelte';
+import Footer from './Footer.svelte';
 
 describe('Footer version check', () => {
   beforeEach(() => {

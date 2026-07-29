@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getContrastRatio } from '../shared/utils/color-contrast';
+import { getContrastRatio } from './color-contrast';
 
 describe('Accessibility Improvements', () => {
   describe('Registration Button Color Contrast', () => {
