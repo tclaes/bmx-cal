@@ -5,8 +5,19 @@ export interface RegistrationStatus {
   color: string;
 }
 
+function parseLocalDate(dateStr: string): Date {
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    const day = parseInt(match[3], 10);
+    return new Date(year, month, day);
+  }
+  return new Date(dateStr);
+}
+
 export function getFridayBefore(dateStr: string): Date {
-  const date = new Date(dateStr);
+  const date = parseLocalDate(dateStr);
   const day = date.getDay();
   const daysUntilFriday = (day + 2) % 7;
   const friday = new Date(date);
@@ -27,7 +38,7 @@ export function getRegistrationStatus(event: Pick<EventWithDetails, 'registratio
   }
 
   if (event.registration_deadline) {
-    const deadline = new Date(event.registration_deadline);
+    const deadline = parseLocalDate(event.registration_deadline);
     deadline.setHours(0, 0, 0, 0);
     if (deadline < today) {
       return { label: 'Registration Closed', color: '#6b7280' };
@@ -35,7 +46,7 @@ export function getRegistrationStatus(event: Pick<EventWithDetails, 'registratio
   }
 
   if (event.registration_opens) {
-    const opens = new Date(event.registration_opens);
+    const opens = parseLocalDate(event.registration_opens);
     opens.setHours(0, 0, 0, 0);
     if (opens > today) {
       return { label: 'Registration Opens Soon', color: '#b45309' };
