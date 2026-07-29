@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 
@@ -65,6 +65,10 @@ describe('Service Worker', () => {
 });
 
 describe('PWA Install Prompt', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('should detect standalone mode', () => {
     const matchMediaMock = vi.fn().mockImplementation((query) => ({
       matches: query === '(display-mode: standalone)',
@@ -83,35 +87,39 @@ describe('PWA Install Prompt', () => {
   it('should detect iOS devices correctly', () => {
     const originalUserAgent = navigator.userAgent;
 
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
-      configurable: true,
-    });
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
+        configurable: true,
+      });
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    expect(isIOS).toBe(true);
-
-    Object.defineProperty(navigator, 'userAgent', {
-      value: originalUserAgent,
-      configurable: true,
-    });
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      expect(isIOS).toBe(true);
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: originalUserAgent,
+        configurable: true,
+      });
+    }
   });
 
   it('should detect Android devices correctly', () => {
     const originalUserAgent = navigator.userAgent;
 
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-      configurable: true,
-    });
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
+        configurable: true,
+      });
 
-    const isAndroid = /Android/.test(navigator.userAgent);
-    expect(isAndroid).toBe(true);
-
-    Object.defineProperty(navigator, 'userAgent', {
-      value: originalUserAgent,
-      configurable: true,
-    });
+      const isAndroid = /Android/.test(navigator.userAgent);
+      expect(isAndroid).toBe(true);
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: originalUserAgent,
+        configurable: true,
+      });
+    }
   });
 });
 

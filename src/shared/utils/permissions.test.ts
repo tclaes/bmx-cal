@@ -1,9 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { canAccessMyCalendar, canEditEvent } from './permissions';
-import type { AdminUser, EventWithDetails, Team } from '../../types';
-
-const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };
-const team2: Team = { id: 'team-2', name: 'Team Beta', created_at: '2026-01-01T00:00:00Z' };
+import type { EventWithDetails } from '../../types';
+import { team1, team2, makeUser } from '../../tests/fixtures';
 
 function makeEvent(overrides: Partial<EventWithDetails> = {}): EventWithDetails {
   return {
@@ -29,17 +27,6 @@ function makeEvent(overrides: Partial<EventWithDetails> = {}): EventWithDetails 
     updated_at: '2026-01-01T00:00:00Z',
     event_type: null,
     location_details: null,
-    ...overrides,
-  };
-}
-
-function makeUser(overrides: Partial<AdminUser>): AdminUser {
-  return {
-    id: 'user-1',
-    email: 'user@example.com',
-    role: 'user',
-    teams: [],
-    managedTeams: [],
     ...overrides,
   };
 }

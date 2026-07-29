@@ -1,21 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { authStore, isAdmin, isTeamManager, userTeams, userManagedTeams } from './auth.store';
-import type { AdminUser, Team } from '../../types';
-
-const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };
-const team2: Team = { id: 'team-2', name: 'Team Beta', created_at: '2026-01-01T00:00:00Z' };
-
-function makeUser(overrides: Partial<AdminUser>): AdminUser {
-  return {
-    id: 'user-1',
-    email: 'user@example.com',
-    role: 'user',
-    teams: [],
-    managedTeams: [],
-    ...overrides,
-  };
-}
+import { team1, team2, makeUser } from '../../tests/fixtures';
 
 describe('authStore', () => {
   beforeEach(() => {
