@@ -4,8 +4,19 @@
  * Test script to send a test email via the send-contact-email edge function
  */
 
-const SUPABASE_URL = 'https://wateawaecktywtlfhomn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdGVhd2FlY2t0eXd0bGZob21uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjYsImV4cCI6MjA4ODgzMDAyNn0.4D-5xGGpIteXO1GS0PIlg1hP8CjFUXtXMXDy7XrpnM0';
+import { readFileSync } from 'fs';
+
+const envContent = readFileSync('.env', 'utf-8');
+const env = {};
+envContent.split('\n').forEach(line => {
+  const match = line.match(/^([^=]+)=(.*)$/);
+  if (match) {
+    env[match[1].trim()] = match[2].trim();
+  }
+});
+
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
 
 async function sendTestEmail() {
   console.log('Sending test email...\n');

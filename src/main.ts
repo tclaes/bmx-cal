@@ -1,11 +1,10 @@
 import './app.css'
+import { mount } from 'svelte'
 import App from './App.svelte'
 import { updateStore } from '@shared/stores/pwa.store';
 import { checkForUpdate, storeCurrentVersion } from '@shared/utils/version-checker';
 
-const app = new App({
-  target: document.getElementById('app')!,
-})
+mount(App, { target: document.getElementById('app')! });
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -40,5 +39,3 @@ if ('serviceWorker' in navigator) {
       .catch(() => {});
   });
 }
-
-export default app

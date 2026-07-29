@@ -47,19 +47,7 @@
   }
 </script>
 
-<div
-  class="file-upload"
-  class:dragging={isDragging}
-  class:disabled
-  role="button"
-  tabindex={disabled ? -1 : 0}
-  on:drop={handleDrop}
-  on:dragover={handleDragOver}
-  on:dragleave={handleDragLeave}
-  on:click={handleClick}
-  on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
-  aria-label="{label} - Click or drag and drop to upload"
->
+<div class="file-upload-wrapper">
   <input
     type="file"
     {accept}
@@ -70,18 +58,40 @@
     aria-hidden="true"
     tabindex="-1"
   />
-  <div class="upload-content" aria-hidden="true">
-    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-      <polyline points="17 8 12 3 7 8"></polyline>
-      <line x1="12" y1="3" x2="12" y2="15"></line>
-    </svg>
-    <p class="upload-text">{label}</p>
-    <p class="upload-hint">Click or drag and drop to upload</p>
+  <div
+    class="file-upload"
+    class:dragging={isDragging}
+    class:disabled
+    role="button"
+    tabindex={disabled ? -1 : 0}
+    on:drop={handleDrop}
+    on:dragover={handleDragOver}
+    on:dragleave={handleDragLeave}
+    on:click={handleClick}
+    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
+    aria-label="{label} - Click or drag and drop to upload"
+  >
+    <div class="upload-content" aria-hidden="true">
+      <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      <p class="upload-text">{label}</p>
+      <p class="upload-hint">Click or drag and drop to upload</p>
+    </div>
   </div>
 </div>
 
 <style>
+  .file-upload-wrapper {
+    position: relative;
+  }
+
+  .file-input {
+    display: none;
+  }
+
   .file-upload {
     border: 2px dashed var(--color-border);
     border-radius: var(--border-radius-lg);
@@ -109,10 +119,6 @@
   .file-upload.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  .file-input {
-    display: none;
   }
 
   .upload-content {

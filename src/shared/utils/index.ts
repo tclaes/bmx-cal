@@ -9,3 +9,4 @@ export { canEditEvent, getInitialTeamExpandedState } from './permissions';
 export { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
 export { searchEvents } from './event-search';
 export { getRegistrationStatus, getFridayBefore } from './registration-status';
+export { routeMeta, NO_AD_ROUTES, updateDocumentMeta } from './route-meta';
