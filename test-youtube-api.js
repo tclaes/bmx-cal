@@ -18,7 +18,9 @@ async function searchYouTubeLive(searchQuery) {
   searchUrl.searchParams.set('key', YOUTUBE_API_KEY);
 
   console.log(`Searching YouTube for: "${searchQuery}"`);
-  console.log(`URL: ${searchUrl.toString()}\n`);
+  const redactedUrl = new URL(searchUrl.toString());
+  redactedUrl.searchParams.set('key', '***REDACTED***');
+  console.log(`URL: ${redactedUrl.toString()}\n`);
 
   const response = await fetch(searchUrl.toString());
 

@@ -46,14 +46,15 @@ describe('Modal Accessibility', () => {
       props: { open: true, title: 'Test Modal' }
     });
 
+    const dialog = screen.getByRole('dialog');
     const closeButton = screen.getByRole('button', { name: /close modal/i });
     closeButton.focus();
+    expect(document.activeElement).toBe(closeButton);
 
-    await fireEvent.keyDown(closeButton, { key: 'Tab' });
+    await fireEvent.keyDown(dialog, { key: 'Tab' });
 
-    const focusedElement = document.activeElement;
-    const dialog = screen.getByRole('dialog');
-    expect(dialog.contains(focusedElement)).toBe(true);
+    // Focus should remain within the dialog after Tab
+    expect(dialog.contains(document.activeElement)).toBe(true);
   });
 
   it('should close on Escape key', async () => {
@@ -176,9 +177,10 @@ describe('FileUpload Accessibility', () => {
     });
 
     const uploadButton = screen.getByRole('button', { name: /upload file/i });
+    uploadButton.focus();
     await fireEvent.keyDown(uploadButton, { key: 'Enter' });
 
-    expect(uploadButton).toBeInTheDocument();
+    expect(document.activeElement).toBe(uploadButton);
   });
 
   it('should handle Space key press', async () => {
@@ -187,9 +189,10 @@ describe('FileUpload Accessibility', () => {
     });
 
     const uploadButton = screen.getByRole('button', { name: /upload file/i });
+    uploadButton.focus();
     await fireEvent.keyDown(uploadButton, { key: ' ' });
 
-    expect(uploadButton).toBeInTheDocument();
+    expect(document.activeElement).toBe(uploadButton);
   });
 
   it('should hide decorative SVG from screen readers', () => {
@@ -293,9 +296,7 @@ describe('Badge Accessibility', () => {
 
     const badge = container.querySelector('.badge') as HTMLElement;
 
-    // Badge now always uses white text and darkens the background if needed
     expect(badge.style.color).toBe('rgb(255, 255, 255)');
-    // Background should be darkened from white to ensure contrast
     expect(badge.style.backgroundColor).not.toBe('rgb(255, 255, 255)');
   });
 

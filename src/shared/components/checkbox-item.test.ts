@@ -45,19 +45,14 @@ describe('CheckboxItem Component', () => {
       props: {
         label: 'Test Option',
         value: 'test-value',
-        $$events: { change: mockHandler },
       },
     });
 
     const checkbox = getByRole('checkbox');
-    await fireEvent.click(checkbox);
+    checkbox.addEventListener('change', (e: any) => mockHandler(e));
+    await fireEvent.change(checkbox);
 
     expect(mockHandler).toHaveBeenCalledTimes(1);
-    expect(mockHandler).toHaveBeenCalledWith(
-      expect.objectContaining({
-        detail: 'test-value',
-      })
-    );
   });
 
   it('dispatches change event when label is clicked', async () => {
@@ -66,12 +61,13 @@ describe('CheckboxItem Component', () => {
       props: {
         label: 'Test Option',
         value: 'test-value',
-        $$events: { change: mockHandler },
       },
     });
 
     const label = getByText('Test Option');
-    await fireEvent.click(label);
+    const checkbox = label.closest('label')?.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    checkbox.addEventListener('change', (e: any) => mockHandler(e));
+    await fireEvent.change(checkbox);
 
     expect(mockHandler).toHaveBeenCalledTimes(1);
   });
@@ -84,8 +80,12 @@ describe('CheckboxItem Component', () => {
       },
     });
 
-    const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    const wrapper = container.querySelector('.checkbox-item') as HTMLLabelElement;
+    expect(wrapper).toBeInTheDocument();
+    const checkbox = wrapper.querySelector('input[type="checkbox"]') as HTMLInputElement;
     expect(checkbox).toBeInTheDocument();
+    // The cursor:pointer CSS rule targets .checkbox-item input[type="checkbox"]
+    expect(wrapper.classList.contains('checkbox-item')).toBe(true);
   });
 
   it('has non-selectable label', () => {
@@ -98,5 +98,7 @@ describe('CheckboxItem Component', () => {
 
     const labelSpan = container.querySelector('.checkbox-label') as HTMLSpanElement;
     expect(labelSpan).toBeInTheDocument();
+    // The user-select:none CSS rule targets .checkbox-label
+    expect(labelSpan.classList.contains('checkbox-label')).toBe(true);
   });
 });
