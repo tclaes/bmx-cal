@@ -78,7 +78,7 @@ You can manually trigger the edge functions for testing:
 
 ### Test JSTiming Sync
 ```bash
-curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/sync-jstiming" \
+curl -X POST "https://<YOUR_SUPABASE_PROJECT>.supabase.co/functions/v1/sync-jstiming" \
   -H "Authorization: Bearer <YOUR_ANON_KEY>" \
   -H "Content-Type: application/json"
 ```
@@ -86,12 +86,12 @@ curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/sync-jstimin
 ### Test UEC Livestream Search
 ```bash
 # Search for today's events
-curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/search-uec-livestream" \
+curl -X POST "https://<YOUR_SUPABASE_PROJECT>.supabase.co/functions/v1/search-uec-livestream" \
   -H "Authorization: Bearer <YOUR_ANON_KEY>" \
   -H "Content-Type: application/json"
 
 # Test specific event
-curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/search-uec-livestream" \
+curl -X POST "https://<YOUR_SUPABASE_PROJECT>.supabase.co/functions/v1/search-uec-livestream" \
   -H "Authorization: Bearer <YOUR_ANON_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"event_id":"<EVENT_UUID>"}'
