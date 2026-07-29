@@ -20,7 +20,7 @@ The application follows a clean, modular architecture with Sheriff enforcing mod
 
 ## Prerequisites
 
-- Node.js 16 or higher
+- Node.js 22 or higher
 - A Supabase account and project
 
 ## Installation
