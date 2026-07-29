@@ -6,7 +6,7 @@
  * This simulates what the search-uec-livestream edge function does
  */
 
-const YOUTUBE_API_KEY = 'AIzaSyBhIVCSNMdh9gmnONUNkTNkGMCZQUEZOKs';
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'YOUR_YOUTUBE_API_KEY';
 
 async function searchYouTubeLive(searchQuery) {
   const searchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
