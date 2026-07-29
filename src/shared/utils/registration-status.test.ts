@@ -150,21 +150,28 @@ describe('getRegistrationStatus', () => {
 });
 
 describe('getFridayBefore', () => {
+  function toLocalISODate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   it('returns the Friday before a Sunday event', () => {
     const friday = getFridayBefore('2026-04-12');
     expect(friday.getDay()).toBe(5);
-    expect(friday.toISOString().split('T')[0]).toBe('2026-04-10');
+    expect(toLocalISODate(friday)).toBe('2026-04-10');
   });
 
   it('returns the Friday before a Saturday event', () => {
     const friday = getFridayBefore('2026-04-11');
     expect(friday.getDay()).toBe(5);
-    expect(friday.toISOString().split('T')[0]).toBe('2026-04-10');
+    expect(toLocalISODate(friday)).toBe('2026-04-10');
   });
 
   it('returns same day when event is on a Friday', () => {
     const friday = getFridayBefore('2026-04-10');
     expect(friday.getDay()).toBe(5);
-    expect(friday.toISOString().split('T')[0]).toBe('2026-04-10');
+    expect(toLocalISODate(friday)).toBe('2026-04-10');
   });
 });

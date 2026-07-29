@@ -4,19 +4,34 @@
  * Test script to send a test email via the send-contact-email edge function
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
-const envContent = readFileSync('.env', 'utf-8');
-const env = {};
-envContent.split('\n').forEach(line => {
-  const match = line.match(/^([^=]+)=(.*)$/);
-  if (match) {
-    env[match[1].trim()] = match[2].trim();
+function resolveEnv() {
+  const env = { ...process.env };
+  if (existsSync('.env')) {
+    const envContent = readFileSync('.env', 'utf-8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        if (!env[key]) {
+          env[key] = match[2].trim();
+        }
+      }
+    });
   }
-});
+  return env;
+}
+
+const env = resolveEnv();
 
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('Missing required credentials: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set in environment or .env file');
+  process.exit(1);
+}
 
 async function sendTestEmail() {
   console.log('Sending test email...\n');

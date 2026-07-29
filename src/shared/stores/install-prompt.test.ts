@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { installPromptStore } from '@shared/stores/pwa.store';
 
@@ -89,6 +89,10 @@ describe('InstallPrompt Component Logic', () => {
       removeEventListener: vi.fn(),
       dispatchEvent: vi.fn(),
     })));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('should check localStorage for dismissed prompt', () => {

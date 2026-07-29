@@ -59,9 +59,13 @@ export const NO_AD_ROUTES = new Set([
   '/admin/login',
 ]);
 
+const DEFAULT_META = {
+  title: 'BMX Calendar',
+  description: 'BMX events, races and competitions in Belgium.',
+};
+
 export function updateDocumentMeta(path: string) {
-  const meta = routeMeta[path];
-  if (!meta) return;
+  const meta = routeMeta[path] ?? DEFAULT_META;
   document.title = meta.title;
   const desc = document.querySelector('meta[name="description"]');
   if (desc) desc.setAttribute('content', meta.description);

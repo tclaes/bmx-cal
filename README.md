@@ -8,7 +8,7 @@ BMX Calendar brings together race schedules from multiple organisations into one
 
 - **Browse events** -- view upcoming BMX races, competitions, and shows with full details
 - **Filter and search** -- narrow down by event type, date range, or location
-- **Personal calendar** -- create a free account, select the races you want to ride, and export your selection to Google, Apple, or Outlook Calendar with one click
+- **Personal calendar** -- create a free account, select the races you want to ride, and download your selection as an `.ics` calendar file that imports into Google, Apple, or Outlook Calendar
 - **Registration tracking** -- see at a glance whether registration is open, closed, or opening soon
 - **Livestream links** -- watch UEC European events live, with links discovered automatically each day
 - **Multi-language** -- available in English, Dutch, and French
@@ -42,7 +42,7 @@ BMX Calendar brings together race schedules from multiple organisations into one
 
 - Secure login with Supabase Auth
 - Event editor for creating and updating events
-- Document upload to bulk import events (CSV, Excel, iCalendar)
+- Document upload to bulk import events (CSV, Excel, iCalendar, PDF)
 - Bug report management with GitHub issue integration
 
 ### Automated Background Jobs
@@ -139,7 +139,7 @@ If you want the automated livestream search to work, add your YouTube API key as
 
 ## Project Structure
 
-```
+```text
 src/
 ├── features/              # Feature modules (smart components)
 │   ├── about/            # About and contact pages

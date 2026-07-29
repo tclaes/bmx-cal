@@ -6,7 +6,8 @@ export interface RegistrationStatus {
 }
 
 export function getFridayBefore(dateStr: string): Date {
-  const date = new Date(dateStr);
+  const parts = dateStr.split('-').map(Number);
+  const date = new Date(parts[0], parts[1] - 1, parts[2]);
   const day = date.getDay();
   const daysUntilFriday = (day + 2) % 7;
   const friday = new Date(date);

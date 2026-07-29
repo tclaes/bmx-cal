@@ -126,11 +126,11 @@ describe('Color Contrast Utilities', () => {
     });
 
     it('should fail AAA requirement for moderate contrast', () => {
-      const ratio = getContrastRatio('#555555', '#ffffff');
-      if (ratio >= 4.5 && ratio < 7) {
-        expect(meetsContrastRequirement('#555555', '#ffffff', 'AA')).toBe(true);
-        expect(meetsContrastRequirement('#555555', '#ffffff', 'AAA')).toBe(false);
-      }
+      const ratio = getContrastRatio('#767676', '#ffffff');
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+      expect(ratio).toBeLessThan(7);
+      expect(meetsContrastRequirement('#767676', '#ffffff', 'AA')).toBe(true);
+      expect(meetsContrastRequirement('#767676', '#ffffff', 'AAA')).toBe(false);
     });
 
     it('should default to AA level', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/svelte';
-import { axe } from 'vitest-axe';
+import { configuredAxe as axe } from '../../test-setup';
 
 import Modal from './Modal.svelte';
 import Alert from './Alert.svelte';

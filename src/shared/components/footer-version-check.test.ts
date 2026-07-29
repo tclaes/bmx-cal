@@ -29,10 +29,10 @@ describe('Footer version check', () => {
     const versionButton = await screen.findByTitle(/Current version:/);
     fireEvent.click(versionButton);
 
-    const checkingText = screen.queryByText('Checking...');
-    if (checkingText) {
+    await waitFor(() => {
+      const checkingText = screen.queryByText('Checking...');
       expect(checkingText).toBeInTheDocument();
-    }
+    }, { timeout: 1000 });
   });
 
   it('should display update message after check', async () => {

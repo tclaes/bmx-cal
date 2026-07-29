@@ -84,6 +84,7 @@ curl -X POST "https://<YOUR_SUPABASE_PROJECT>.supabase.co/functions/v1/sync-jsti
 ```
 
 ### Test UEC Livestream Search
+
 ```bash
 # Search for today's events
 curl -X POST "https://<YOUR_SUPABASE_PROJECT>.supabase.co/functions/v1/search-uec-livestream" \

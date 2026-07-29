@@ -3,15 +3,33 @@
   import { APP_VERSION } from '@config/version';
   import { t, interpolate } from '../../i18n';
   import { navigate } from '../../router';
+  import { onMount, onDestroy } from 'svelte';
+
+  const footerRoutes = [
+    { path: '/about', key: 'about' as const },
+    { path: '/get-in-touch', key: 'getInTouch' as const },
+    { path: '/report-bug', key: 'reportBug' as const },
+    { path: '/privacy-policy', key: 'privacy' as const },
+    { path: '/terms', key: 'terms' as const },
+  ];
 
   let updateCheckMessage = '';
   let showUpdateMessage = false;
+  let updateTimeout: ReturnType<typeof setTimeout> | null = null;
 
   function openCookieSettings() {
     window.dispatchEvent(new Event('open-cookie-settings'));
   }
 
+  function clearUpdateTimeout() {
+    if (updateTimeout) {
+      clearTimeout(updateTimeout);
+      updateTimeout = null;
+    }
+  }
+
   async function handleCheckForUpdates() {
+    clearUpdateTimeout();
     showUpdateMessage = false;
 
     try {
@@ -27,20 +45,23 @@
     }
 
     showUpdateMessage = true;
-    setTimeout(() => {
+    updateTimeout = setTimeout(() => {
       showUpdateMessage = false;
+      updateTimeout = null;
     }, 5000);
   }
+
+  onDestroy(() => {
+    clearUpdateTimeout();
+  });
 </script>
 
 <footer class="footer">
   <div class="footer-inner">
     <span>{interpolate($t.footer.copyright, { year: new Date().getFullYear() })}</span>
-    <button class="footer-link" on:click={() => navigate('/about')}>{$t.footer.about}</button>
-    <button class="footer-link" on:click={() => navigate('/get-in-touch')}>{$t.footer.getInTouch}</button>
-    <button class="footer-link" on:click={() => navigate('/report-bug')}>{$t.footer.reportBug}</button>
-    <button class="footer-link" on:click={() => navigate('/privacy-policy')}>{$t.footer.privacy}</button>
-    <button class="footer-link" on:click={() => navigate('/terms')}>{$t.footer.terms}</button>
+    {#each footerRoutes as route}
+      <button class="footer-link" on:click={() => navigate(route.path)}>{$t.footer[route.key]}</button>
+    {/each}
     <button class="footer-link" on:click={openCookieSettings}>{$t.footer.cookieSettings}</button>
     <button
       class="footer-link footer-link--version"
