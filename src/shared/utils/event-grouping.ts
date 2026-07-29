@@ -3,7 +3,7 @@ import type { EventWithType } from '../../types';
 export function groupEventsByYear(events: EventWithType[]): Map<number, EventWithType[]> {
   const map = new Map<number, EventWithType[]>();
   for (const evt of events) {
-    const year = new Date(evt.date).getFullYear();
+    const year = parseInt(evt.date.slice(0, 4), 10);
     if (!map.has(year)) map.set(year, []);
     map.get(year)!.push(evt);
   }

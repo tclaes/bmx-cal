@@ -10,19 +10,34 @@
  * To test a specific event, pass its UUID as an argument.
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
-const envContent = readFileSync('.env', 'utf-8');
-const env = {};
-envContent.split('\n').forEach(line => {
-  const match = line.match(/^([^=]+)=(.*)$/);
-  if (match) {
-    env[match[1].trim()] = match[2].trim();
+function resolveEnv() {
+  const env = { ...process.env };
+  if (existsSync('.env')) {
+    const envContent = readFileSync('.env', 'utf-8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        if (!env[key]) {
+          env[key] = match[2].trim();
+        }
+      }
+    });
   }
-});
+  return env;
+}
+
+const env = resolveEnv();
 
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
 const SERVICE_ROLE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('Missing required credentials: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in environment or .env file');
+  process.exit(1);
+}
 
 const eventId = process.argv[2];
 const body = eventId ? { event_id: eventId } : {};
