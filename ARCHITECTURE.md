@@ -31,7 +31,7 @@ types              → no dependencies
 
 ## Directory Structure
 
-```
+```text
 src/
 ├── features/                  # Feature modules (smart components)
 │   ├── about/                 # About page and contact page
@@ -193,6 +193,7 @@ All edge functions implement CORS headers and JWT verification.
 ## Data Flow
 
 ### Public User Flow
+
 1. User visits the app
 2. `CalendarView` loads and `EventList` fetches events via `EventsService`
 3. Events stored in `eventsStore`
@@ -202,6 +203,7 @@ All edge functions implement CORS headers and JWT verification.
 7. Livestream links displayed for UEC events when available
 
 ### Authenticated User Flow
+
 1. User registers or signs in via `LoginPage` / `RegisterPage`
 2. `AuthService` authenticates via Supabase Auth
 3. `authStore` holds user, admin flag, and team-manager flag
@@ -210,6 +212,7 @@ All edge functions implement CORS headers and JWT verification.
 6. User can manage their profile and delete their account (`ProfilePage`)
 
 ### Admin User Flow
+
 1. Admin navigates to `/admin/login`
 2. `Login` authenticates via `AuthService`
 3. Redirected to `/admin` dashboard
@@ -221,12 +224,14 @@ All edge functions implement CORS headers and JWT verification.
 9. Events appear in public calendar
 
 ### Team Manager Flow
+
 1. Team manager signs in and navigates to `/team-manager`
 2. `TeamManagerDashboard` shows team-specific events and event types
 3. Team manager can add/edit events for their team
 4. `TeamMemberManager` (admin) manages team members
 
 ### Bug Report Flow
+
 1. User navigates to `/report-bug`
 2. `BugReportPage` collects issue details
 3. `bug-report.service` creates a database record
@@ -235,6 +240,7 @@ All edge functions implement CORS headers and JWT verification.
 6. Admin can reopen issues via `reopen-github-issue` edge function
 
 ### Automated Sync Flow (Cron Jobs)
+
 1. `pg_cron` schedules run on the Supabase database
 2. `sync-jstiming` edge function fetches registration data from JS Timing
 3. Event registration fields updated automatically
@@ -244,6 +250,7 @@ All edge functions implement CORS headers and JWT verification.
 ## State Management
 
 ### Stores
+
 We use Svelte stores for global state:
 
 - **eventsStore**: Events list, event types, loading state. Includes `upcomingEvents` derived store.
@@ -254,6 +261,7 @@ We use Svelte stores for global state:
 - **pwa.store**: Install prompt state (`installPromptStore`) and update prompt state (`updateStore`).
 
 ### Store Pattern
+
 ```typescript
 function createStore() {
   const { subscribe, set, update } = writable(initialState);
@@ -278,6 +286,7 @@ The app supports three languages: English (`en`), Dutch (`nl`), and French (`fr`
 ## Security
 
 ### Row Level Security (RLS)
+
 All database tables use RLS policies:
 
 - **Public read access**: SELECT on events and event_types (for public calendar)
@@ -287,6 +296,7 @@ All database tables use RLS policies:
 - **Import logs**: Admin-only access
 
 ### Authentication
+
 - Supabase Auth for user management (email/password)
 - Admin role stored in `app_metadata`
 - Team manager role determined via `team_managers` table
@@ -298,12 +308,14 @@ All database tables use RLS policies:
 ## File Import System
 
 ### Supported Formats
+
 1. **CSV** - Parsed with Papa Parse
 2. **Excel** (.xlsx, .xls) - Parsed with SheetJS
 3. **iCalendar** (.ics) - Custom parser
 4. **PDF** - Parsed via `analyze-pdf` edge function
 
 ### Import Process
+
 1. File uploaded via drag-and-drop or file picker
 2. Format detected by file extension (`file-parser.ts`)
 3. Appropriate parser extracts events
@@ -313,6 +325,7 @@ All database tables use RLS policies:
 7. Import logged with success/error details
 
 ### Validation Rules
+
 - Title is required
 - Date is required (YYYY-MM-DD format)
 - Location is required
@@ -337,12 +350,14 @@ All database tables use RLS policies:
 ## Styling System
 
 ### CSS Architecture
+
 - **variables.css**: Design tokens (colors, spacing, typography)
 - **reset.css**: Browser normalization
 - **layout.css**: Grid and flexbox utilities
 - **utilities.css**: Margin, padding, text utilities
 
 ### Component Styles
+
 - Scoped styles in each component
 - Use CSS custom properties from variables
 - No global CSS classes
@@ -350,6 +365,7 @@ All database tables use RLS policies:
 - Logical properties (e.g., `margin-inline`, `padding-block`) preferred
 
 ### Responsive Design
+
 - Mobile-first approach
 - Breakpoints: 768px, 1024px
 - Flexible grid layouts
@@ -366,6 +382,7 @@ All database tables use RLS policies:
 ## Testing Strategy
 
 ### Automated Tests
+
 The project uses Vitest with jsdom and axe-core for accessibility testing:
 
 - **Component tests**: Svelte component rendering and behavior (`*.test.ts` in `shared/components/`)
@@ -379,11 +396,13 @@ The project uses Vitest with jsdom and axe-core for accessibility testing:
 Run tests with `npm run test` (single run) or `npm run test:watch` (watch mode).
 
 ### Sheriff Verification
+
 Run `npm run sheriff` to verify module boundaries are respected.
 
 ## Future Scalability
 
 ### Easy to Add
+
 - New event fields (update `database.types.ts` and database schema)
 - New file formats (add parser in `shared/utils/`)
 - New filters (add to `filtersStore`)
@@ -391,6 +410,7 @@ Run `npm run sheriff` to verify module boundaries are respected.
 - New pages (add route in `router/index.ts`, feature folder, and route meta)
 
 ### Requires Planning
+
 - Tag remaining feature folders in Sheriff config for boundary enforcement
 - Real-time event updates
 - Event analytics
@@ -400,6 +420,7 @@ Run `npm run sheriff` to verify module boundaries are respected.
 ## Best Practices
 
 ### When Adding Features
+
 1. Identify if it's a feature or shared component
 2. Smart components in `features/`, dumb in `shared/components/`
 3. Business logic in `shared/services/`
@@ -412,12 +433,14 @@ Run `npm run sheriff` to verify module boundaries are respected.
 10. Use logical properties in CSS
 
 ### Code Style
+
 - No comments unless explaining non-obvious logic
 - Descriptive variable names
 - Single responsibility per function/component
 - Prefer composition over inheritance
 
 ### Git Workflow
+
 - Small, focused commits
 - Descriptive commit messages
 - Feature branches for new features
@@ -426,18 +449,21 @@ Run `npm run sheriff` to verify module boundaries are respected.
 ## Troubleshooting
 
 ### Build Errors
+
 - Check TypeScript errors: `npm run check`
 - Verify Sheriff boundaries: `npm run sheriff`
 - Check linting: `npm run stylelint`
 - Clear cache: `rm -rf node_modules dist && npm install`
 
 ### Runtime Errors
+
 - Check browser console
 - Verify Supabase connection
 - Check RLS policies
 - Validate environment variables
 
 ### Import Issues
+
 - Verify file format matches extension
 - Check column names in CSV/Excel
 - Validate date format (YYYY-MM-DD)
