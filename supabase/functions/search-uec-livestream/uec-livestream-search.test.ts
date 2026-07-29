@@ -1,91 +1,86 @@
 import { describe, it, expect } from 'vitest';
 
+function extractKeywords(title: string): string[] {
+  return title
+    .toLowerCase()
+    .split(/[\s\-]+/)
+    .filter((w) => w.length >= 3 && !['european', 'round'].includes(w));
+}
+
+function isTitleMatch(videoTitle: string, eventTitle: string): boolean {
+  const lowerVideoTitle = videoTitle.toLowerCase();
+  const keywords = extractKeywords(eventTitle);
+  const matchCount = keywords.filter((kw) => lowerVideoTitle.includes(kw)).length;
+  return matchCount >= 2 || (lowerVideoTitle.includes('bmx') && lowerVideoTitle.includes('european'));
+}
+
+function buildSearchTerms(eventTitle: string, year: number): string[] {
+  return [
+    `${eventTitle} ${year}`,
+    `UEC BMX European Cup ${year}`,
+    'BMX European Cup Round',
+  ];
+}
+
+function getDateRange(dateStr: string): { publishedAfter: string; publishedBefore: string } {
+  const eventDate = new Date(dateStr + 'T00:00:00');
+  const dayBefore = new Date(eventDate);
+  dayBefore.setDate(dayBefore.getDate() - 1);
+  const dayAfter = new Date(eventDate);
+  dayAfter.setDate(dayAfter.getDate() + 1);
+  return {
+    publishedAfter: dayBefore.toISOString(),
+    publishedBefore: dayAfter.toISOString(),
+  };
+}
+
 describe('UEC Livestream Search Logic', () => {
-  it('should extract keywords from event title', () => {
-    const eventTitle = 'UEC BMX European Cup Round 1';
-    const keywords = eventTitle
-      .toLowerCase()
-      .split(/[\s\-]+/)
-      .filter((w: string) => w.length >= 3 && !['european', 'round'].includes(w));
+  describe('extractKeywords', () => {
+    it('extracts meaningful keywords from event title', () => {
+      const keywords = extractKeywords('UEC BMX European Cup Round 1');
+      expect(keywords).toContain('uec');
+      expect(keywords).toContain('bmx');
+      expect(keywords).not.toContain('european');
+      expect(keywords).not.toContain('round');
+    });
 
-    expect(keywords).toContain('uec');
-    expect(keywords).toContain('bmx');
-    expect(keywords).toContain('cup');
-    expect(keywords).not.toContain('european');
-    expect(keywords).not.toContain('round');
+    it('filters out words shorter than 3 characters', () => {
+      const keywords = extractKeywords('BMX Cup 1');
+      expect(keywords).toContain('bmx');
+      expect(keywords).toContain('cup');
+      expect(keywords).not.toContain('1');
+    });
   });
 
-  it('should match video titles with event keywords', () => {
-    const eventTitle = 'UEC BMX European Cup Round 3';
-    const videoTitle = '2025 UEC BMX European Cup - Round 3 | Zolder (BEL)';
+  describe('isTitleMatch', () => {
+    it('matches when 2 or more keywords are present', () => {
+      expect(isTitleMatch('uec bmx european cup 2026', 'UEC BMX European Cup Round 1')).toBe(true);
+    });
 
-    const keywords = eventTitle
-      .toLowerCase()
-      .split(/[\s\-]+/)
-      .filter((w: string) => w.length >= 3 && !['european', 'round'].includes(w));
+    it('matches when both bmx and european are present', () => {
+      expect(isTitleMatch('bmx european championship 2026', 'UEC BMX European Cup Round 1')).toBe(true);
+    });
 
-    const matchCount = keywords.filter((kw: string) =>
-      videoTitle.toLowerCase().includes(kw)
-    ).length;
-
-    expect(matchCount).toBeGreaterThanOrEqual(2);
+    it('does not match when fewer than 2 keywords and no bmx+european', () => {
+      expect(isTitleMatch('random cycling video 2026', 'UEC BMX European Cup Round 1')).toBe(false);
+    });
   });
 
-  it('should match BMX and European keywords as fallback', () => {
-    const videoTitle = '2025 BMX European Championship Day 1';
-    const titleLower = videoTitle.toLowerCase();
-
-    const hasBmx = titleLower.includes('bmx');
-    const hasEuropean = titleLower.includes('european');
-
-    expect(hasBmx && hasEuropean).toBe(true);
+  describe('buildSearchTerms', () => {
+    it('builds search terms with event title and year', () => {
+      const terms = buildSearchTerms('UEC BMX European Cup Round 1', 2026);
+      expect(terms).toHaveLength(3);
+      expect(terms[0]).toBe('UEC BMX European Cup Round 1 2026');
+      expect(terms[1]).toBe('UEC BMX European Cup 2026');
+      expect(terms[2]).toBe('BMX European Cup Round');
+    });
   });
 
-  it('should calculate date range correctly', () => {
-    const eventDate = new Date('2025-04-20');
-    const dayBefore = new Date(eventDate);
-    dayBefore.setDate(dayBefore.getDate() - 1);
-    const dayAfter = new Date(eventDate);
-    dayAfter.setDate(dayAfter.getDate() + 1);
-
-    expect(dayBefore.toISOString().split('T')[0]).toBe('2025-04-19');
-    expect(dayAfter.toISOString().split('T')[0]).toBe('2025-04-21');
-  });
-
-  it('should generate appropriate search terms', () => {
-    const eventTitle = 'UEC BMX European Cup Round 5';
-    const eventYear = 2025;
-
-    const searchTerms = [
-      `${eventTitle} ${eventYear}`,
-      `UEC BMX European Cup ${eventYear}`,
-      `BMX European Cup Round`
-    ];
-
-    expect(searchTerms[0]).toBe('UEC BMX European Cup Round 5 2025');
-    expect(searchTerms[1]).toBe('UEC BMX European Cup 2025');
-    expect(searchTerms[2]).toBe('BMX European Cup Round');
-  });
-
-  it('should filter out short words and common terms', () => {
-    const eventTitle = 'UEC BMX European Cup Round 1 in Zolder';
-    const keywords = eventTitle
-      .toLowerCase()
-      .split(/[\s\-]+/)
-      .filter((w: string) => w.length >= 3 && !['european', 'round'].includes(w));
-
-    expect(keywords).not.toContain('in');
-    expect(keywords).toContain('uec');
-    expect(keywords).toContain('bmx');
-    expect(keywords).toContain('zolder');
-    expect(keywords).toContain('cup');
-  });
-
-  it('should match UEC in video titles', () => {
-    const videoTitle = '2025 UEC BMX Championships';
-    const titleLower = videoTitle.toLowerCase();
-
-    expect(titleLower.includes('uec')).toBe(true);
-    expect(titleLower.includes('bmx')).toBe(true);
+  describe('getDateRange', () => {
+    it('returns date range with 1 day before and after', () => {
+      const range = getDateRange('2026-04-12');
+      expect(range.publishedAfter).toContain('2026-04-11');
+      expect(range.publishedBefore).toContain('2026-04-13');
+    });
   });
 });
