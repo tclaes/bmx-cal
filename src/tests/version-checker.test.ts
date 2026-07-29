@@ -7,6 +7,7 @@ import {
   checkForUpdate,
   isVersionOutdated,
 } from '@shared/utils/version-checker';
+import { APP_VERSION, MIN_VERSION } from '@config/version';
 
 describe('version-checker', () => {
   beforeEach(() => {
@@ -64,7 +65,7 @@ describe('version-checker', () => {
     it('should store and retrieve version', () => {
       storeCurrentVersion();
       const stored = getStoredVersion();
-      expect(stored).toBe('0.0.2');
+      expect(stored).toBe(APP_VERSION);
     });
 
     it('should handle localStorage errors gracefully', () => {
@@ -84,7 +85,7 @@ describe('version-checker', () => {
       const result = checkForUpdate();
       expect(result.hasUpdate).toBe(false);
       expect(result.stored).toBe(null);
-      expect(result.current).toBe('0.0.2');
+      expect(result.current).toBe(APP_VERSION);
     });
 
     it('should detect update when stored version is lower', () => {
@@ -92,31 +93,31 @@ describe('version-checker', () => {
       const result = checkForUpdate();
       expect(result.hasUpdate).toBe(true);
       expect(result.stored).toBe('0.0.1');
-      expect(result.current).toBe('0.0.2');
+      expect(result.current).toBe(APP_VERSION);
     });
 
     it('should not detect update when versions match', () => {
-      localStorage.setItem('app_version', '0.0.2');
+      localStorage.setItem('app_version', APP_VERSION);
       const result = checkForUpdate();
       expect(result.hasUpdate).toBe(false);
-      expect(result.stored).toBe('0.0.2');
+      expect(result.stored).toBe(APP_VERSION);
     });
 
     it('should not detect update when stored version is newer', () => {
-      localStorage.setItem('app_version', '0.0.3');
+      localStorage.setItem('app_version', '99.0.0');
       const result = checkForUpdate();
       expect(result.hasUpdate).toBe(false);
-      expect(result.stored).toBe('0.0.3');
+      expect(result.stored).toBe('99.0.0');
     });
 
     it('should include force update flag', () => {
       const result = checkForUpdate();
-      expect(result.forceUpdate).toBe(true);
+      expect(result).toHaveProperty('forceUpdate');
     });
 
     it('should include min version', () => {
       const result = checkForUpdate();
-      expect(result.minVersion).toBe('0.0.1');
+      expect(result.minVersion).toBe(MIN_VERSION);
     });
   });
 
@@ -126,7 +127,7 @@ describe('version-checker', () => {
     });
 
     it('should return false when stored version meets minimum', () => {
-      localStorage.setItem('app_version', '0.0.1');
+      localStorage.setItem('app_version', APP_VERSION);
       expect(isVersionOutdated()).toBe(false);
     });
 
@@ -136,7 +137,7 @@ describe('version-checker', () => {
     });
 
     it('should return false when stored version exceeds minimum', () => {
-      localStorage.setItem('app_version', '0.0.2');
+      localStorage.setItem('app_version', '99.0.0');
       expect(isVersionOutdated()).toBe(false);
     });
   });

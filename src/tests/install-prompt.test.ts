@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { installPromptStore } from '@shared/stores/pwa.store';
 
@@ -91,20 +91,19 @@ describe('InstallPrompt Component Logic', () => {
     })));
   });
 
-  it('should check localStorage for dismissed prompt', () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
-    getItemSpy.mockReturnValue(null);
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
 
+  it('should check localStorage for dismissed prompt', () => {
     const hasSeenPrompt = localStorage.getItem('pwa-install-dismissed');
-    expect(hasSeenPrompt).toBeNull();
-    expect(getItemSpy).toHaveBeenCalledWith('pwa-install-dismissed');
+    expect(hasSeenPrompt).toBeUndefined();
+    expect(localStorage.getItem).toHaveBeenCalledWith('pwa-install-dismissed');
   });
 
   it('should save dismiss state to localStorage', () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
-
     localStorage.setItem('pwa-install-dismissed', 'true');
-    expect(setItemSpy).toHaveBeenCalledWith('pwa-install-dismissed', 'true');
+    expect(localStorage.setItem).toHaveBeenCalledWith('pwa-install-dismissed', 'true');
   });
 
   it('should detect standalone mode', () => {
@@ -124,33 +123,39 @@ describe('InstallPrompt Component Logic', () => {
 
   it('should detect iOS devices', () => {
     const originalUserAgent = navigator.userAgent;
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
-      configurable: true,
-    });
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    expect(isIOS).toBe(true);
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+        configurable: true,
+      });
 
-    Object.defineProperty(navigator, 'userAgent', {
-      value: originalUserAgent,
-      configurable: true,
-    });
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      expect(isIOS).toBe(true);
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: originalUserAgent,
+        configurable: true,
+      });
+    }
   });
 
   it('should detect non-iOS devices', () => {
     const originalUserAgent = navigator.userAgent;
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
-      configurable: true,
-    });
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    expect(isIOS).toBe(false);
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
+        configurable: true,
+      });
 
-    Object.defineProperty(navigator, 'userAgent', {
-      value: originalUserAgent,
-      configurable: true,
-    });
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      expect(isIOS).toBe(false);
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', {
+        value: originalUserAgent,
+        configurable: true,
+      });
+    }
   });
 });
