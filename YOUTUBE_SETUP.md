@@ -2,30 +2,32 @@
 
 The `search-uec-livestream` edge function requires a YouTube API key to search for live broadcasts.
 
-## ✅ YouTube API Key Configured
+## Obtaining a YouTube API Key
 
-The YouTube API key has been tested and is working correctly:
-- **Key**: `AIzaSyBhIVCSNMdh9gmnONUNkTNkGMCZQUEZOKs`
-- **Status**: ✅ Verified working with YouTube Data API v3
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create or select a project
+3. Enable the **YouTube Data API v3** from the API library
+4. Create an API key under **Credentials**
+5. Restrict the key to the YouTube Data API v3 for security
 
 ## Setting up the Secret in Supabase
 
-**IMPORTANT**: The YouTube API key must be added to Supabase Edge Functions as a secret:
+**IMPORTANT**: The YouTube API key must be added to Supabase Edge Functions as a secret.
 
 ### Option 1: Via Supabase Dashboard (Recommended)
 
-1. Go to your [Supabase Dashboard](https://app.supabase.com/project/wateawaecktywtlfhomn)
+1. Go to your Supabase Dashboard for your project
 2. Navigate to **Edge Functions** → **Manage secrets** (or **Settings** → **Edge Functions** → **Secrets**)
 3. Click **Add new secret**
 4. Add the secret:
    - **Name**: `YOUTUBE_API_KEY`
-   - **Value**: `AIzaSyBhIVCSNMdh9gmnONUNkTNkGMCZQUEZOKs`
+   - **Value**: your-youtube-api-key-here
 5. Click **Save**
 
 ### Option 2: Via Supabase CLI (Alternative)
 
 ```bash
-supabase secrets set YOUTUBE_API_KEY=AIzaSyBhIVCSNMdh9gmnONUNkTNkGMCZQUEZOKs
+supabase secrets set YOUTUBE_API_KEY=your-youtube-api-key-here
 ```
 
 ### Verification
@@ -46,13 +48,6 @@ The edge function:
 2. Searches for UEC events happening today
 3. Uses YouTube Data API v3 to find live broadcasts
 4. Updates the `events` table with the livestream URL if found
-
-## Current Status
-
-✅ **YouTube API Key**: Verified working
-✅ **Edge Function**: Deployed and functional
-✅ **Cron Job**: Scheduled (daily at 08:00 UTC)
-⚠️ **Required Action**: Add YouTube API key as Supabase secret (see setup instructions above)
 
 ## Manual Testing
 
@@ -88,12 +83,3 @@ The cron job `search-uec-livestream-daily` is scheduled to run:
 - **Filters**: Events with titles containing "UEC", "European Cup", or "European Championships"
 
 You can monitor the job execution in the Supabase logs or by checking the `sync_logs` table.
-
-## Next Steps
-
-1. ✅ YouTube API key obtained and verified
-2. ⚠️ Add the secret to Supabase Edge Functions (see setup instructions above)
-3. ✅ Test the edge function manually
-4. ✅ Verify cron job is scheduled correctly
-
-Once the secret is added in Supabase, the cron job will automatically start updating livestream URLs for UEC events!

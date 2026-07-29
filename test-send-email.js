@@ -4,8 +4,34 @@
  * Test script to send a test email via the send-contact-email edge function
  */
 
-const SUPABASE_URL = 'https://wateawaecktywtlfhomn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdGVhd2FlY2t0eXd0bGZob21uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTQwMjYsImV4cCI6MjA4ODgzMDAyNn0.4D-5xGGpIteXO1GS0PIlg1hP8CjFUXtXMXDy7XrpnM0';
+import { readFileSync, existsSync } from 'fs';
+
+function resolveEnv() {
+  const env = { ...process.env };
+  if (existsSync('.env')) {
+    const envContent = readFileSync('.env', 'utf-8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        if (!env[key]) {
+          env[key] = match[2].trim();
+        }
+      }
+    });
+  }
+  return env;
+}
+
+const env = resolveEnv();
+
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('Missing required credentials: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set in environment or .env file');
+  process.exit(1);
+}
 
 async function sendTestEmail() {
   console.log('Sending test email...\n');

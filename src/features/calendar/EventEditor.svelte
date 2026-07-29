@@ -180,7 +180,7 @@
         bind:value={formData.description}
         placeholder="Event description"
         rows="4"
-      />
+      ></textarea>
     </div>
 
     {#if !event?.team_id}

@@ -96,8 +96,10 @@ describe('InstallPrompt Component Logic', () => {
   });
 
   it('should check localStorage for dismissed prompt', () => {
+    (localStorage.getItem as ReturnType<typeof vi.fn>).mockReturnValue(null);
+
     const hasSeenPrompt = localStorage.getItem('pwa-install-dismissed');
-    expect(hasSeenPrompt).toBeUndefined();
+    expect(hasSeenPrompt).toBeNull();
     expect(localStorage.getItem).toHaveBeenCalledWith('pwa-install-dismissed');
   });
 
@@ -123,39 +125,33 @@ describe('InstallPrompt Component Logic', () => {
 
   it('should detect iOS devices', () => {
     const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+      configurable: true,
+    });
 
-    try {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
-        configurable: true,
-      });
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    expect(isIOS).toBe(true);
 
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      expect(isIOS).toBe(true);
-    } finally {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: originalUserAgent,
-        configurable: true,
-      });
-    }
+    Object.defineProperty(navigator, 'userAgent', {
+      value: originalUserAgent,
+      configurable: true,
+    });
   });
 
   it('should detect non-iOS devices', () => {
     const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
+      configurable: true,
+    });
 
-    try {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0',
-        configurable: true,
-      });
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    expect(isIOS).toBe(false);
 
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      expect(isIOS).toBe(false);
-    } finally {
-      Object.defineProperty(navigator, 'userAgent', {
-        value: originalUserAgent,
-        configurable: true,
-      });
-    }
+    Object.defineProperty(navigator, 'userAgent', {
+      value: originalUserAgent,
+      configurable: true,
+    });
   });
 });

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import '@testing-library/jest-dom';
-import Modal from '../shared/components/Modal.svelte';
-import Alert from '../shared/components/Alert.svelte';
-import FileUpload from '../shared/components/FileUpload.svelte';
-import LoadingSpinner from '../shared/components/LoadingSpinner.svelte';
-import Badge from '../shared/components/Badge.svelte';
+import Modal from './Modal.svelte';
+import Alert from './Alert.svelte';
+import FileUpload from './FileUpload.svelte';
+import LoadingSpinner from './LoadingSpinner.svelte';
+import Badge from './Badge.svelte';
 
 describe('Modal Accessibility', () => {
   let originalActiveElement: Element | null;
@@ -42,7 +42,7 @@ describe('Modal Accessibility', () => {
   });
 
   it('should trap focus within modal', async () => {
-    render(Modal, {
+    const { component } = render(Modal, {
       props: { open: true, title: 'Test Modal' }
     });
 
@@ -53,6 +53,7 @@ describe('Modal Accessibility', () => {
 
     await fireEvent.keyDown(dialog, { key: 'Tab' });
 
+    // Focus should remain within the dialog after Tab
     expect(dialog.contains(document.activeElement)).toBe(true);
   });
 

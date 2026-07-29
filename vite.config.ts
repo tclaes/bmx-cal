@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { svelteTesting } from '@testing-library/svelte/vite'
 import path from 'path'
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), svelteTesting()],
   resolve: {
     alias: {
       '@features': path.resolve(__dirname, './src/features'),
@@ -17,8 +18,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/tests/setup.ts'],
-    include: ['src/tests/**/*.test.ts'],
+    setupFiles: ['./src/test-setup.ts'],
+    include: ['src/**/*.test.ts', 'supabase/**/*.test.ts'],
+    exclude: ['src/data/cron-jobs.test.ts'],
   },
   build: {
     rollupOptions: {

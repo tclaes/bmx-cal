@@ -460,7 +460,7 @@
               bind:value={formData.description}
               rows="3"
               placeholder="Optional description"
-            />
+            ></textarea>
           </div>
 
           <div class="form-actions">

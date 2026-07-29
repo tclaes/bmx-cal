@@ -10,8 +10,34 @@
  * To test a specific event, pass its UUID as an argument.
  */
 
-const SUPABASE_URL = 'https://wateawaecktywtlfhomn.supabase.co';
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdGVhd2FlY2t0eXd0bGZob21uIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzI1NDAyNiwiZXhwIjoyMDg4ODMwMDI2fQ.NeLhXnz3w1hav5mysLNmHzYA2rVE_qI9_Ut7s-_PUZM';
+import { readFileSync, existsSync } from 'fs';
+
+function resolveEnv() {
+  const env = { ...process.env };
+  if (existsSync('.env')) {
+    const envContent = readFileSync('.env', 'utf-8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        if (!env[key]) {
+          env[key] = match[2].trim();
+        }
+      }
+    });
+  }
+  return env;
+}
+
+const env = resolveEnv();
+
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+const SERVICE_ROLE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error('Missing required credentials: VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in environment or .env file');
+  process.exit(1);
+}
 
 const eventId = process.argv[2];
 const body = eventId ? { event_id: eventId } : {};

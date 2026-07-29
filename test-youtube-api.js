@@ -6,7 +6,7 @@
  * This simulates what the search-uec-livestream edge function does
  */
 
-const YOUTUBE_API_KEY = 'AIzaSyBhIVCSNMdh9gmnONUNkTNkGMCZQUEZOKs';
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'YOUR_YOUTUBE_API_KEY';
 
 async function searchYouTubeLive(searchQuery) {
   const searchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
@@ -18,7 +18,9 @@ async function searchYouTubeLive(searchQuery) {
   searchUrl.searchParams.set('key', YOUTUBE_API_KEY);
 
   console.log(`Searching YouTube for: "${searchQuery}"`);
-  console.log(`URL: ${searchUrl.toString()}\n`);
+  const redactedUrl = new URL(searchUrl.toString());
+  redactedUrl.searchParams.set('key', '***REDACTED***');
+  console.log(`URL: ${redactedUrl.toString()}\n`);
 
   const response = await fetch(searchUrl.toString());
 

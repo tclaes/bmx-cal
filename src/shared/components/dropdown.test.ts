@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import Dropdown from '../shared/components/Dropdown.svelte';
+import Dropdown from '@shared/components/Dropdown.svelte';
 
 describe('Dropdown Component', () => {
   it('renders with label and placeholder', () => {
@@ -56,6 +56,8 @@ describe('Dropdown Component', () => {
     const button = getByRole('button');
     await fireEvent.click(button);
 
+    // The click handler calls dispatch('toggle') internally;
+    // verify the button is still present and clickable
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute('aria-haspopup', 'listbox');
   });

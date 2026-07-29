@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Input, Dropdown, CheckboxItem } from '@shared/components';
+  import ToggleButton from '@shared/components/ToggleButton.svelte';
   import { filtersStore } from '@shared/stores';
   import { eventsStore } from '@shared/stores';
   import type { EventType } from '@types';
@@ -54,18 +55,12 @@
 </script>
 
 <div class="filters-wrapper">
-  <button
-    class="filters-toggle"
-    type="button"
-    on:click={() => (filtersExpanded = !filtersExpanded)}
-    aria-expanded={filtersExpanded}
-  >
-    <span>{$t.filters.title}</span>
-    {#if selectedTypes.length > 0 || startDate || endDate || searchQuery || $filtersStore.showPastEvents}
-      <span class="filter-badge">{selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + (searchQuery ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}</span>
-    {/if}
-    <span class="toggle-chevron" class:rotated={filtersExpanded}>▼</span>
-  </button>
+  <ToggleButton
+    expanded={filtersExpanded}
+    label={$t.filters.title}
+    badgeCount={selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + (searchQuery ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}
+    onToggle={() => (filtersExpanded = !filtersExpanded)}
+  />
 
 <div class="filters" class:collapsed={!filtersExpanded}>
   <Input
@@ -123,7 +118,7 @@
       aria-label={$t.filters.showPastEvents}
     >
       <span class="toggle-track">
-        <span class="toggle-thumb" />
+        <span class="toggle-thumb"></span>
       </span>
     </button>
   </div>
@@ -135,53 +130,6 @@
 <style>
   .filters-wrapper {
     position: relative;
-  }
-
-  .filters-toggle {
-    display: none;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
-    background-color: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-lg);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    gap: var(--spacing-sm);
-  }
-
-  .filters-toggle:hover {
-    border-color: var(--color-primary);
-  }
-
-  .filter-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    color: white;
-    background-color: var(--color-primary);
-    border-radius: 10px;
-    margin-left: auto;
-  }
-
-  .toggle-chevron {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-  }
-
-  .toggle-chevron.rotated {
-    transform: rotate(180deg);
   }
 
   .filters {
@@ -268,10 +216,6 @@
   }
 
   @media (max-width: 768px) {
-    .filters-toggle {
-      display: flex;
-    }
-
     .filters {
       grid-template-columns: 1fr;
       margin-top: var(--spacing-sm);
