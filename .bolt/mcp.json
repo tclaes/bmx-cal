@@ -5,6 +5,9 @@
     },
     "github": {
       "enabled": true
+    },
+    "sentry": {
+      "enabled": true
     }
   }
 }
