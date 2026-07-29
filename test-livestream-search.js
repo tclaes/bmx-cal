@@ -10,8 +10,19 @@
  * To test a specific event, pass its UUID as an argument.
  */
 
-const SUPABASE_URL = 'https://wateawaecktywtlfhomn.supabase.co';
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdGVhd2FlY2t0eXd0bGZob21uIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzI1NDAyNiwiZXhwIjoyMDg4ODMwMDI2fQ.NeLhXnz3w1hav5mysLNmHzYA2rVE_qI9_Ut7s-_PUZM';
+import { readFileSync } from 'fs';
+
+const envContent = readFileSync('.env', 'utf-8');
+const env = {};
+envContent.split('\n').forEach(line => {
+  const match = line.match(/^([^=]+)=(.*)$/);
+  if (match) {
+    env[match[1].trim()] = match[2].trim();
+  }
+});
+
+const SUPABASE_URL = env.VITE_SUPABASE_URL;
+const SERVICE_ROLE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
 
 const eventId = process.argv[2];
 const body = eventId ? { event_id: eventId } : {};
