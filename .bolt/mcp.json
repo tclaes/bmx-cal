@@ -2,15 +2,6 @@
   "mcpServers": {
     "context7": {
       "enabled": true
-    },
-    "github": {
-      "enabled": true
-    },
-    "sentry": {
-      "enabled": true
-    },
-    "supabase": {
-      "enabled": true
     }
   }
 }
