@@ -10,7 +10,7 @@
       "enabled": true
     },
     "supabase": {
-      "enabled": false
+      "enabled": true
     }
   }
 }
