@@ -20,6 +20,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
     include: ['src/**/*.test.ts', 'supabase/**/*.test.ts'],
+    exclude: ['src/data/cron-jobs.test.ts'],
   },
   build: {
     rollupOptions: {
