@@ -50,8 +50,10 @@ describe('cookie-consent', () => {
     (window as unknown as { dataLayer: unknown[] }).dataLayer = dataLayer;
     applyConsentToGoogle({ analytics: 'granted', ads: 'denied', decidedAt: null });
     expect(dataLayer).toHaveLength(1);
-    expect(dataLayer[0]).toMatchObject({
-      event: 'consent_update',
+    const args = Array.from(dataLayer[0] as ArrayLike<unknown>);
+    expect(args[0]).toBe('consent');
+    expect(args[1]).toBe('update');
+    expect(args[2]).toEqual({
       analytics_storage: 'granted',
       ad_storage: 'denied',
       ad_user_data: 'denied',

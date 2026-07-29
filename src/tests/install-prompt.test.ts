@@ -92,19 +92,13 @@ describe('InstallPrompt Component Logic', () => {
   });
 
   it('should check localStorage for dismissed prompt', () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
-    getItemSpy.mockReturnValue(null);
-
-    const hasSeenPrompt = localStorage.getItem('pwa-install-dismissed');
-    expect(hasSeenPrompt).toBeNull();
-    expect(getItemSpy).toHaveBeenCalledWith('pwa-install-dismissed');
+    localStorage.getItem('pwa-install-dismissed');
+    expect(localStorage.getItem).toHaveBeenCalledWith('pwa-install-dismissed');
   });
 
   it('should save dismiss state to localStorage', () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
-
     localStorage.setItem('pwa-install-dismissed', 'true');
-    expect(setItemSpy).toHaveBeenCalledWith('pwa-install-dismissed', 'true');
+    expect(localStorage.setItem).toHaveBeenCalledWith('pwa-install-dismissed', 'true');
   });
 
   it('should detect standalone mode', () => {

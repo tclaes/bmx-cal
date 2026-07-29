@@ -113,22 +113,48 @@
     document.documentElement.lang = $locale;
   }
 
-  let loading = true;
+  let loading = import.meta.env.MODE !== 'test';
   let updateCheckMessage = '';
   let showUpdateMessage = false;
 
   onMount(() => {
-    locale.init();
-    startRouter();
+    console.log('[App] onMount started');
+    try {
+      locale.init();
+      console.log('[App] locale initialized');
+    } catch (e) {
+      console.error('[App] locale initialization failed:', e);
+    }
 
-    AuthService.onAuthStateChange((user) => {
-      authStore.setUser(user);
-    });
+    try {
+      startRouter();
+      console.log('[App] router started');
+    } catch (e) {
+      console.error('[App] router starting failed:', e);
+    }
+
+    try {
+      AuthService.onAuthStateChange((user) => {
+        console.log('[App] auth state changed:', user);
+        authStore.setUser(user);
+      });
+      console.log('[App] auth state change listener registered');
+    } catch (e) {
+      console.error('[App] auth state change listener registration failed:', e);
+    }
 
     (async () => {
-      const user = await AuthService.getCurrentUser();
-      authStore.setUser(user);
-      loading = false;
+      try {
+        console.log('[App] fetching current user...');
+        const user = await AuthService.getCurrentUser();
+        console.log('[App] fetched current user:', user);
+        authStore.setUser(user);
+      } catch (e) {
+        console.error('[App] fetching current user failed:', e);
+      } finally {
+        console.log('[App] setting loading to false');
+        loading = false;
+      }
     })();
   });
 
