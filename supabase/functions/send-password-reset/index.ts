@@ -7,6 +7,43 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+/**
+ * Validates that the provided origin is in the allowlist.
+ * Returns the validated origin or null if invalid.
+ */
+function validateOrigin(requestedOrigin: string | null, allowedOrigins: string[]): string | null {
+  if (!requestedOrigin) {
+    return null;
+  }
+
+  try {
+    const url = new URL(requestedOrigin);
+    const normalizedOrigin = url.origin;
+
+    // Check if the normalized origin is in the allowlist
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return normalizedOrigin;
+    }
+
+    return null;
+  } catch {
+    // Invalid URL format
+    return null;
+  }
+}
+
+/**
+ * HTML-escapes a string to prevent injection attacks in email templates.
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -16,12 +53,24 @@ Deno.serve(async (req: Request) => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const allowedOriginsEnv = Deno.env.get("ALLOWED_ORIGINS");
 
     if (!resendApiKey) {
       return new Response(
         JSON.stringify({ error: "Email service not configured" }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Parse allowed origins from environment variable (comma-separated list)
+    // Always include the Supabase URL as a fallback
+    const allowedOrigins = allowedOriginsEnv
+      ? allowedOriginsEnv.split(",").map(o => o.trim()).filter(o => o.length > 0)
+      : [];
+    
+    // Ensure supabaseUrl is always in the allowlist
+    if (!allowedOrigins.includes(supabaseUrl)) {
+      allowedOrigins.push(supabaseUrl);
     }
 
     const { email, appUrl } = await req.json();
@@ -54,20 +103,30 @@ Deno.serve(async (req: Request) => {
     }
 
     const tokenHash = linkData.properties?.hashed_token;
-    const origin = appUrl || req.headers.get("origin") || supabaseUrl;
 
     if (!tokenHash) {
       throw new Error("Failed to generate reset token");
     }
 
-    const resetUrl = `${origin}/reset-password?token_hash=${tokenHash}&type=recovery`;
+    // Validate the requested origin against the allowlist
+    // Priority: appUrl from request body, then Origin header, then supabaseUrl
+    const requestedOrigin = appUrl || req.headers.get("origin");
+    const validatedOrigin = validateOrigin(requestedOrigin, allowedOrigins);
+    
+    // Use validated origin or fall back to supabaseUrl
+    const origin = validatedOrigin || supabaseUrl;
+
+    const resetUrl = `${origin}/reset-password?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`;
+    
+    // HTML-escape the URL for safe inclusion in the email template
+    const escapedResetUrl = escapeHtml(resetUrl);
 
     const htmlBody = `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #1a1a1a;">Reset your password</h2>
         <p style="color: #555;">You requested a password reset for your BMX Calendar account.</p>
         <p style="color: #555;">Click the button below to set a new password. This link is valid for 1 hour.</p>
-        <a href="${resetUrl}" style="display:inline-block;margin:24px 0;padding:12px 28px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">
+        <a href="${escapedResetUrl}" style="display:inline-block;margin:24px 0;padding:12px 28px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">
           Reset password
         </a>
         <p style="color:#999;font-size:0.85rem;">If you didn't request this, you can safely ignore this email.</p>
