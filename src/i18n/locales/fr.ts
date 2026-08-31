@@ -268,11 +268,10 @@ export const fr: Translations = {
     description: 'Créez un compte gratuit pour enregistrer vos événements favoris, créer un calendrier personnalisé et l\'exporter sur votre téléphone.',
     benefit1: 'Enregistrez et suivez vos événements',
     benefit2: 'Exportez vers Google, Apple et Outlook',
-    benefit3: 'Rappels d\'événements personnalisés',
-    benefit4: 'Soutenez vos clubs locaux',
+    benefit3: 'Alertes de date limite d\'inscription',
+    benefit3Badge: 'Nouveau',
     createAccount: 'Créer un compte gratuit',
     signIn: 'Se connecter',
-    future: 'Expérience sans publicité bientôt disponible pour les supporters.',
   },
   pwa: {
     installTitle: 'Installer BMX Calendrier',

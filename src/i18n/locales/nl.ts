@@ -268,11 +268,10 @@ export const nl: Translations = {
     description: 'Maak een gratis account aan om je favoriete evenementen op te slaan, een aangepaste kalender te maken en te exporteren naar je telefoon.',
     benefit1: 'Evenementen opslaan en bijhouden',
     benefit2: 'Exporteren naar Google, Apple & Outlook',
-    benefit3: 'Gepersonaliseerde evenementherinneringen',
-    benefit4: 'Steun je lokale clubs',
+    benefit3: 'Meldingen voor inschrijvingsdeadlines',
+    benefit3Badge: 'Nieuw',
     createAccount: 'Gratis account aanmaken',
     signIn: 'Aanmelden',
-    future: 'Advertentievrije ervaring binnenkort beschikbaar voor supporters.',
   },
   pwa: {
     installTitle: 'BMX Kalender installeren',

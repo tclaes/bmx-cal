@@ -267,10 +267,9 @@ export interface Translations {
     benefit1: string;
     benefit2: string;
     benefit3: string;
-    benefit4: string;
+    benefit3Badge: string;
     createAccount: string;
     signIn: string;
-    future: string;
   };
   pwa: {
     installTitle: string;
