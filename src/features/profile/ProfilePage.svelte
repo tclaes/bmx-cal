@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
-  import { authStore, updateStore } from '@shared/stores';
+  import { authStore, updateStore, isAdmin } from '@shared/stores';
   import { AuthService, PushService } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
@@ -225,7 +225,7 @@
           </Button>
         </div>
 
-        {#if pushEnabled}
+        {#if pushEnabled && $isAdmin}
           <div class="notifications-test">
             {#if testMessage}
               <Alert type={testSuccess ? 'success' : 'danger'} message={testMessage} />
