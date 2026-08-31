@@ -150,6 +150,10 @@ export const en: Translations = {
     notificationsPermissionDenied: 'Notification permission denied. Adjust your browser settings to enable notifications.',
     notificationsError: 'Something went wrong enabling notifications. Please try again.',
     notificationsInfo: 'On iOS you must add the app to your home screen to receive push notifications.',
+    notificationsSendTest: 'Send test notification',
+    notificationsTestSending: 'Sending...',
+    notificationsTestSent: 'Test notification sent!',
+    notificationsTestFailed: 'Test notification failed',
   },
   myEvents: {
     title: 'Create my calendar',

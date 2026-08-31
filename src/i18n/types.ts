@@ -148,6 +148,10 @@ export interface Translations {
     notificationsPermissionDenied: string;
     notificationsError: string;
     notificationsInfo: string;
+    notificationsSendTest: string;
+    notificationsTestSending: string;
+    notificationsTestSent: string;
+    notificationsTestFailed: string;
   };
   myEvents: {
     title: string;

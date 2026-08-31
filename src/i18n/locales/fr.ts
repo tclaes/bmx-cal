@@ -150,6 +150,10 @@ export const fr: Translations = {
     notificationsPermissionDenied: 'Autorisation de notification refusée. Ajustez les paramètres de votre navigateur pour activer les notifications.',
     notificationsError: 'Une erreur est survenue lors de l\'activation des notifications. Veuillez réessayer.',
     notificationsInfo: 'Sur iOS, vous devez ajouter l\'application à votre écran d\'accueil pour recevoir les notifications push.',
+    notificationsSendTest: 'Envoyer une notification de test',
+    notificationsTestSending: 'Envoi...',
+    notificationsTestSent: 'Notification de test envoyée !',
+    notificationsTestFailed: 'Échec de la notification de test',
   },
   myEvents: {
     title: 'Créer mon calendrier',

@@ -48,6 +48,79 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => ({}));
+    const isTest = body.test === true;
+
+    const { createClient } = await import("npm:@supabase/supabase-js@2");
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    const { data: subscriptions, error: subError } = await supabase
+      .from("push_subscriptions")
+      .select("id, user_id, endpoint, p256dh, auth");
+
+    if (subError) {
+      console.error("Error fetching subscriptions:", subError);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch subscriptions" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent: 0, message: "No subscriptions" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const webPushKey = await import("npm:web-push@3.6.7");
+    webPushKey.setVapidDetails(
+      `mailto:bmxcalendar@tcla.be`,
+      vapidPublicKey,
+      vapidPrivateKey
+    );
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    if (isTest) {
+      for (const sub of subscriptions as PushSubscriptionRow[]) {
+        const payload = JSON.stringify({
+          title: "BMX Kalender - Test Notificatie",
+          body: "Push notificaties werken! Je ontvangt nu herinneringen voor inschrijvingsdeadlines.",
+          url: "/",
+          tag: "test-notification",
+        });
+
+        try {
+          await webPushKey.sendNotification({
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          }, payload);
+          sentCount++;
+        } catch (err) {
+          console.error(`Push failed for subscription ${sub.id}:`, err);
+          failedCount++;
+
+          if (err instanceof Error && err.message.includes("410")) {
+            await supabase
+              .from("push_subscriptions")
+              .delete()
+              .eq("id", sub.id);
+          }
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          sent: sentCount,
+          failed: failedCount,
+          test: true,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const daysBefore = body.daysBefore ?? [7, 1];
     const eventTypes = body.eventTypes ?? ["European Cup", "3 Nations Cup"];
 
@@ -59,9 +132,6 @@ Deno.serve(async (req: Request) => {
       target.setDate(target.getDate() + days);
       targetDates.push(target.toISOString().split("T")[0]);
     }
-
-    const { createClient } = await import("npm:@supabase/supabase-js@2");
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: events, error: eventsError } = await supabase
       .from("events")
@@ -93,35 +163,6 @@ Deno.serve(async (req: Request) => {
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const { data: subscriptions, error: subError } = await supabase
-      .from("push_subscriptions")
-      .select("id, user_id, endpoint, p256dh, auth");
-
-    if (subError) {
-      console.error("Error fetching subscriptions:", subError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch subscriptions" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (!subscriptions || subscriptions.length === 0) {
-      return new Response(
-        JSON.stringify({ success: true, sent: 0, message: "No subscriptions" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const webPushKey = await import("npm:web-push@3.6.7");
-    webPushKey.setVapidDetails(
-      `mailto:bmxcalendar@tcla.be`,
-      vapidPublicKey,
-      vapidPrivateKey
-    );
-
-    let sentCount = 0;
-    let failedCount = 0;
 
     for (const event of filteredEvents) {
       const daysLabel = getDaysLabel(event.registration_deadline, today);

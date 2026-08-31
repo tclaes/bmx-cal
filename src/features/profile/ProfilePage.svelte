@@ -12,6 +12,9 @@
   let pushLoading = false;
   let pushError = '';
   let pushInfo = '';
+  let testLoading = false;
+  let testMessage = '';
+  let testSuccess = false;
 
   async function loadPushState() {
     pushSupported = PushService.isSupported();
@@ -41,6 +44,26 @@
       pushError = err instanceof Error ? err.message : $t.profile.notificationsError;
     } finally {
       pushLoading = false;
+    }
+  }
+
+  async function handleSendTest() {
+    testMessage = '';
+    testSuccess = false;
+    try {
+      testLoading = true;
+      const { error } = await supabase.functions.invoke('send-push-notifications', {
+        body: { test: true },
+      });
+      if (error) throw error;
+      testMessage = $t.profile.notificationsTestSent;
+      testSuccess = true;
+    } catch (err) {
+      testMessage = err instanceof Error ? err.message : $t.profile.notificationsTestFailed;
+      testSuccess = false;
+    } finally {
+      testLoading = false;
+      setTimeout(() => { testMessage = ''; }, 5000);
     }
   }
 
@@ -201,6 +224,17 @@
             {/if}
           </Button>
         </div>
+
+        {#if pushEnabled}
+          <div class="notifications-test">
+            {#if testMessage}
+              <Alert type={testSuccess ? 'success' : 'danger'} message={testMessage} />
+            {/if}
+            <Button variant="secondary" on:click={handleSendTest} disabled={testLoading}>
+              {testLoading ? $t.profile.notificationsTestSending : $t.profile.notificationsSendTest}
+            </Button>
+          </div>
+        {/if}
 
         <p class="notifications-info">{$t.profile.notificationsInfo}</p>
       {:else}
@@ -363,6 +397,13 @@
 
   .notifications-toggle {
     margin: 0 0 var(--spacing-md);
+  }
+
+  .notifications-test {
+    margin: 0 0 var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
 
   .notifications-info {

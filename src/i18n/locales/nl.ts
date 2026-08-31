@@ -150,6 +150,10 @@ export const nl: Translations = {
     notificationsPermissionDenied: 'Toestemming voor meldingen geweigerd. Pas je browserinstellingen aan om meldingen in te schakelen.',
     notificationsError: 'Er ging iets mis bij het inschakelen van meldingen. Probeer opnieuw.',
     notificationsInfo: 'Op iOS moet je de app toevoegen aan je thuisscherm om pushmeldingen te ontvangen.',
+    notificationsSendTest: 'Stuur test notificatie',
+    notificationsTestSending: 'Versturen...',
+    notificationsTestSent: 'Test notificatie verzonden!',
+    notificationsTestFailed: 'Test notificatie mislukt',
   },
   myEvents: {
     title: 'Mijn kalender maken',
