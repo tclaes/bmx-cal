@@ -1,6 +1,7 @@
 import { supabase } from '@data/supabase';
 
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY
+  || 'BLMu0x1a_rMoWMFSRMl0ibywqFYJU8-upD-zLnLZ1RllJGUMv4hHef-l6x5rISo5Upg7M93W3X_DGSoFa35XNCY';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -28,7 +29,12 @@ export class PushService {
   }
 
   static async subscribe(): Promise<PushSubscription | null> {
-    if (!this.isSupported() || !VAPID_PUBLIC_KEY) return null;
+    if (!this.isSupported()) {
+      throw new Error('Push notifications are not supported in this browser.');
+    }
+    if (!VAPID_PUBLIC_KEY) {
+      throw new Error('VAPID public key is not configured.');
+    }
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return null;
