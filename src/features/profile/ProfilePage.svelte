@@ -1,11 +1,50 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
   import { authStore, updateStore } from '@shared/stores';
-  import { AuthService } from '@shared/services';
+  import { AuthService, PushService } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
   import { APP_VERSION } from '@config/version';
   import { t, interpolate } from '../../i18n';
+
+  let pushSupported = false;
+  let pushEnabled = false;
+  let pushLoading = false;
+  let pushError = '';
+  let pushInfo = '';
+
+  async function loadPushState() {
+    pushSupported = PushService.isSupported();
+    if (pushSupported) {
+      pushEnabled = await PushService.isSubscribed();
+    }
+  }
+
+  async function handleTogglePush() {
+    pushError = '';
+    pushInfo = '';
+
+    try {
+      pushLoading = true;
+      if (pushEnabled) {
+        await PushService.unsubscribe();
+        pushEnabled = false;
+      } else {
+        const result = await PushService.subscribe();
+        if (result) {
+          pushEnabled = true;
+        } else {
+          pushError = $t.profile.notificationsPermissionDenied;
+        }
+      }
+    } catch (err) {
+      pushError = err instanceof Error ? err.message : $t.profile.notificationsError;
+    } finally {
+      pushLoading = false;
+    }
+  }
+
+  loadPushState();
 
   let currentPassword = '';
   let newPassword = '';
@@ -135,6 +174,38 @@
       <Button variant="secondary" on:click={handleCheckForUpdates} disabled={$updateStore.checking}>
         {$updateStore.checking ? $t.common.checking : $t.profile.checkForUpdates}
       </Button>
+    </Card>
+
+    <Card padding="lg" shadow="md">
+      <h2 class="section-title">{$t.profile.notificationsTitle}</h2>
+
+      {#if pushSupported}
+        <p class="notifications-description">{$t.profile.notificationsDescription}</p>
+
+        {#if pushError}
+          <Alert type="danger" message={pushError} />
+        {/if}
+
+        <div class="notifications-toggle">
+          <Button
+            variant={pushEnabled ? 'secondary' : 'primary'}
+            on:click={handleTogglePush}
+            disabled={pushLoading}
+          >
+            {#if pushLoading}
+              {pushEnabled ? $t.profile.notificationsDisabling : $t.profile.notificationsEnabling}
+            {:else if pushEnabled}
+              {$t.profile.notificationsEnabled}
+            {:else}
+              {$t.profile.notificationsEnable}
+            {/if}
+          </Button>
+        </div>
+
+        <p class="notifications-info">{$t.profile.notificationsInfo}</p>
+      {:else}
+        <p class="notifications-unsupported">{$t.profile.notificationsUnsupported}</p>
+      {/if}
     </Card>
 
     <Card padding="lg" shadow="md">
@@ -281,5 +352,29 @@
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     margin: 0 0 var(--spacing-lg);
+  }
+
+  .notifications-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-lg);
+    line-height: var(--line-height-normal);
+  }
+
+  .notifications-toggle {
+    margin: 0 0 var(--spacing-md);
+  }
+
+  .notifications-info {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin: var(--spacing-sm) 0 0;
+    line-height: var(--line-height-normal);
+  }
+
+  .notifications-unsupported {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
   }
 </style>

@@ -130,3 +130,13 @@ export interface ImportResult {
   imported: number;
   errors: Array<{ row: number; error: string }>;
 }
+
+export interface PushSubscription {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+  updated_at: string;
+}

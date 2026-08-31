@@ -137,6 +137,17 @@ export interface Translations {
     failedToUpdate: string;
     newPasswordMinLength: string;
     newPasswordsDoNotMatch: string;
+    notificationsTitle: string;
+    notificationsDescription: string;
+    notificationsEnable: string;
+    notificationsEnabled: string;
+    notificationsDisabled: string;
+    notificationsEnabling: string;
+    notificationsDisabling: string;
+    notificationsUnsupported: string;
+    notificationsPermissionDenied: string;
+    notificationsError: string;
+    notificationsInfo: string;
   };
   myEvents: {
     title: string;
