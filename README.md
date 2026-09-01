@@ -97,6 +97,7 @@ All variables are stored in `.env` (gitignored). Required variables:
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only, never exposed to client) |
 | `YOUTUBE_API_KEY` | YouTube Data API key for UEC livestream search |
 | `VITE_GA_MEASUREMENT_ID` | Google Analytics measurement ID |
+| `ALLOWED_ORIGINS` | Comma-separated list of allowed origins for password reset links (e.g., `https://bmxkalender.be,https://www.bmxkalender.be`). The `VITE_SUPABASE_URL` is always included automatically. |
 
 ## Architecture
 
