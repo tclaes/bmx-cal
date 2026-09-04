@@ -118,41 +118,33 @@
   let showUpdateMessage = false;
 
   onMount(() => {
-    console.log('[App] onMount started');
     try {
       locale.init();
-      console.log('[App] locale initialized');
     } catch (e) {
-      console.error('[App] locale initialization failed:', e);
+      console.error('Locale initialization failed:', e);
     }
 
     try {
       startRouter();
-      console.log('[App] router started');
     } catch (e) {
-      console.error('[App] router starting failed:', e);
+      console.error('Router starting failed:', e);
     }
 
     try {
       AuthService.onAuthStateChange((user) => {
-        console.log('[App] auth state changed:', user);
         authStore.setUser(user);
       });
-      console.log('[App] auth state change listener registered');
     } catch (e) {
-      console.error('[App] auth state change listener registration failed:', e);
+      console.error('Auth state change listener registration failed:', e);
     }
 
     (async () => {
       try {
-        console.log('[App] fetching current user...');
         const user = await AuthService.getCurrentUser();
-        console.log('[App] fetched current user:', user);
         authStore.setUser(user);
       } catch (e) {
-        console.error('[App] fetching current user failed:', e);
+        console.error('Fetching current user failed:', e);
       } finally {
-        console.log('[App] setting loading to false');
         loading = false;
       }
     })();
