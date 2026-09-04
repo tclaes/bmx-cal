@@ -20,6 +20,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
         navigator.serviceWorker.addEventListener('message', event => {
+          if (event.source !== navigator.serviceWorker.controller) return;
           if (event.data?.type === 'SW_UPDATED') {
             const updatedVersionInfo = checkForUpdate();
             updateStore.setAvailable(true, updatedVersionInfo.forceUpdate);

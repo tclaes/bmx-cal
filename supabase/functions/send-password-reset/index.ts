@@ -11,6 +11,23 @@ const corsHeaders = {
 // body and the Origin header are attacker-controlled, so they are never trusted.
 const DEFAULT_SITE_URL = "https://bmxkalender.be";
 
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const recentResets = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (recentResets.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (hits.length >= RATE_LIMIT_MAX) {
+    recentResets.set(ip, hits);
+    return true;
+  }
+  hits.push(now);
+  recentResets.set(ip, hits);
+  if (recentResets.size > 5000) recentResets.clear();
+  return false;
+}
+
 function resolveSiteOrigin(): string {
   const configured = Deno.env.get("SITE_URL")?.trim();
   if (!configured) return DEFAULT_SITE_URL;
@@ -37,6 +54,18 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Email service not configured" }),
         { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
+
+    if (isRateLimited(clientIp)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
