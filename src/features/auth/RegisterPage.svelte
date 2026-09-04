@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { AuthService } from '@shared/services';
   import { authStore } from '@shared/stores';
   import { supabase } from '@data/supabase';
@@ -39,7 +40,7 @@
       authStore.setUser(user);
       navigate('/my-events');
     } catch (err) {
-      error = err instanceof Error ? err.message : $t.auth.registrationFailed;
+      error = toUserMessage(err, $t.auth.registrationFailed);
     } finally {
       loading = false;
     }

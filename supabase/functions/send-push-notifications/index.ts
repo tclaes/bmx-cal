@@ -51,11 +51,55 @@ Deno.serve(async (req: Request) => {
     const isTest = body.test === true;
 
     const { createClient } = await import("npm:@supabase/supabase-js@2");
+
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+    // The scheduled broadcast is invoked by pg_cron with the service-role key.
+    const isScheduledRun = bearer.length > 0 && bearer === serviceRoleKey;
+
+    let callerUserId: string | null = null;
+    let callerIsAdmin = false;
+
+    if (!isScheduledRun) {
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData } = await userClient.auth.getUser();
+      const user = userData?.user ?? null;
+
+      if (!user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      callerUserId = user.id;
+      callerIsAdmin = user.app_metadata?.role === "admin";
+
+      // Only the scheduler or an admin may broadcast to everyone.
+      if (!isTest && !callerIsAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: subscriptions, error: subError } = await supabase
+    let subscriptionQuery = supabase
       .from("push_subscriptions")
       .select("id, user_id, endpoint, p256dh, auth");
+
+    // A test notification only ever goes to the device(s) of the caller.
+    if (isTest && callerUserId) {
+      subscriptionQuery = subscriptionQuery.eq("user_id", callerUserId);
+    }
+
+    const { data: subscriptions, error: subError } = await subscriptionQuery;
 
     if (subError) {
       console.error("Error fetching subscriptions:", subError);

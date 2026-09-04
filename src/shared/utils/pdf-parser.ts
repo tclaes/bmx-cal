@@ -1,3 +1,4 @@
+import { supabase } from '@data/supabase';
 import type { ParsedEvent } from '@types';
 
 interface PDFAnalysisResponse {
@@ -35,11 +36,19 @@ export async function parsePDF(file: File): Promise<ParsedEvent[]> {
   const apiUrl = `${supabaseUrl}/functions/v1/analyze-pdf`;
   console.log('Calling edge function:', apiUrl);
 
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('You need to be signed in to import a document.');
+  }
+
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Authorization': `Bearer ${accessToken}`,
+        'apikey': supabaseAnonKey,
       },
       body: formData,
     });

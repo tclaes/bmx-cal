@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
   import { LoadingSpinner, Alert } from '@shared/components';
@@ -66,7 +67,7 @@
           eventsStore.setEventTypes(eventTypes);
           eventsStore.setLocations(locations);
         } catch (error) {
-          eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
+          eventsStore.setError(toUserMessage(error, 'Failed to reload events'));
         } finally {
           eventsStore.setLoading(false);
         }
@@ -88,7 +89,7 @@
       const events = await EventsService.getAllEvents();
       eventsStore.setEvents(events);
     } catch (error) {
-      eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
+      eventsStore.setError(toUserMessage(error, 'Failed to reload events'));
     } finally {
       eventsStore.setLoading(false);
     }
@@ -111,7 +112,7 @@
       eventsStore.setEventTypes(eventTypes);
       eventsStore.setLocations(locations);
     } catch (error) {
-      eventsStore.setError(error instanceof Error ? error.message : 'Failed to load events');
+      eventsStore.setError(toUserMessage(error, 'Failed to load events'));
     } finally {
       eventsStore.setLoading(false);
     }

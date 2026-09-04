@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { Button, Alert, LoadingSpinner, Select } from '@shared/components';
   import { TeamService } from '@shared/services';
   import type { Team } from '@types';
@@ -33,7 +34,7 @@
         await loadMembers();
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load teams';
+      error = toUserMessage(err, 'Failed to load teams');
     } finally {
       loadingTeams = false;
     }
@@ -46,7 +47,7 @@
     try {
       members = await TeamService.getTeamMembers(selectedTeamId);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load members';
+      error = toUserMessage(err, 'Failed to load members');
     } finally {
       loadingMembers = false;
     }
@@ -83,7 +84,7 @@
       selectedUserId = '';
       await loadMembers();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to add member';
+      error = toUserMessage(err, 'Failed to add member');
     } finally {
       adding = false;
     }
@@ -99,7 +100,7 @@
       success = `${member.user_email} removed from ${selectedTeam?.name}`;
       await loadMembers();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to remove member';
+      error = toUserMessage(err, 'Failed to remove member');
     } finally {
       removingId = null;
     }

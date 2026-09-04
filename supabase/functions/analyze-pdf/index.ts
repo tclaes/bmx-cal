@@ -144,6 +144,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // The anon key satisfies verify_jwt, so the caller must be identified here:
+    // this endpoint spends paid AI quota and is an admin-only import tool.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const { createClient } = await import("npm:@supabase/supabase-js@2");
+    const userClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData } = await userClient.auth.getUser();
+    if (userData?.user?.app_metadata?.role !== "admin") {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const formData = await req.formData();
     const pdfFile = formData.get("file") as File;
 

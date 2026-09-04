@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import type { Location } from '@types';
   import { EventsService } from '@shared/services';
   import Input from './Input.svelte';
@@ -66,7 +67,7 @@
       dispatch('change', { locationId: created.id, locationLabel: selectedLocationLabel });
       dispatch('locationsUpdated', locations);
     } catch (err) {
-      locationError = err instanceof Error ? err.message : 'Failed to create location';
+      locationError = toUserMessage(err, 'Failed to create location');
     } finally {
       savingLocation = false;
     }

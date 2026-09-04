@@ -7,6 +7,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+// Password reset links may only ever point at an origin we control. The request
+// body and the Origin header are attacker-controlled, so they are never trusted.
+const DEFAULT_SITE_URL = "https://bmxkalender.be";
+
+function resolveSiteOrigin(): string {
+  const configured = Deno.env.get("SITE_URL")?.trim();
+  if (!configured) return DEFAULT_SITE_URL;
+  try {
+    const url = new URL(configured);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return DEFAULT_SITE_URL;
+    return url.origin;
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -24,7 +40,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { email, appUrl } = await req.json();
+    const { email } = await req.json();
 
     if (!email?.trim()) {
       return new Response(
@@ -54,7 +70,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const tokenHash = linkData.properties?.hashed_token;
-    const origin = appUrl || req.headers.get("origin") || supabaseUrl;
+    const origin = resolveSiteOrigin();
 
     if (!tokenHash) {
       throw new Error("Failed to generate reset token");
@@ -102,7 +118,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("Unexpected error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal server error", detail: String(err) }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

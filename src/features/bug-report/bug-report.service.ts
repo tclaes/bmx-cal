@@ -35,19 +35,32 @@ async function uploadScreenshot(file: File): Promise<string> {
   return data.publicUrl;
 }
 
+async function authHeaders(): Promise<Record<string, string> | null> {
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const { data } = await supabase.auth.getSession();
+  const accessToken = data.session?.access_token;
+
+  if (!accessToken) return null;
+
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    apikey: supabaseAnonKey,
+    'Content-Type': 'application/json',
+  };
+}
+
 async function createGithubIssue(report: BugReport): Promise<string | null> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const headers = await authHeaders();
+
+    if (!headers) return null;
 
     const response = await fetch(
       `${supabaseUrl}/functions/v1/create-github-issue`,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${supabaseAnonKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify(report),
       }
     );
@@ -100,14 +113,13 @@ export const bugReportService = {
 async function updateGithubIssueState(githubIssueUrl: string, state: 'open' | 'closed'): Promise<void> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const headers = await authHeaders();
+
+    if (!headers) return;
 
     await fetch(`${supabaseUrl}/functions/v1/reopen-github-issue`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ github_issue_url: githubIssueUrl, state }),
     });
   } catch {
@@ -120,14 +132,13 @@ async function fetchGithubIssueStatuses(
 ): Promise<Record<string, 'open' | 'closed' | 'unknown'>> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const headers = await authHeaders();
+
+    if (!headers) return {};
 
     const response = await fetch(`${supabaseUrl}/functions/v1/get-github-issue-statuses`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ urls }),
     });
 

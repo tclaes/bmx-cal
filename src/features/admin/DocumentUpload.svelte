@@ -1,5 +1,6 @@
 <script lang="ts">
   import { FileUpload, Button, Alert, LoadingSpinner } from '@shared/components';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { importStore, authStore } from '@shared/stores';
   import { ImportService } from '@shared/services';
   import { parseFile, getSupportedFileTypes } from '@shared/utils';
@@ -23,7 +24,7 @@
       parsedEvents = await parseFile(selectedFile);
       success = `Successfully parsed ${parsedEvents.length} events from ${selectedFile.name}`;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to parse file';
+      error = toUserMessage(err, 'Failed to parse file');
       selectedFile = null;
     } finally {
       parsing = false;
@@ -65,7 +66,7 @@
       parsedEvents = [];
     } catch (err) {
       console.error('Import error:', err);
-      error = err instanceof Error ? err.message : 'Failed to import events';
+      error = toUserMessage(err, 'Failed to import events');
     } finally {
       importing = false;
       importStore.setUploading(false);

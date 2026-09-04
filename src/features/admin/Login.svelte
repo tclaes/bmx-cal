@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { Card, Input, Button, Alert } from '@shared/components';
   import { AuthService } from '@shared/services';
   import { authStore } from '@shared/stores';
@@ -33,7 +34,7 @@
       authStore.setUser(user);
       dispatch('loginSuccess');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Login failed';
+      error = toUserMessage(err, 'Login failed');
     } finally {
       loading = false;
     }

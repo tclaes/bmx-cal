@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { Button, Alert, LoadingSpinner, Badge } from '@shared/components';
   import { adminBugReportService } from '@features/bug-report/bug-report.service';
   import type { BugReport } from '@features/bug-report/bug-report.service';
@@ -28,7 +29,7 @@
       const fetched = await adminBugReportService.getAllReports();
       reports = await adminBugReportService.syncGithubStatuses(fetched);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load bug reports';
+      error = toUserMessage(err, 'Failed to load bug reports');
     } finally {
       loading = false;
     }
@@ -40,7 +41,7 @@
       await adminBugReportService.updateStatus(report.id, status, report);
       reports = reports.map(r => r.id === report.id ? { ...r, status } : r);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to update status';
+      error = toUserMessage(err, 'Failed to update status');
     } finally {
       updatingId = null;
     }

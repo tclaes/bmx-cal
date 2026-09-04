@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { AuthService } from '@shared/services';
   import { authStore } from '@shared/stores';
   import { navigate } from '../../router';
@@ -25,7 +26,7 @@
       authStore.setUser(user);
       navigate('/my-events');
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Login failed';
+      error = toUserMessage(err, 'Login failed');
     } finally {
       loading = false;
     }

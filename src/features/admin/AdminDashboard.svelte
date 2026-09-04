@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
@@ -25,7 +26,7 @@
     try {
       events = await EventsService.getUpcomingEvents();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load events';
+      error = toUserMessage(err, 'Failed to load events');
     } finally {
       loading = false;
     }
@@ -45,7 +46,7 @@
       deleteSuccess = `Event "${eventTitle}" has been deleted successfully.`;
       await loadEvents();
     } catch (err) {
-      deleteError = err instanceof Error ? err.message : 'Failed to delete event';
+      deleteError = toUserMessage(err, 'Failed to delete event');
     } finally {
       deletingEventId = null;
     }
