@@ -23,9 +23,9 @@ export class PushService {
     return VAPID_PUBLIC_KEY;
   }
 
-  static async getPermissionState(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) return 'denied';
-    return Notification.permission;
+  static getPermissionState(): Promise<NotificationPermission> {
+    if (!('Notification' in window)) return Promise.resolve('denied');
+    return Promise.resolve(Notification.permission);
   }
 
   static async subscribe(): Promise<PushSubscription | null> {

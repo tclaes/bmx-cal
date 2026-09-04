@@ -54,8 +54,7 @@ function parseICalText(text: string): ParsedEvent[] {
         currentEvent.date = dateTime.date;
         currentEvent.start_time = dateTime.time;
       } else if (key.startsWith('DTEND')) {
-        const dateTime = parseDateTimeValue(value);
-        currentEvent.end_time = dateTime.time;
+        currentEvent.end_time = parseDateTimeValue(value).time;
       } else if (key.startsWith('LOCATION')) {
         currentEvent.location = value;
       } else if (key.startsWith('CATEGORIES')) {

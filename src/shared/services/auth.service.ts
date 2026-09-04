@@ -20,14 +20,7 @@ async function fetchUserTeams(userId: string): Promise<{ allTeams: Team[]; manag
     .map((row: { team: Team }) => row.team)
     .filter(Boolean);
 
-  const seen = new Set<string>();
-  const allTeams: Team[] = [];
-  for (const t of [...managedTeams, ...memberTeams]) {
-    if (!seen.has(t.id)) {
-      seen.add(t.id);
-      allTeams.push(t);
-    }
-  }
+  const allTeams = [...new Map([...managedTeams, ...memberTeams].map(t => [t.id, t])).values()];
   return { allTeams, managedTeams };
 }
 
@@ -49,19 +42,8 @@ export class AuthService {
 
   static async getCurrentUser(): Promise<AdminUser | null> {
     const { data: { user } } = await supabase.auth.getUser();
-
     if (!user) return null;
-
-    const role = user.app_metadata?.role || 'user';
-    const { allTeams, managedTeams } = await fetchUserTeams(user.id);
-
-    return {
-      id: user.id,
-      email: user.email || '',
-      role,
-      teams: allTeams,
-      managedTeams,
-    };
+    return this.toAdminUser(user);
   }
 
   static async isAdmin(): Promise<boolean> {
@@ -77,22 +59,14 @@ export class AuthService {
   static onAuthStateChange(callback: (user: AdminUser | null) => void) {
     return supabase.auth.onAuthStateChange((_event, session) => {
       (async () => {
-        if (session?.user) {
-          const role = session.user.app_metadata?.role || 'user';
-          const { allTeams, managedTeams } = await fetchUserTeams(session.user.id);
-
-          const adminUser: AdminUser = {
-            id: session.user.id,
-            email: session.user.email || '',
-            role,
-            teams: allTeams,
-            managedTeams,
-          };
-          callback(adminUser);
-        } else {
-          callback(null);
-        }
+        callback(session?.user ? await this.toAdminUser(session.user) : null);
       })();
     });
+  }
+
+  private static async toAdminUser(user: { id: string; email?: string; app_metadata?: Record<string, unknown> }): Promise<AdminUser> {
+    const role = user.app_metadata?.role || 'user';
+    const { allTeams, managedTeams } = await fetchUserTeams(user.id);
+    return { id: user.id, email: user.email || '', role, teams: allTeams, managedTeams };
   }
 }

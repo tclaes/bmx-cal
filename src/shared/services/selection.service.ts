@@ -65,17 +65,14 @@ export const selectionService = {
   },
 
   toggleSelection(eventId: string): boolean {
-    const selections = this.getLocalSelections();
-    const index = selections.indexOf(eventId);
-    if (index > -1) {
-      selections.splice(index, 1);
-      this.saveLocalSelections(selections);
-      return false;
+    const selections = new Set(this.getLocalSelections());
+    if (selections.has(eventId)) {
+      selections.delete(eventId);
     } else {
-      selections.push(eventId);
-      this.saveLocalSelections(selections);
-      return true;
+      selections.add(eventId);
     }
+    this.saveLocalSelections([...selections]);
+    return selections.has(eventId);
   },
 
   clearAllSelections(): void {

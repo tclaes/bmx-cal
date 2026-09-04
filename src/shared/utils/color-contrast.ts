@@ -50,29 +50,22 @@ export function darkenColorForWhiteText(hex: string, minContrast = 4.5): string 
   if (!rgb) return hex;
 
   let [r, g, b] = rgb;
-  let currentContrast = getContrastRatio(rgbToHex(r, g, b), '#ffffff');
 
-  // If contrast is already sufficient, return the original color
-  if (currentContrast >= minContrast) {
+  if (getContrastRatio(hex, '#ffffff') >= minContrast) {
     return hex;
   }
 
-  // Darken the color until we meet the contrast requirement
-  while (currentContrast < minContrast && (r > 0 || g > 0 || b > 0)) {
+  while (getContrastRatio(rgbToHex(r, g, b), '#ffffff') < minContrast && (r > 0 || g > 0 || b > 0)) {
     r = Math.max(0, Math.floor(r * 0.9));
     g = Math.max(0, Math.floor(g * 0.9));
     b = Math.max(0, Math.floor(b * 0.9));
-    currentContrast = getContrastRatio(rgbToHex(r, g, b), '#ffffff');
   }
 
   return rgbToHex(r, g, b);
 }
 
 export function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (n: number) => {
-    const hex = Math.round(n).toString(16).padStart(2, '0');
-    return hex;
-  };
+  const toHex = (n: number) => Math.round(n).toString(16).padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
