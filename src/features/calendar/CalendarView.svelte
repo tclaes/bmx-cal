@@ -10,7 +10,7 @@
 </script>
 
 <div class="calendar-view">
-  <div class="calendar-layout">
+  <div class="calendar-layout" class:no-sidebar={!isAuthenticated}>
     <div class="calendar-main">
       <div class="calendar-header">
         <div class="header-content">
@@ -50,6 +50,10 @@
     grid-template-columns: 1fr 300px;
     gap: var(--spacing-xl);
     align-items: start;
+  }
+
+  .calendar-layout.no-sidebar {
+    grid-template-columns: 1fr;
   }
 
   .calendar-main {
@@ -93,7 +97,7 @@
   }
 
   @media (max-width: 1024px) {
-    .calendar-layout {
+    .calendar-layout:not(.no-sidebar) {
       grid-template-columns: 1fr 260px;
     }
   }
