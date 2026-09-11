@@ -10,7 +10,7 @@
 </script>
 
 <div class="calendar-view">
-  <div class="calendar-layout" class:no-sidebar={!isAuthenticated}>
+  <div class="calendar-layout" class:no-sidebar={isAuthenticated}>
     <div class="calendar-main">
       <div class="calendar-header">
         <div class="header-content">
