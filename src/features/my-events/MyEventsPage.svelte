@@ -277,11 +277,11 @@
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
     margin: 0 0 var(--spacing-sm) 0;
-    color: var(--text-primary);
+    color: var(--color-text-primary);
   }
 
   .subtitle {
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
@@ -294,9 +294,9 @@
 
   .count {
     font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
+    color: var(--color-text-primary);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--background-secondary);
+    background: var(--color-bg-secondary);
     border-radius: var(--border-radius-md);
   }
 
@@ -307,14 +307,14 @@
   }
 
   .error-container {
-    background: white;
-    border: 2px solid var(--border-color);
+    background: var(--color-bg-primary);
+    border: 2px solid var(--color-danger);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
   }
 
   .error {
-    color: var(--error);
+    color: var(--color-danger);
     text-align: center;
     margin: 0;
   }
@@ -322,15 +322,15 @@
   .type-selector {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    gap: var(--spacing-sm-plus);
+    margin-bottom: var(--spacing-md);
     flex-wrap: wrap;
   }
 
   .type-selector-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     white-space: nowrap;
@@ -338,46 +338,46 @@
 
   .type-buttons {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--spacing-xs);
     flex-wrap: wrap;
   }
 
   .type-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--spacing-sm-plus);
     padding: 0.6rem 0.9rem;
     min-height: 44px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--color-border);
     border-radius: 22px;
-    background: white;
+    background: var(--color-bg-primary);
     cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    transition: all 0.15s ease;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
     line-height: 1;
   }
 
   .type-btn:hover {
     border-color: var(--type-color);
-    color: var(--text-primary);
-    background: var(--background-secondary);
+    color: var(--color-text-primary);
+    background: var(--color-bg-secondary);
   }
 
   .type-btn.fully-selected {
     border-color: var(--type-color);
     background: color-mix(in srgb, var(--type-color) 85%, white);
     color: white;
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
     padding: 0.65rem 1rem;
   }
 
   .type-btn.partially-selected {
     border-color: var(--type-color);
     background: color-mix(in srgb, var(--type-color) 6%, white);
-    color: var(--text-primary);
+    color: var(--color-text-primary);
   }
 
   .type-dot {
@@ -396,9 +396,9 @@
   }
 
   .type-count {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    background: var(--background-secondary);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-secondary);
     border-radius: 10px;
     padding: 0 0.3rem;
     line-height: 1.4;
@@ -421,51 +421,51 @@
   .events-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--spacing-xxs);
   }
 
   .event-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--spacing-sm-plus);
     padding: 0.5rem 0.75rem;
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--transition-fast);
     text-align: left;
     width: 100%;
   }
 
   .event-item:hover {
-    border-color: var(--primary);
-    background: var(--background-secondary);
+    border-color: var(--color-primary);
+    background: var(--color-bg-secondary);
   }
 
   .event-item.selected {
-    border-color: var(--primary);
-    background: var(--primary-light, #f0f7ff);
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
   }
 
   .checkbox {
     flex-shrink: 0;
-    color: var(--border-color);
-    transition: color 0.2s ease;
+    color: var(--color-border);
+    transition: color var(--transition-base);
   }
 
   .event-item:hover .checkbox {
-    color: var(--primary);
+    color: var(--color-primary);
   }
 
   .event-item.selected .checkbox {
-    color: var(--primary);
+    color: var(--color-primary);
   }
 
   .type-indicator {
     width: 3px;
     height: 24px;
-    border-radius: 2px;
+    border-radius: var(--spacing-xxs);
     flex-shrink: 0;
   }
 
@@ -474,13 +474,13 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--spacing-xs);
   }
 
   .event-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -489,32 +489,32 @@
   .event-meta {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
     flex-wrap: wrap;
   }
 
   .event-date {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
     white-space: nowrap;
   }
 
   .event-city {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
     white-space: nowrap;
   }
 
   .event-city::before {
     content: '•';
-    margin-right: 0.5rem;
-    color: var(--border-color);
+    margin-right: var(--spacing-sm);
+    color: var(--color-border);
   }
 
   @media (max-width: 640px) {
     .header {
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--spacing-md);
     }
 
     .header-actions {
