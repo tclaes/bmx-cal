@@ -212,6 +212,7 @@
         <button
           class="event-item"
           class:selected={$selectedEventIds.has(event.id)}
+          aria-pressed={$selectedEventIds.has(event.id)}
           on:click={() => handleToggle(event.id)}
         >
           <div class="checkbox">

@@ -29,6 +29,14 @@
     return Array.from(modalContent.querySelectorAll(selector));
   }
 
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      close();
+      return;
+    }
+    trapFocus(event);
+  }
+
   function trapFocus(event: KeyboardEvent) {
     if (event.key !== 'Tab') return;
 
@@ -93,8 +101,7 @@
       aria-labelledby="modal-title"
       tabindex="-1"
       bind:this={modalContent}
-      on:keydown={(e) => { if (e.key === 'Escape') close(); }}
-      on:keydown={trapFocus}
+      on:keydown={handleKeydown}
     >
       <div class="modal-header">
         <h2 id="modal-title" class="modal-title">{title}</h2>

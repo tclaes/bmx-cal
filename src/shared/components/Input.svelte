@@ -8,6 +8,9 @@
   export let required = false;
   export let id = '';
   export let readonly = false;
+
+  $: errorId = id ? `${id}-error` : '';
+  $: describedBy = error ? errorId : undefined;
 </script>
 
 <div class="input-wrapper">
@@ -24,6 +27,8 @@
       {readonly}
       class="input"
       class:error={!!error}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy}
       bind:value
       on:input
       on:change
@@ -39,6 +44,8 @@
       {readonly}
       class="input"
       class:error={!!error}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy}
       bind:value
       on:input
       on:change
@@ -54,6 +61,8 @@
       {readonly}
       class="input"
       class:error={!!error}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy}
       bind:value
       on:input
       on:change
@@ -69,6 +78,8 @@
       {readonly}
       class="input"
       class:error={!!error}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy}
       bind:value
       on:input
       on:change
@@ -84,6 +95,8 @@
       {readonly}
       class="input"
       class:error={!!error}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy}
       bind:value
       on:input
       on:change
@@ -99,6 +112,8 @@
       {readonly}
       class="input"
       class:error={!!error}
+      aria-invalid={!!error || undefined}
+      aria-describedby={describedBy}
       bind:value
       on:input
       on:change
@@ -106,7 +121,7 @@
     />
   {/if}
   {#if error}
-    <span class="error-message">{error}</span>
+    <span id={errorId} class="error-message">{error}</span>
   {/if}
 </div>
 
@@ -137,6 +152,11 @@
   .input:focus {
     outline: none;
     border-color: var(--color-primary);
+  }
+
+  .input:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   .input:disabled {

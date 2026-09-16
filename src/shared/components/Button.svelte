@@ -34,6 +34,11 @@
     cursor: not-allowed;
   }
 
+  .button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
   .button-sm {
     padding: var(--spacing-sm) var(--spacing-lg);
     font-size: var(--font-size-sm);
