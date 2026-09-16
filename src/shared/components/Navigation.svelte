@@ -7,8 +7,25 @@
   import type { Locale } from '../../i18n';
 
   let menuOpen = false;
+  let navEl: HTMLElement;
 
   const locales: Locale[] = ['en', 'nl', 'fr'];
+
+  function closeMenu() {
+    menuOpen = false;
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape' && menuOpen) closeMenu();
+  }
+
+  function handleResize() {
+    if (window.innerWidth >= 768 && menuOpen) closeMenu();
+  }
+
+  function handleOutsideClick(e: MouseEvent) {
+    if (menuOpen && navEl && !navEl.contains(e.target as Node)) closeMenu();
+  }
 
   function handleNav(e: MouseEvent, path: string) {
     e.preventDefault();
@@ -37,7 +54,9 @@
   $: currentLocale = $locale;
 </script>
 
-<nav class="navigation" aria-label="Main navigation">
+<svelte:window on:keydown={handleKeydown} on:resize={handleResize} />
+
+<nav class="navigation" aria-label="Main navigation" bind:this={navEl} on:click={handleOutsideClick}>
   <div class="nav-container">
     <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label={$t.nav.home}>
       <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
