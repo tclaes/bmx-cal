@@ -15,6 +15,7 @@
   let deleteError = '';
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
+  let confirmingDeleteId: string | null = null;
 
   const currentYear = new Date().getFullYear();
 
@@ -32,11 +33,16 @@
     }
   }
 
-  async function handleDeleteEvent(eventId: string, eventTitle: string) {
-    if (!confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`)) {
-      return;
-    }
+  function requestDeleteConfirm(eventId: string) {
+    confirmingDeleteId = eventId;
+  }
 
+  function cancelDeleteConfirm() {
+    confirmingDeleteId = null;
+  }
+
+  async function confirmDeleteEvent(eventId: string, eventTitle: string) {
+    confirmingDeleteId = null;
     deleteError = '';
     deleteSuccess = '';
     deletingEventId = eventId;
@@ -180,14 +186,33 @@
                           {/if}
                         </div>
                         <div class="event-actions">
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            disabled={deletingEventId === event.id}
-                            on:click={() => handleDeleteEvent(event.id, event.title)}
-                          >
-                            {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
-                          </Button>
+                          {#if confirmingDeleteId === event.id}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={() => confirmDeleteEvent(event.id, event.title)}
+                            >
+                              {deletingEventId === event.id ? 'Deleting...' : 'Confirm?'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={cancelDeleteConfirm}
+                            >
+                              Cancel
+                            </Button>
+                          {:else}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId !== null}
+                              on:click={() => requestDeleteConfirm(event.id)}
+                            >
+                              Delete
+                            </Button>
+                          {/if}
                         </div>
                       </div>
                     {/each}

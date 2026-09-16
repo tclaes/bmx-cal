@@ -22,12 +22,14 @@
   let members: TeamMemberWithEmail[] = [];
   let loadingMembers = false;
   let removingMemberId: string | null = null;
+  let confirmingRemoveId: string | null = null;
   let memberError = '';
   let memberSuccess = '';
 
   let showForm = false;
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
+  let confirmingDeleteId: string | null = null;
 
   let teamMembers: Record<string, TeamMemberWithEmail[]> = {};
   let loadingMembersMap: Record<string, boolean> = {};
@@ -109,8 +111,16 @@
     }
   }
 
-  async function handleRemoveMember(member: TeamMemberWithEmail, team: Team) {
-    if (!confirm(`Remove ${member.user_email} from ${team.name}?`)) return;
+  function requestRemoveConfirm(memberId: string) {
+    confirmingRemoveId = memberId;
+  }
+
+  function cancelRemoveConfirm() {
+    confirmingRemoveId = null;
+  }
+
+  async function confirmRemoveMember(member: TeamMemberWithEmail, team: Team) {
+    confirmingRemoveId = null;
     removingMemberId = member.id;
     memberError = '';
     memberSuccess = '';
@@ -219,8 +229,16 @@
     }
   }
 
-  async function handleDelete(event: EventWithDetails) {
-    if (!confirm(`Delete "${event.title}"? This cannot be undone.`)) return;
+  function requestDeleteConfirm(eventId: string) {
+    confirmingDeleteId = eventId;
+  }
+
+  function cancelDeleteConfirm() {
+    confirmingDeleteId = null;
+  }
+
+  async function confirmDelete(event: EventWithDetails) {
+    confirmingDeleteId = null;
     deletingEventId = event.id;
     error = '';
     successMessage = '';
@@ -313,14 +331,33 @@
                         </div>
                         <div class="event-actions">
                           <Button variant="secondary" size="sm" on:click={() => openEditForm(event)}>Edit</Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            disabled={deletingEventId === event.id}
-                            on:click={() => handleDelete(event)}
-                          >
-                            {deletingEventId === event.id ? '...' : 'Delete'}
-                          </Button>
+                          {#if confirmingDeleteId === event.id}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={() => confirmDelete(event)}
+                            >
+                              {deletingEventId === event.id ? '...' : 'Confirm?'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={cancelDeleteConfirm}
+                            >
+                              Cancel
+                            </Button>
+                          {:else}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId !== null}
+                              on:click={() => requestDeleteConfirm(event.id)}
+                            >
+                              Delete
+                            </Button>
+                          {/if}
                         </div>
                       </div>
                     {/each}
@@ -349,14 +386,35 @@
                               <span class="member-email">{member.user_email}</span>
                               <span class="member-since">Member since {formatDate(member.created_at)}</span>
                             </div>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              disabled={removingMemberId === member.id}
-                              on:click={() => handleRemoveMember(member, team)}
-                            >
-                              {removingMemberId === member.id ? '...' : 'Remove'}
-                            </Button>
+                            <div class="member-actions">
+                              {#if confirmingRemoveId === member.id}
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  disabled={removingMemberId === member.id}
+                                  on:click={() => confirmRemoveMember(member, team)}
+                                >
+                                  {removingMemberId === member.id ? '...' : 'Confirm?'}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={removingMemberId === member.id}
+                                  on:click={cancelRemoveConfirm}
+                                >
+                                  Cancel
+                                </Button>
+                              {:else}
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  disabled={removingMemberId !== null}
+                                  on:click={() => requestRemoveConfirm(member.id)}
+                                >
+                                  Remove
+                                </Button>
+                              {/if}
+                            </div>
                           </div>
                         {/each}
                       </div>
