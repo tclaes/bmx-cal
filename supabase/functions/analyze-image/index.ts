@@ -36,9 +36,13 @@ async function analyzeImageWithAI(
     throw new Error("GEMINI_API_KEY not configured");
   }
 
-  const base64 = btoa(
-    String.fromCharCode(...new Uint8Array(imageBuffer))
-  );
+  const bytes = new Uint8Array(imageBuffer);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  const base64 = btoa(binary);
 
   const prompt = `You are an expert at extracting BMX event information from images.
 Analyze the provided image and extract all BMX events. For each event, provide:
