@@ -83,6 +83,11 @@
           {$t.nav.guide}
         </a>
       </li>
+      <li>
+        <a class="nav-link" class:active={route === '/news'} href="/news" on:click={(e) => handleNav(e, '/news')}>
+          {$t.nav.news}
+        </a>
+      </li>
 
       {#if user}
         {#if isAdmin}
@@ -165,6 +170,11 @@
       <li>
         <a class="mobile-link" class:active={route === '/guide'} href="/guide" on:click={(e) => handleNav(e, '/guide')}>
           {$t.nav.guide}
+        </a>
+      </li>
+      <li>
+        <a class="mobile-link" class:active={route === '/news'} href="/news" on:click={(e) => handleNav(e, '/news')}>
+          {$t.nav.news}
         </a>
       </li>
 

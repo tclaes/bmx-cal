@@ -7,6 +7,7 @@ export const nl: Translations = {
     myCalendar: 'Mijn kalender maken',
     about: 'Over ons',
     guide: 'Gids',
+    news: 'Nieuws',
     admin: 'Admin',
     teamManager: 'Teammanager',
     profile: 'Profiel',

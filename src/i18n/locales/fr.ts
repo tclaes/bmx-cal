@@ -7,6 +7,7 @@ export const fr: Translations = {
     myCalendar: 'Créer mon calendrier',
     about: 'À propos',
     guide: 'Guide',
+    news: 'Actualités',
     admin: 'Admin',
     teamManager: 'Responsable d\'équipe',
     profile: 'Profil',

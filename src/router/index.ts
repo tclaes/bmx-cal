@@ -7,10 +7,12 @@ export const routeParams = writable<Record<string, string>>({});
 
 const router = navaid('/', () => {
   currentRoute.set('/');
+  routeParams.set({});
 });
 
-function setRoute(path: string) {
+function setRoute(path: string, params?: Record<string, string>) {
   currentRoute.set(path);
+  routeParams.set(params ?? {});
   trackPageView(path);
 }
 
@@ -32,12 +34,14 @@ const ROUTES = [
   '/race-day',
   '/tracks',
   '/get-in-touch',
+  '/news',
+  '/news/:slug',
   '/privacy-policy',
   '/terms',
 ];
 
 for (const path of ROUTES) {
-  router.on(path, () => setRoute(path));
+  router.on(path, (params) => setRoute(path, params));
 }
 
 // Canonical URL is /privacy-policy; redirect so AdSense crawlers always land on the real page

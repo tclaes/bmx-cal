@@ -135,6 +135,19 @@ export interface ImportResult {
   errors: Array<{ row: number; error: string }>;
 }
 
+export interface NewsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string;
+  author: string;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PushSubscription {
   id: string;
   user_id: string;

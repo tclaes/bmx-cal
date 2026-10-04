@@ -24,6 +24,8 @@
   import FaqPage from './features/guide/FaqPage.svelte';
   import RaceDayPage from './features/guide/RaceDayPage.svelte';
   import TracksPage from './features/guide/TracksPage.svelte';
+  import NewsPage from './features/news/NewsPage.svelte';
+  import NewsArticlePage from './features/news/NewsArticlePage.svelte';
   import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage.svelte';
   import TermsPage from './features/legal/TermsPage.svelte';
   import CookieConsent from '@shared/components/CookieConsent.svelte';
@@ -64,6 +66,10 @@
       title: 'Get in touch - BMX Calendar',
       description: 'Contact the BMX Calendar team for questions, feedback or partnerships.',
     },
+    '/news': {
+      title: 'News & Updates - BMX Calendar',
+      description: 'Stay up to date with the latest features, improvements, and announcements from BMX Calendar.',
+    },
     '/privacy-policy': {
       title: 'Privacy Policy - BMX Calendar',
       description: 'How BMX Calendar handles your personal data, cookies and advertising.',
@@ -100,9 +106,15 @@
     '/team-manager',
     '/admin',
     '/admin/login',
+    '/profile',
+    '/my-events',
+    '/team-manager',
   ]);
 
-  $: suppressAds = NO_AD_ROUTES.has($currentRoute);
+  // News article pages have no publisher content for ads
+  const NO_AD_ROUTE_PREFIXES = ['/news/'];
+
+  $: suppressAds = NO_AD_ROUTES.has($currentRoute) || NO_AD_ROUTE_PREFIXES.some(p => $currentRoute.startsWith(p));
 
   function openCookieSettings() {
     window.dispatchEvent(new Event('open-cookie-settings'));
@@ -247,6 +259,10 @@
         <RaceDayPage />
       {:else if $currentRoute === '/tracks'}
         <TracksPage />
+      {:else if $currentRoute === '/news'}
+        <NewsPage />
+      {:else if $currentRoute.startsWith('/news/')}
+        <NewsArticlePage />
       {:else if $currentRoute === '/get-in-touch'}
         <GetInTouchPage />
       {:else if $currentRoute === '/privacy-policy'}
@@ -265,6 +281,7 @@
       <div class="footer-inner">
         <span>{interpolate($t.footer.copyright, { year: new Date().getFullYear() })}</span>
         <button class="footer-link" on:click={() => navigate('/about')}>{$t.footer.about}</button>
+        <button class="footer-link" on:click={() => navigate('/news')}>{$t.nav.news}</button>
         <button class="footer-link" on:click={() => navigate('/get-in-touch')}>{$t.footer.getInTouch}</button>
         <button class="footer-link" on:click={() => navigate('/report-bug')}>{$t.footer.reportBug}</button>
         <button class="footer-link" on:click={() => navigate('/privacy-policy')}>{$t.footer.privacy}</button>

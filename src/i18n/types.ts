@@ -5,6 +5,7 @@ export interface Translations {
     myCalendar: string;
     about: string;
     guide: string;
+    news: string;
     admin: string;
     teamManager: string;
     profile: string;

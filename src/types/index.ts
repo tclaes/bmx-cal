@@ -13,4 +13,5 @@ export type {
   UpdateEventInput,
   ParsedEvent,
   ImportResult,
+  NewsArticle,
 } from './database.types';
