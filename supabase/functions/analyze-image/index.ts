@@ -10,6 +10,8 @@ interface ExtractedEvent {
   title: string;
   start_date: string;
   end_date?: string;
+  start_time?: string;
+  end_time?: string;
   location?: string;
   description?: string;
   event_type?: string;
@@ -50,6 +52,8 @@ Analyze the provided image and extract all BMX events. For each event, provide:
 - title: Event name
 - start_date: ISO 8601 date (YYYY-MM-DD)
 - end_date: ISO 8601 date if multi-day event
+- start_time: Start time in HH:MM 24-hour format if mentioned
+- end_time: End time in HH:MM 24-hour format if mentioned
 - location: Venue/track name and location
 - description: Event description
 - event_type: One of these exact values [Race, Freestyle, Park, Street, Dirt, Flatland]

@@ -34,7 +34,7 @@ function parseICalText(text: string): ParsedEvent[] {
     if (line === 'BEGIN:VEVENT') {
       currentEvent = {};
     } else if (line === 'END:VEVENT' && currentEvent) {
-      if (currentEvent.title && currentEvent.date && currentEvent.location) {
+      if (currentEvent.title && currentEvent.date) {
         events.push(currentEvent as ParsedEvent);
       }
       currentEvent = null;

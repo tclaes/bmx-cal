@@ -7,6 +7,8 @@ interface ImageAnalysisResponse {
     title: string;
     start_date: string;
     end_date?: string;
+    start_time?: string;
+    end_time?: string;
     location?: string;
     description?: string;
     event_type?: string;
@@ -72,6 +74,8 @@ export async function parseImage(file: File): Promise<ParsedEvent[]> {
     title: event.title || `Event ${index + 1}`,
     date: event.start_date,
     end_date: event.end_date,
+    start_time: event.start_time || null,
+    end_time: event.end_time || null,
     location: event.location || '',
     description: event.description || '',
     event_type: event.event_type || 'race',
