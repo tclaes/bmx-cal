@@ -9,6 +9,7 @@
   import type { EventWithType, Team } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
   import BugReportsPanel from './BugReportsPanel.svelte';
+  import TeamMemberManager from './TeamMemberManager.svelte';
 
   let events: EventWithType[] = [];
   let loading = false;
@@ -109,6 +110,27 @@
         </summary>
         <div class="collapsible-body">
           <DocumentUpload isAdmin={true} teams={allTeams} />
+        </div>
+      </details>
+    </Card>
+
+    <Card padding="none" shadow="md">
+      <details class="collapsible-section">
+        <summary class="collapsible-header">
+          <span class="collapsible-title">Team Management</span>
+          <svg
+            class="collapsible-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </summary>
+        <div class="collapsible-body">
+          <TeamMemberManager />
         </div>
       </details>
     </Card>

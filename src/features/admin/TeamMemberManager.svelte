@@ -1,19 +1,23 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { Button, Alert, LoadingSpinner, Select } from '@shared/components';
+  import { Button, Alert, LoadingSpinner } from '@shared/components';
   import { TeamService } from '@shared/services';
   import type { Team } from '@types';
-  import type { TeamMemberWithEmail } from '@shared/services';
+  import type { TeamMemberWithEmail, TeamManagerWithEmail } from '@shared/services';
 
+  type Tab = 'members' | 'managers';
+
+  let activeTab: Tab = 'members';
   let teams: Team[] = [];
   let selectedTeamId = '';
   let members: TeamMemberWithEmail[] = [];
+  let managers: TeamManagerWithEmail[] = [];
   let allUsers: { id: string; email: string }[] = [];
   let selectedUserId = '';
 
   let loadingTeams = false;
-  let loadingMembers = false;
+  let loadingList = false;
   let loadingUsers = false;
   let adding = false;
   let removingId: string | null = null;
@@ -22,7 +26,8 @@
   let success = '';
 
   $: selectedTeam = teams.find(t => t.id === selectedTeamId) ?? null;
-  $: assignableUsers = allUsers.filter(u => !members.some(m => m.user_id === u.id));
+  $: currentList = activeTab === 'members' ? members : managers;
+  $: assignableUsers = allUsers.filter(u => !currentList.some(m => m.user_id === u.id));
 
   async function loadTeams() {
     loadingTeams = true;
@@ -31,7 +36,7 @@
       teams = await TeamService.getTeams();
       if (teams.length > 0 && !selectedTeamId) {
         selectedTeamId = teams[0].id;
-        await loadMembers();
+        await loadList();
       }
     } catch (err) {
       error = toUserMessage(err, 'Failed to load teams');
@@ -40,16 +45,20 @@
     }
   }
 
-  async function loadMembers() {
+  async function loadList() {
     if (!selectedTeamId) return;
-    loadingMembers = true;
+    loadingList = true;
     error = '';
     try {
-      members = await TeamService.getTeamMembers(selectedTeamId);
+      if (activeTab === 'members') {
+        members = await TeamService.getTeamMembers(selectedTeamId);
+      } else {
+        managers = await TeamService.getTeamManagers(selectedTeamId);
+      }
     } catch (err) {
-      error = toUserMessage(err, 'Failed to load members');
+      error = toUserMessage(err, 'Failed to load list');
     } finally {
-      loadingMembers = false;
+      loadingList = false;
     }
   }
 
@@ -69,38 +78,57 @@
     selectedUserId = '';
     success = '';
     error = '';
-    await loadMembers();
+    await loadList();
   }
 
-  async function handleAddMember() {
+  async function handleTabChange(tab: Tab) {
+    if (activeTab === tab) return;
+    activeTab = tab;
+    selectedUserId = '';
+    success = '';
+    error = '';
+    await loadList();
+  }
+
+  async function handleAdd() {
     if (!selectedUserId || !selectedTeamId) return;
     adding = true;
     error = '';
     success = '';
     try {
-      await TeamService.addTeamMember(selectedUserId, selectedTeamId);
       const added = allUsers.find(u => u.id === selectedUserId);
-      success = `${added?.email ?? 'User'} added to ${selectedTeam?.name}`;
+      if (activeTab === 'members') {
+        await TeamService.addTeamMember(selectedUserId, selectedTeamId);
+        success = `${added?.email ?? 'User'} added as member to ${selectedTeam?.name}`;
+      } else {
+        await TeamService.addTeamManager(selectedUserId, selectedTeamId);
+        success = `${added?.email ?? 'User'} added as manager to ${selectedTeam?.name}`;
+      }
       selectedUserId = '';
-      await loadMembers();
+      await loadList();
     } catch (err) {
-      error = toUserMessage(err, 'Failed to add member');
+      error = toUserMessage(err, 'Failed to add');
     } finally {
       adding = false;
     }
   }
 
-  async function handleRemoveMember(member: TeamMemberWithEmail) {
-    if (!confirm(`Remove ${member.user_email} from ${selectedTeam?.name}?`)) return;
-    removingId = member.id;
+  async function handleRemove(item: TeamMemberWithEmail | TeamManagerWithEmail) {
+    const role = activeTab === 'members' ? 'member' : 'manager';
+    if (!confirm(`Remove ${item.user_email} as ${role} from ${selectedTeam?.name}?`)) return;
+    removingId = item.id;
     error = '';
     success = '';
     try {
-      await TeamService.removeTeamMember(member.id);
-      success = `${member.user_email} removed from ${selectedTeam?.name}`;
-      await loadMembers();
+      if (activeTab === 'members') {
+        await TeamService.removeTeamMember(item.id);
+      } else {
+        await TeamService.removeTeamManager(item.id);
+      }
+      success = `${item.user_email} removed as ${role} from ${selectedTeam?.name}`;
+      await loadList();
     } catch (err) {
-      error = toUserMessage(err, 'Failed to remove member');
+      error = toUserMessage(err, 'Failed to remove');
     } finally {
       removingId = null;
     }
@@ -121,7 +149,7 @@
 </script>
 
 <div class="tmm-section">
-  <p class="section-desc">Assign users to teams. Members can see their team's events.</p>
+  <p class="section-desc">Assign users as members or managers to teams. Managers can create and manage team events.</p>
 
   {#if error}
     <Alert type="danger" message={error} />
@@ -144,7 +172,16 @@
       </select>
     </div>
 
-    <div class="add-member-row">
+    <div class="tab-bar">
+      <button class="tab-btn" class:active={activeTab === 'members'} on:click={() => handleTabChange('members')}>
+        Members
+      </button>
+      <button class="tab-btn" class:active={activeTab === 'managers'} on:click={() => handleTabChange('managers')}>
+        Managers
+      </button>
+    </div>
+
+    <div class="add-row">
       {#if loadingUsers}
         <span class="loading-inline">Loading users...</span>
       {:else}
@@ -154,7 +191,7 @@
           disabled={adding || assignableUsers.length === 0}
         >
           <option value="">
-            {assignableUsers.length === 0 ? 'All users already members' : '-- Select a user to add --'}
+            {assignableUsers.length === 0 ? `All users already ${activeTab === 'members' ? 'members' : 'managers'}` : '-- Select a user to add --'}
           </option>
           {#each assignableUsers as u (u.id)}
             <option value={u.id}>{u.email}</option>
@@ -164,32 +201,32 @@
           variant="primary"
           size="sm"
           disabled={!selectedUserId || adding}
-          on:click={handleAddMember}
+          on:click={handleAdd}
         >
-          {adding ? 'Adding...' : 'Add Member'}
+          {adding ? 'Adding...' : `Add ${activeTab === 'members' ? 'Member' : 'Manager'}`}
         </Button>
       {/if}
     </div>
 
-    {#if loadingMembers}
+    {#if loadingList}
       <div class="loading-wrap"><LoadingSpinner size="md" /></div>
-    {:else if members.length === 0}
-      <p class="empty-members">No members in {selectedTeam?.name ?? 'this team'} yet.</p>
+    {:else if currentList.length === 0}
+      <p class="empty-list">No {activeTab === 'members' ? 'members' : 'managers'} in {selectedTeam?.name ?? 'this team'} yet.</p>
     {:else}
-      <div class="members-list">
-        {#each members as member (member.id)}
-          <div class="member-row">
-            <div class="member-info">
-              <span class="member-email">{member.user_email}</span>
-              <span class="member-since">Member since {formatDate(member.created_at)}</span>
+      <div class="list">
+        {#each currentList as item (item.id)}
+          <div class="item-row">
+            <div class="item-info">
+              <span class="item-email">{item.user_email}</span>
+              <span class="item-since">{activeTab === 'members' ? 'Member' : 'Manager'} since {formatDate(item.created_at)}</span>
             </div>
             <Button
               variant="danger"
               size="sm"
-              disabled={removingId === member.id}
-              on:click={() => handleRemoveMember(member)}
+              disabled={removingId === item.id}
+              on:click={() => handleRemove(item)}
             >
-              {removingId === member.id ? '...' : 'Remove'}
+              {removingId === item.id ? '...' : 'Remove'}
             </Button>
           </div>
         {/each}
@@ -246,7 +283,34 @@
     min-width: 0;
   }
 
-  .add-member-row {
+  .tab-bar {
+    display: flex;
+    gap: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .tab-btn:hover {
+    color: var(--color-text-primary);
+  }
+
+  .tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+
+  .add-row {
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
@@ -264,7 +328,7 @@
   }
 
   .empty-state,
-  .empty-members {
+  .empty-list {
     text-align: center;
     color: var(--color-text-muted);
     padding: var(--spacing-lg) 0;
@@ -272,13 +336,13 @@
     margin: 0;
   }
 
-  .members-list {
+  .list {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
   }
 
-  .member-row {
+  .item-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -289,14 +353,14 @@
     gap: var(--spacing-md);
   }
 
-  .member-info {
+  .item-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
   }
 
-  .member-email {
+  .item-email {
     font-weight: var(--font-weight-medium);
     color: var(--color-text-primary);
     font-size: var(--font-size-sm);
@@ -305,18 +369,18 @@
     text-overflow: ellipsis;
   }
 
-  .member-since {
+  .item-since {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
   @media (max-width: 600px) {
-    .add-member-row {
+    .add-row {
       flex-direction: column;
       align-items: stretch;
     }
 
-    .member-row {
+    .item-row {
       flex-direction: column;
       align-items: flex-start;
     }

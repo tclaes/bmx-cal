@@ -73,6 +73,7 @@ export interface TeamManager {
   team_id: string;
   created_at: string;
   team?: Team;
+  user_email?: string;
 }
 
 export interface TeamMember {
