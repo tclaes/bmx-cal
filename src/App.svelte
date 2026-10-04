@@ -281,6 +281,7 @@
       <div class="footer-inner">
         <span>{interpolate($t.footer.copyright, { year: new Date().getFullYear() })}</span>
         <button class="footer-link" on:click={() => navigate('/about')}>{$t.footer.about}</button>
+        <button class="footer-link" on:click={() => navigate('/guide')}>{$t.footer.guide}</button>
         <button class="footer-link" on:click={() => navigate('/news')}>{$t.nav.news}</button>
         <button class="footer-link" on:click={() => navigate('/get-in-touch')}>{$t.footer.getInTouch}</button>
         <button class="footer-link" on:click={() => navigate('/report-bug')}>{$t.footer.reportBug}</button>

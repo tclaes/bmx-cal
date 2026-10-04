@@ -34,6 +34,7 @@ export interface Translations {
   footer: {
     copyright: string;
     about: string;
+    guide: string;
     getInTouch: string;
     reportBug: string;
     support: string;

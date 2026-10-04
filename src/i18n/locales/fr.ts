@@ -36,6 +36,7 @@ export const fr: Translations = {
   footer: {
     copyright: '© {year} BMX Calendrier. Tous droits réservés.',
     about: 'À propos',
+    guide: 'Guide',
     getInTouch: 'Nous contacter',
     reportBug: 'Signaler un bug',
     support: 'Soutenir ce projet',
