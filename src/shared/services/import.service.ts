@@ -128,7 +128,9 @@ export class ImportService {
     }
 
     let eventTypeId: string | undefined;
-    if (event.event_type) {
+    if (event.event_type_id) {
+      eventTypeId = event.event_type_id;
+    } else if (event.event_type) {
       const eventTypeLower = event.event_type.toLowerCase().trim();
       eventTypeId = eventTypeMap.get(eventTypeLower);
 
@@ -165,6 +167,7 @@ export class ImportService {
       title: event.title.trim(),
       description: event.description?.trim() || '',
       date: event.date,
+      end_date: event.end_date || undefined,
       start_time: event.start_time || null,
       end_time: event.end_time || null,
       location: locationText,

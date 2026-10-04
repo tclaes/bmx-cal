@@ -119,11 +119,13 @@ export interface ParsedEvent {
   title: string;
   description?: string;
   date: string;
+  end_date?: string;
   start_time?: string;
   end_time?: string;
   location?: string;
   location_id?: string;
   event_type?: string;
+  event_type_id?: string;
 }
 
 export interface ImportResult {

@@ -115,7 +115,7 @@ export class EventsService {
     return data;
   }
 
-  static async createLocation(location: { name: string; city?: string; address?: string; country?: string }): Promise<Location> {
+  static async createLocation(location: { name: string; city?: string; address?: string; country?: string; maps_url?: string }): Promise<Location> {
     const { data, error } = await supabase
       .from('locations')
       .insert({ ...location, updated_at: new Date().toISOString() })

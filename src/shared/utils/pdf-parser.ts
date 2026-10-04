@@ -68,6 +68,7 @@ export async function parsePDF(file: File): Promise<ParsedEvent[]> {
   return data.events.map((event, index) => ({
     title: event.title || `Event ${index + 1}`,
     date: event.start_date,
+    end_date: event.end_date,
     location: event.location || '',
     description: event.description || '',
     event_type: event.event_type || 'race',
