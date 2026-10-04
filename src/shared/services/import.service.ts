@@ -22,7 +22,7 @@ export class ImportService {
 
     events.forEach((event, index) => {
       try {
-        validEvents.push(this.validateEvent(event, eventTypeMap, locationMap));
+        validEvents.push(this.validateEvent(event, eventTypeMap, locationMap, teamId));
       } catch (error) {
         errors.push({
           row: index + 1,
@@ -105,7 +105,8 @@ export class ImportService {
   private static validateEvent(
     event: ParsedEvent,
     eventTypeMap: Map<string, string>,
-    locationMap: Map<string, string>
+    locationMap: Map<string, string>,
+    teamId?: string
   ): CreateEventInput {
     if (!event.title?.trim()) throw new Error('Title is required');
     if (!event.date) throw new Error('Date is required');
