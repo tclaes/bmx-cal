@@ -122,13 +122,34 @@
         const matched = matchEventType(event.event_type);
         if (matched) {
           event.event_type_id = matched;
-          continue;
         }
       }
-      if (event.event_type_id && availableEventTypes.some(et => et.id === event.event_type_id)) {
-        continue;
+      if (!event.event_type_id || !availableEventTypes.some(et => et.id === event.event_type_id)) {
+        event.event_type_id = availableEventTypes[0]?.id ?? '';
       }
-      event.event_type_id = availableEventTypes[0]?.id ?? '';
+    }
+    autoGenerateTrainingTitles();
+  }
+
+  function autoGenerateTrainingTitles() {
+    for (const event of parsedEvents) {
+      const eventType = allEventTypes.find(et => et.id === event.event_type_id);
+      if (!eventType) continue;
+      const typeName = eventType.name.toLowerCase();
+      const isTraining = typeName.includes('training') || typeName.includes('coaching');
+      if (!isTraining) continue;
+
+      const locText = event.location?.trim();
+      if (locText) {
+        const currentTitle = event.title?.trim() ?? '';
+        const alreadyCombined = currentTitle.toLowerCase().includes(locText.toLowerCase()) ||
+          locText.toLowerCase().includes(currentTitle.toLowerCase());
+        if (!alreadyCombined || !currentTitle) {
+          event.title = `${eventType.name} - ${locText}`;
+        }
+      } else if (!event.title?.trim()) {
+        event.title = eventType.name;
+      }
     }
   }
 
@@ -233,7 +254,8 @@
       r?.city?.trim(),
       r?.country?.trim(),
     ].filter(Boolean);
-    const query = parts.join(', ');
+    const locationQuery = parts.join(', ');
+    const query = `BMX parcour near ${locationQuery}`;
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     locationResolutions[locationText] = { ...r, mapsUrl: url, mapsConfirmed: false };
     locationResolutions = { ...locationResolutions };
@@ -256,7 +278,8 @@
       r?.city?.trim(),
       r?.country?.trim(),
     ].filter(Boolean);
-    const query = parts.join(', ');
+    const locationQuery = parts.join(', ');
+    const query = `BMX parcour near ${locationQuery}`;
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     locationResolutions[locationText] = { ...r, mapsUrl: url, mapsConfirmed: false };
     locationResolutions = { ...locationResolutions };
