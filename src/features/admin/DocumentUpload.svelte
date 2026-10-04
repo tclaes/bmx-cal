@@ -89,18 +89,42 @@
     publicEventTypes = allEventTypes.filter(et => !et.team_id);
   }
 
+  function matchEventType(rawType: string): string | undefined {
+    const trimmed = rawType.toLowerCase().trim();
+    if (!trimmed) return undefined;
+
+    const exact = availableEventTypes.find(et => et.name.toLowerCase() === trimmed);
+    if (exact) return exact.id;
+
+    const partial = availableEventTypes.find(et => {
+      const etName = et.name.toLowerCase();
+      return trimmed.includes(etName) || etName.includes(trimmed);
+    });
+    if (partial) return partial.id;
+
+    const words = trimmed.split(/\s+/).filter(w => w.length >= 3);
+    const wordMatch = availableEventTypes.find(et => {
+      const etWords = et.name.toLowerCase().split(/\s+/);
+      return words.some(w => etWords.some(ew => ew.includes(w) || w.includes(ew)));
+    });
+    if (wordMatch) return wordMatch.id;
+
+    return undefined;
+  }
+
   function assignDefaultEventTypeIds() {
-    const eventTypeMap = new Map(allEventTypes.map(et => [et.name.toLowerCase(), et.id]));
     for (const event of parsedEvents) {
       if (event.event_type) {
-        const matched = eventTypeMap.get(event.event_type.toLowerCase().trim());
+        const matched = matchEventType(event.event_type);
         if (matched) {
           event.event_type_id = matched;
           continue;
         }
       }
-      const raceType = availableEventTypes.find(et => et.name.toLowerCase() === 'race');
-      event.event_type_id = raceType?.id ?? availableEventTypes[0]?.id ?? '';
+      if (event.event_type_id && availableEventTypes.some(et => et.id === event.event_type_id)) {
+        continue;
+      }
+      event.event_type_id = availableEventTypes[0]?.id ?? '';
     }
   }
 

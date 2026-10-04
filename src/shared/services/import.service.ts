@@ -2,18 +2,6 @@ import { supabase } from '@data/supabase';
 import type { ImportLog, ImportResult, CreateEventInput, ParsedEvent } from '@types';
 import { EventsService } from './events.service';
 
-const EVENT_TYPE_KEYWORDS: Array<[string, string]> = [
-  ['race', 'race'],
-  ['racing', 'race'],
-  ['competition', 'race'],
-  ['championship', 'race'],
-  ['freestyle', 'freestyle'],
-  ['park', 'park'],
-  ['street', 'street'],
-  ['dirt', 'dirt'],
-  ['flatland', 'flatland'],
-];
-
 export class ImportService {
   static async importEvents(
     events: ParsedEvent[],
@@ -135,9 +123,20 @@ export class ImportService {
       eventTypeId = eventTypeMap.get(eventTypeLower);
 
       if (!eventTypeId) {
-        for (const [keyword, mappedType] of EVENT_TYPE_KEYWORDS) {
-          if (eventTypeLower.includes(keyword)) {
-            eventTypeId = eventTypeMap.get(mappedType);
+        for (const [etName, etId] of eventTypeMap.entries()) {
+          if (eventTypeLower.includes(etName) || etName.includes(eventTypeLower)) {
+            eventTypeId = etId;
+            break;
+          }
+        }
+      }
+
+      if (!eventTypeId) {
+        const words = eventTypeLower.split(/\s+/).filter(w => w.length >= 3);
+        for (const [etName, etId] of eventTypeMap.entries()) {
+          const etWords = etName.split(/\s+/);
+          if (words.some(w => etWords.some(ew => ew.includes(w) || w.includes(ew)))) {
+            eventTypeId = etId;
             break;
           }
         }
