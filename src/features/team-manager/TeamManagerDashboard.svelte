@@ -3,6 +3,7 @@
   import { Card, Button, Input, Select, Alert, LoadingSpinner, LocationPicker } from '@shared/components';
   import { authStore } from '@shared/stores';
   import TeamMemberManager from '../admin/TeamMemberManager.svelte';
+  import DocumentUpload from '../admin/DocumentUpload.svelte';
   import { EventsService, TeamService } from '@shared/services';
   import type { TeamMemberWithEmail } from '@shared/services';
   import { supabase } from '@data/supabase';
@@ -297,6 +298,31 @@
       {:else if allTeams.length === 0}
         <p class="empty-state">No teams found.</p>
       {:else}
+        <Card padding="none" shadow="md">
+          <details class="collapsible-section">
+            <summary class="collapsible-header">
+              <span class="collapsible-title">Import Events from File</span>
+              <svg
+                class="collapsible-chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="collapsible-body">
+              <DocumentUpload
+                isAdmin={isAdmin}
+                teams={allTeams}
+                fixedTeamId={isAdmin ? null : (allTeams.length > 0 ? allTeams[0].id : null)}
+              />
+            </div>
+          </details>
+        </Card>
+
         {#each allTeams as team (team.id)}
           {@const teamEvts = eventsByTeam[team.id] ?? []}
           {@const teamMbrs = teamMembers[team.id] ?? []}
@@ -991,5 +1017,55 @@
       flex-direction: column;
       align-items: flex-start;
     }
+  }
+
+  .collapsible-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .collapsible-section > summary {
+    list-style: none;
+  }
+
+  .collapsible-section > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .collapsible-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-radius: var(--border-radius-md);
+    user-select: none;
+  }
+
+  .collapsible-header:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .collapsible-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  .collapsible-chevron {
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  details[open] .collapsible-chevron {
+    transform: rotate(180deg);
+  }
+
+  .collapsible-body {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
   }
 </style>

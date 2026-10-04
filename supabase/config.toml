@@ -1,3 +1,6 @@
+[functions.analyze-image]
+verify_jwt = true
+
 [functions.analyze-pdf]
 verify_jwt = true
 

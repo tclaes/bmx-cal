@@ -4,8 +4,9 @@
   import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
+  import { supabase } from '@data/supabase';
   import { groupEventsByYear, getDefaultOpenYears } from '@shared/utils';
-  import type { EventWithType } from '@types';
+  import type { EventWithType, Team } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
   import BugReportsPanel from './BugReportsPanel.svelte';
 
@@ -16,6 +17,7 @@
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
   let confirmingDeleteId: string | null = null;
+  let allTeams: Team[] = [];
 
   const currentYear = new Date().getFullYear();
 
@@ -26,6 +28,8 @@
     error = '';
     try {
       events = await EventsService.getUpcomingEvents();
+      const { data: teams } = await supabase.from('teams').select('*').order('name');
+      allTeams = teams ?? [];
     } catch (err) {
       error = toUserMessage(err, 'Failed to load events');
     } finally {
@@ -104,7 +108,7 @@
           </svg>
         </summary>
         <div class="collapsible-body">
-          <DocumentUpload />
+          <DocumentUpload isAdmin={true} teams={allTeams} />
         </div>
       </details>
     </Card>

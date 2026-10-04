@@ -122,6 +122,7 @@ export interface ParsedEvent {
   start_time?: string;
   end_time?: string;
   location?: string;
+  location_id?: string;
   event_type?: string;
 }
 

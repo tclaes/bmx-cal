@@ -18,7 +18,8 @@ export class ImportService {
   static async importEvents(
     events: ParsedEvent[],
     filename: string,
-    userId: string
+    userId: string,
+    teamId?: string
   ): Promise<ImportResult> {
     const errors: Array<{ row: number; error: string }> = [];
     const validEvents: CreateEventInput[] = [];
@@ -143,15 +144,19 @@ export class ImportService {
 
     let locationId: string | undefined;
     const locationText = event.location?.trim() || 'TBD';
-    const locationLower = locationText.toLowerCase();
 
-    locationId = locationMap.get(locationLower);
+    if (event.location_id) {
+      locationId = event.location_id;
+    } else {
+      const locationLower = locationText.toLowerCase();
+      locationId = locationMap.get(locationLower);
 
-    if (!locationId) {
-      for (const [locName, locId] of locationMap.entries()) {
-        if (locationLower.includes(locName) || locName.includes(locationLower)) {
-          locationId = locId;
-          break;
+      if (!locationId) {
+        for (const [locName, locId] of locationMap.entries()) {
+          if (locationLower.includes(locName) || locName.includes(locationLower)) {
+            locationId = locId;
+            break;
+          }
         }
       }
     }
@@ -165,6 +170,7 @@ export class ImportService {
       location: locationText,
       location_id: locationId,
       event_type_id: eventTypeId,
+      team_id: teamId || undefined,
       status: 'upcoming',
     };
   }
