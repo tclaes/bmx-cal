@@ -97,7 +97,7 @@ export const bugReportService = {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error('Could not submit your report. Please try again.');
 
     const issueUrl = await createGithubIssue(report as BugReport);
 

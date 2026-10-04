@@ -1,7 +1,10 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { bugReportService } from './bug-report.service';
+
+  const MAX_DESCRIPTION_LENGTH = 5000;
 
   let description = '';
   let screenshotFile: File | null = null;
@@ -32,6 +35,11 @@
       return;
     }
 
+    if (description.trim().length > MAX_DESCRIPTION_LENGTH) {
+      error = 'Please shorten your description before submitting.';
+      return;
+    }
+
     if (!user && !reporterEmail.trim()) {
       error = 'Please provide your email so we can follow up if needed.';
       return;
@@ -47,7 +55,7 @@
       });
       success = true;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to submit report. Please try again.';
+      error = toUserMessage(err, 'Failed to submit report. Please try again.');
     } finally {
       loading = false;
     }

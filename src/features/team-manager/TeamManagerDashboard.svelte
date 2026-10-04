@@ -8,6 +8,7 @@
   import type { TeamMemberWithEmail } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { getInitialTeamExpandedState } from '@shared/utils';
+  import { toUserMessage } from '@shared/utils/error-message';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let allEvents: EventWithDetails[] = [];
@@ -95,7 +96,7 @@
         }
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load data';
+      error = toUserMessage(err, 'Failed to load data');
     } finally {
       loading = false;
     }
@@ -130,7 +131,7 @@
       memberSuccess = `${member.user_email} removed from ${team.name}`;
       await loadMembersForTeam(team.id);
     } catch (err) {
-      memberError = err instanceof Error ? err.message : 'Failed to remove member';
+      memberError = toUserMessage(err, 'Failed to remove member');
     } finally {
       removingMemberId = null;
     }
@@ -224,7 +225,7 @@
       const evts = await EventsService.getAllEvents();
       allEvents = evts.filter(e => e.team_id !== null);
     } catch (err) {
-      formError = err instanceof Error ? err.message : 'Failed to save event';
+      formError = toUserMessage(err, 'Failed to save event');
     } finally {
       saving = false;
     }
@@ -249,7 +250,7 @@
       const evts = await EventsService.getAllEvents();
       allEvents = evts.filter(e => e.team_id !== null);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete event';
+      error = toUserMessage(err, 'Failed to delete event');
     } finally {
       deletingEventId = null;
     }
