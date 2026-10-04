@@ -47,31 +47,42 @@ async function analyzeImageWithAI(
   }
   const base64 = btoa(binary);
 
-  const prompt = `You are an expert at extracting BMX event information from images.
-Analyze the provided image and extract all BMX events. For each event, provide:
-- title: Event name
+  const prompt = `You are an expert at extracting BMX and cycling event information from images.
+Analyze the provided image and extract ALL events, including trainings, coaching sessions, races, and competitions.
+
+IMPORTANT: Count every single entry in the image. Do not skip or merge any events. If the image lists 16 training sessions, return all 16 as separate events.
+
+For each event, provide:
+- title: Event name as shown in the image
 - start_date: ISO 8601 date (YYYY-MM-DD)
 - end_date: ISO 8601 date if multi-day event
-- start_time: Start time in HH:MM 24-hour format if mentioned
-- end_time: End time in HH:MM 24-hour format if mentioned
-- location: Venue/track name and location
-- description: Event description
-- event_type: One of these exact values [Race, Freestyle, Park, Street, Dirt, Flatland]
-  * Use "Race" for: races, racing, competition, championship, regional, national, provincial
-  * Use "Freestyle" for: freestyle competitions, tricks, stunts
-  * Use "Park" for: park events, skateparks, park competitions
-  * Use "Street" for: street events, street competitions
-  * Use "Dirt" for: dirt jumping, dirt events
-  * Use "Flatland" for: flatland competitions
+- start_time: Start time in HH:MM 24-hour format if mentioned (e.g., "14:00")
+- end_time: End time in HH:MM 24-hour format if mentioned (e.g., "16:00")
+- location: Venue/track name and location if mentioned
+- description: Event description if available
+- event_type: Choose the most appropriate from these options:
+  * "Training" for: training sessions, MTB training, coaching, practice, skills sessions, team training
+  * "Race" for: races, racing, competition, championship, regional, national, provincial, grand prix
+  * "European Cup" for: European Cup events, UEC events, European championship rounds
+  * "World Cup" for: World Cup events, UCI World Cup, world championship rounds
+  * "3 Nations Cup" for: 3 Nations Cup events
+  * "Belgian Cycling" for: Belgian Cycling events, BK events, Belgian championship
+  * "Cycling Vlaanderen" for: Cycling Vlaanderen events, Vlaanderen events
+  * "Wallonie Cycling" for: Wallonie Cycling events, Walloon events
+  * "Dare2Race" for: Dare2Race events, D2R events
+  * "Freestyle" for: freestyle competitions, tricks, stunts
+  * "Park" for: park events, skateparks, park competitions
+  * "Street" for: street events, street competitions
+  * "Dirt" for: dirt jumping, dirt events
+  * "Flatland" for: flatland competitions
 - class_categories: Array of racing classes if applicable (e.g., ["Novice", "Intermediate", "Expert"])
 - age_groups: Array of age groups if applicable (e.g., ["5-6", "7-8", "9-10"])
 - registration_url: URL for registration if available
 - contact_info: Contact information if available
 
-IMPORTANT: Match event_type to one of the exact values above based on the event description.
 If the image is blurry, unclear, or does not contain event information, return an empty array.
 
-Return ONLY valid JSON array of events. If no events found, return empty array [].`;
+Return ONLY a valid JSON array of events. If no events found, return empty array [].`;
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
@@ -96,6 +107,7 @@ Return ONLY valid JSON array of events. If no events found, return empty array [
         ],
         generationConfig: {
           temperature: 0.3,
+          maxOutputTokens: 16384,
         },
       }),
     }
