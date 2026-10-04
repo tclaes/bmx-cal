@@ -45,9 +45,9 @@
   ];
 
   $: availableEventTypes = fixedTeamId
-    ? allEventTypes.filter(et => et.team_id === fixedTeamId)
+    ? allEventTypes.filter(et => et.team_id === fixedTeamId || et.team_id === null)
     : selectedTeamId
-      ? allEventTypes.filter(et => et.team_id === selectedTeamId)
+      ? allEventTypes.filter(et => et.team_id === selectedTeamId || et.team_id === null)
       : publicEventTypes;
 
   $: eventTypeOptions = [
