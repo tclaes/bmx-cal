@@ -35,6 +35,7 @@ async function analyzeImageWithAI(
   if (!geminiApiKey) {
     throw new Error("GEMINI_API_KEY not configured");
   }
+  void geminiApiKey.length;
 
   const bytes = new Uint8Array(imageBuffer);
   let binary = '';
