@@ -16,7 +16,8 @@
   let success = '';
   let parsing = false;
   let importing = false;
-  let step: 'preview' | 'confirm' = 'preview';
+  let step: 'edit' | 'confirm' = 'edit';
+  let currentEventIndex = 0;
 
   let allLocations: Location[] = [];
   let allEventTypes: EventType[] = [];
@@ -33,7 +34,6 @@
   }> = {};
   let creatingLocations = false;
 
-  let eventTypesByTeam: EventType[] = [];
   let publicEventTypes: EventType[] = [];
   let selectedTeamId = fixedTeamId ?? '';
 
@@ -55,6 +55,10 @@
     ...availableEventTypes.map(et => ({ value: et.id, label: et.name })),
   ];
 
+  $: currentEvent = parsedEvents[currentEventIndex] ?? null;
+
+  $: locationSelectOptions = allLocations.map(loc => ({ value: loc.id, label: loc.name }));
+
   async function handleFileSelected(event: CustomEvent<File>) {
     selectedFile = event.detail;
     error = '';
@@ -62,7 +66,8 @@
     parsedEvents = [];
     unknownLocations = new Map();
     locationResolutions = {};
-    step = 'preview';
+    currentEventIndex = 0;
+    step = 'edit';
 
     try {
       parsing = true;
@@ -75,7 +80,6 @@
       }
       assignDefaultEventTypeIds();
       await detectUnknownLocations();
-      success = `Successfully parsed ${parsedEvents.length} events from ${selectedFile.name}`;
     } catch (err) {
       error = toUserMessage(err, 'Failed to parse file');
       selectedFile = null;
@@ -128,8 +132,18 @@
     }
   }
 
-  function setEventType(index: number, eventTypeId: string) {
-    parsedEvents[index].event_type_id = eventTypeId;
+  function setEventTypeForCurrent(eventTypeId: string) {
+    if (currentEvent) {
+      parsedEvents[currentEventIndex] = { ...currentEvent, event_type_id: eventTypeId };
+      parsedEvents = parsedEvents;
+    }
+  }
+
+  function updateCurrentEvent(field: keyof ParsedEvent, value: string) {
+    if (currentEvent) {
+      parsedEvents[currentEventIndex] = { ...currentEvent, [field]: value };
+      parsedEvents = parsedEvents;
+    }
   }
 
   async function detectUnknownLocations() {
@@ -164,6 +178,9 @@
     unknownLocations = unknowns;
   }
 
+  $: currentLocationText = currentEvent?.location?.trim() ?? '';
+  $: currentLocationIsUnknown = currentLocationText !== '' && unknownLocations.has(currentLocationText);
+
   $: hasUnresolvedLocations = unknownLocations.size > 0 &&
     Array.from(unknownLocations.keys()).some(loc =>
       locationResolutions[loc]?.action === 'match' && !locationResolutions[loc]?.locationId
@@ -179,16 +196,23 @@
   $: canProceedToConfirm = parsedEvents.length > 0 && !hasUnresolvedLocations && !importing && !parsing && allEventTypesAssigned;
   $: canImport = step === 'confirm' && !hasUnconfirmedMaps && !importing;
 
+  $: currentEventReady = currentEvent && (currentEvent.event_type_id || '') !== '' &&
+    (!currentLocationIsUnknown ||
+     locationResolutions[currentLocationText]?.action !== 'match' ||
+     locationResolutions[currentLocationText]?.locationId);
+
   function setResolutionAction(locationText: string, action: 'match' | 'create' | 'skip') {
     const existing = locationResolutions[locationText];
     locationResolutions[locationText] = { ...existing, action, mapsConfirmed: action === 'create' ? false : (existing?.mapsConfirmed ?? false) };
     if (action === 'create') {
       generateMapsUrl(locationText);
     }
+    locationResolutions = { ...locationResolutions };
   }
 
   function setMatchLocation(locationText: string, locationId: string) {
     locationResolutions[locationText] = { ...locationResolutions[locationText], action: 'match', locationId };
+    locationResolutions = { ...locationResolutions };
   }
 
   function setCreateLocationField(locationText: string, field: 'newName' | 'city' | 'address' | 'country', value: string) {
@@ -198,6 +222,7 @@
       [field]: value,
       mapsConfirmed: false,
     };
+    locationResolutions = { ...locationResolutions };
   }
 
   function generateMapsUrl(locationText: string) {
@@ -211,6 +236,7 @@
     const query = parts.join(', ');
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     locationResolutions[locationText] = { ...r, mapsUrl: url, mapsConfirmed: false };
+    locationResolutions = { ...locationResolutions };
   }
 
   function confirmMapsUrl(locationText: string) {
@@ -218,6 +244,7 @@
     if (!r) return;
     generateMapsUrl(locationText);
     locationResolutions[locationText] = { ...locationResolutions[locationText], mapsConfirmed: true };
+    locationResolutions = { ...locationResolutions };
   }
 
   function regenerateMapsUrl(locationText: string) {
@@ -232,9 +259,8 @@
     const query = parts.join(', ');
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
     locationResolutions[locationText] = { ...r, mapsUrl: url, mapsConfirmed: false };
+    locationResolutions = { ...locationResolutions };
   }
-
-  $: locationSelectOptions = allLocations.map(loc => ({ value: loc.id, label: loc.name }));
 
   async function resolveLocations(): Promise<void> {
     creatingLocations = true;
@@ -269,6 +295,24 @@
     }
   }
 
+  function goToEvent(index: number) {
+    if (index >= 0 && index < parsedEvents.length) {
+      currentEventIndex = index;
+    }
+  }
+
+  function nextEvent() {
+    if (currentEventIndex < parsedEvents.length - 1) {
+      currentEventIndex++;
+    }
+  }
+
+  function prevEvent() {
+    if (currentEventIndex > 0) {
+      currentEventIndex--;
+    }
+  }
+
   function proceedToConfirm() {
     step = 'confirm';
     for (const locText of Array.from(unknownLocations.keys())) {
@@ -279,8 +323,13 @@
     }
   }
 
-  function backToPreview() {
-    step = 'preview';
+  function backToEdit() {
+    step = 'edit';
+  }
+
+  function jumpToEvent(index: number) {
+    currentEventIndex = index;
+    step = 'edit';
   }
 
   async function handleImport() {
@@ -320,7 +369,8 @@
       parsedEvents = [];
       unknownLocations = new Map();
       locationResolutions = {};
-      step = 'preview';
+      currentEventIndex = 0;
+      step = 'edit';
     } catch (err) {
       error = toUserMessage(err, 'Failed to import events');
     } finally {
@@ -336,7 +386,8 @@
     success = '';
     unknownLocations = new Map();
     locationResolutions = {};
-    step = 'preview';
+    currentEventIndex = 0;
+    step = 'edit';
   }
 
   function getEventTypeName(eventTypeId: string | undefined): string {
@@ -358,6 +409,20 @@
     }
     return '';
   }
+
+  function isEventComplete(index: number): boolean {
+    const event = parsedEvents[index];
+    if (!event) return false;
+    if (!event.event_type_id) return false;
+    const locText = event.location?.trim();
+    if (locText && unknownLocations.has(locText)) {
+      const r = locationResolutions[locText];
+      if (r?.action === 'match' && !r.locationId) return false;
+    }
+    return true;
+  }
+
+  $: completedCount = parsedEvents.filter((_, i) => isEventComplete(i)).length;
 </script>
 
 <div class="document-upload">
@@ -390,121 +455,170 @@
       <p>Parsing file...</p>
     </div>
   {:else if parsedEvents.length > 0}
-    {#if step === 'preview'}
-      <div class="preview-container">
-        <h3 class="preview-title">Preview: {parsedEvents.length} events found</h3>
+    {#if step === 'edit'}
+      <div class="editor-container">
+        <div class="editor-header">
+          <div class="editor-header-left">
+            <h3 class="editor-title">Event {currentEventIndex + 1} of {parsedEvents.length}</h3>
+            <span class="progress-pill">{completedCount}/{parsedEvents.length} complete</span>
+          </div>
+          <Button variant="ghost" size="sm" on:click={handleCancel} disabled={importing}>
+            Cancel
+          </Button>
+        </div>
 
-        <div class="preview-list">
-          {#each parsedEvents as event, i}
-            <div class="preview-item">
-              <div class="preview-item-header">
-                <strong>{event.title}</strong>
-                <span class="preview-date">{event.date}{#if event.location} at {event.location}{/if}</span>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" style="width: {((currentEventIndex + 1) / parsedEvents.length) * 100}%"></div>
+        </div>
+
+        {#if currentEvent}
+          <div class="event-card" class:complete={isEventComplete(currentEventIndex)}>
+            <div class="event-card-header">
+              <div class="event-card-title-row">
+                <Input
+                  label="Title"
+                  value={currentEvent.title}
+                  on:input={(e) => updateCurrentEvent('title', e.currentTarget.value)}
+                />
               </div>
-              <div class="preview-item-type">
-                <label for={`event-type-${i}`} class="event-type-label">Event type</label>
-                <Select
-                  id={`event-type-${i}`}
-                  value={event.event_type_id ?? ''}
-                  options={eventTypeOptions}
-                  on:change={(e) => setEventType(i, e.currentTarget.value)}
+              <div class="event-card-dates">
+                <Input
+                  label="Date"
+                  type="date"
+                  value={currentEvent.date}
+                  on:input={(e) => updateCurrentEvent('date', e.currentTarget.value)}
+                />
+                <Input
+                  label="End Date"
+                  type="date"
+                  value={currentEvent.end_date ?? ''}
+                  on:input={(e) => updateCurrentEvent('end_date', e.currentTarget.value)}
+                />
+              </div>
+              <div class="event-card-dates">
+                <Input
+                  label="Start Time"
+                  type="time"
+                  value={currentEvent.start_time ?? ''}
+                  on:input={(e) => updateCurrentEvent('start_time', e.currentTarget.value)}
+                />
+                <Input
+                  label="End Time"
+                  type="time"
+                  value={currentEvent.end_time ?? ''}
+                  on:input={(e) => updateCurrentEvent('end_time', e.currentTarget.value)}
                 />
               </div>
             </div>
-          {/each}
-        </div>
 
-        {#if unknownLocations.size > 0}
-          <div class="location-resolution">
-            <h4 class="resolution-title">Resolve unknown locations</h4>
-            <p class="resolution-hint">
-              These locations were not found in the database. Match them to existing locations, create new ones, or skip.
-            </p>
+            <div class="event-card-body">
+              <div class="field-group">
+                <label class="field-label" for="event-type-select">Event type</label>
+                <Select
+                  id="event-type-select"
+                  value={currentEvent.event_type_id ?? ''}
+                  options={eventTypeOptions}
+                  on:change={(e) => setEventTypeForCurrent(e.currentTarget.value)}
+                />
+              </div>
 
-            {#each Array.from(unknownLocations.keys()) as locText (locText)}
-              <div class="resolution-item">
-                <div class="resolution-location-name">{locText}</div>
-                <div class="resolution-actions">
+              <div class="field-group">
+                <label class="field-label" for="event-location-input">Location</label>
+                <Input
+                  id="event-location-input"
+                  value={currentEvent.location ?? ''}
+                  placeholder="Location name"
+                  on:input={(e) => updateCurrentEvent('location', e.currentTarget.value)}
+                />
+              </div>
+
+              {#if currentLocationIsUnknown}
+                <div class="location-resolution-inline">
+                  <div class="resolution-notice">
+                    <span class="resolution-notice-icon">!</span>
+                    <span>This location was not found in the database. Choose how to handle it.</span>
+                  </div>
+
                   <div class="resolution-tabs">
                     <button
                       class="resolution-tab"
-                      class:active={locationResolutions[locText]?.action === 'match'}
-                      on:click={() => setResolutionAction(locText, 'match')}
+                      class:active={locationResolutions[currentLocationText]?.action === 'match'}
+                      on:click={() => setResolutionAction(currentLocationText, 'match')}
                     >
                       Match existing
                     </button>
                     <button
                       class="resolution-tab"
-                      class:active={locationResolutions[locText]?.action === 'create'}
-                      on:click={() => setResolutionAction(locText, 'create')}
+                      class:active={locationResolutions[currentLocationText]?.action === 'create'}
+                      on:click={() => setResolutionAction(currentLocationText, 'create')}
                     >
                       Create new
                     </button>
                     <button
                       class="resolution-tab"
-                      class:active={locationResolutions[locText]?.action === 'skip'}
-                      on:click={() => setResolutionAction(locText, 'skip')}
+                      class:active={locationResolutions[currentLocationText]?.action === 'skip'}
+                      on:click={() => setResolutionAction(currentLocationText, 'skip')}
                     >
                       Skip
                     </button>
                   </div>
 
-                  {#if locationResolutions[locText]?.action === 'match'}
+                  {#if locationResolutions[currentLocationText]?.action === 'match'}
                     <Select
-                      value={locationResolutions[locText]?.locationId ?? ''}
+                      value={locationResolutions[currentLocationText]?.locationId ?? ''}
                       options={locationSelectOptions}
                       placeholder="Select a location"
-                      on:change={(e) => setMatchLocation(locText, e.currentTarget.value)}
+                      on:change={(e) => setMatchLocation(currentLocationText, e.currentTarget.value)}
                     />
-                  {:else if locationResolutions[locText]?.action === 'create'}
+                  {:else if locationResolutions[currentLocationText]?.action === 'create'}
                     <div class="create-fields">
                       <Input
                         label="Location name"
-                        value={locationResolutions[locText]?.newName ?? locText}
-                        on:input={(e) => setCreateLocationField(locText, 'newName', e.currentTarget.value)}
+                        value={locationResolutions[currentLocationText]?.newName ?? currentLocationText}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'newName', e.currentTarget.value)}
                       />
                       <Input
                         label="City"
-                        value={locationResolutions[locText]?.city ?? ''}
-                        on:input={(e) => setCreateLocationField(locText, 'city', e.currentTarget.value)}
+                        value={locationResolutions[currentLocationText]?.city ?? ''}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'city', e.currentTarget.value)}
                       />
                       <Input
                         label="Address"
-                        value={locationResolutions[locText]?.address ?? ''}
-                        on:input={(e) => setCreateLocationField(locText, 'address', e.currentTarget.value)}
+                        value={locationResolutions[currentLocationText]?.address ?? ''}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'address', e.currentTarget.value)}
                       />
                       <Input
                         label="Country"
-                        value={locationResolutions[locText]?.country ?? ''}
-                        on:input={(e) => setCreateLocationField(locText, 'country', e.currentTarget.value)}
+                        value={locationResolutions[currentLocationText]?.country ?? ''}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'country', e.currentTarget.value)}
                       />
                     </div>
                     <div class="maps-preview">
                       <div class="maps-preview-label">Google Maps link:</div>
-                      {#if locationResolutions[locText]?.mapsUrl}
+                      {#if locationResolutions[currentLocationText]?.mapsUrl}
                         <a
-                          href={locationResolutions[locText]?.mapsUrl}
+                          href={locationResolutions[currentLocationText]?.mapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           class="maps-link"
                         >
-                          {locationResolutions[locText]?.mapsUrl}
+                          {locationResolutions[currentLocationText]?.mapsUrl}
                         </a>
-                        {#if locationResolutions[locText]?.mapsConfirmed}
+                        {#if locationResolutions[currentLocationText]?.mapsConfirmed}
                           <span class="maps-confirmed">Confirmed</span>
                         {:else}
                           <div class="maps-confirm-actions">
                             <Button
                               variant="primary"
                               size="sm"
-                              on:click={() => confirmMapsUrl(locText)}
+                              on:click={() => confirmMapsUrl(currentLocationText)}
                             >
                               Confirm link
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              on:click={() => regenerateMapsUrl(locText)}
+                              on:click={() => regenerateMapsUrl(currentLocationText)}
                             >
                               Regenerate
                             </Button>
@@ -514,38 +628,81 @@
                         <Button
                           variant="ghost"
                           size="sm"
-                          on:click={() => generateMapsUrl(locText)}
+                          on:click={() => generateMapsUrl(currentLocationText)}
                         >
                           Generate Maps link
                         </Button>
                       {/if}
                     </div>
+                  {:else if locationResolutions[currentLocationText]?.action === 'skip'}
+                    <p class="resolution-skip-hint">This event will be imported without a linked location.</p>
                   {/if}
                 </div>
+              {/if}
+
+              <div class="field-group">
+                <label class="field-label" for="event-desc-input">Description</label>
+                <textarea
+                  id="event-desc-input"
+                  class="event-desc"
+                  value={currentEvent.description ?? ''}
+                  placeholder="Optional description"
+                  on:input={(e) => updateCurrentEvent('description', e.currentTarget.value)}
+                  rows="3"
+                ></textarea>
               </div>
-            {/each}
+            </div>
           </div>
         {/if}
 
-        <div class="preview-actions">
+        <div class="event-nav-dots">
+          {#each parsedEvents as _, i}
+            <button
+              class="nav-dot"
+              class:active={i === currentEventIndex}
+              class:done={isEventComplete(i)}
+              on:click={() => goToEvent(i)}
+              aria-label="Go to event {i + 1}"
+            >
+              {i + 1}
+            </button>
+          {/each}
+        </div>
+
+        <div class="editor-actions">
           <Button
-            variant="primary"
+            variant="ghost"
             size="md"
-            disabled={!canProceedToConfirm}
-            on:click={proceedToConfirm}
+            on:click={prevEvent}
+            disabled={currentEventIndex === 0}
           >
-            Review & Confirm
+            Previous
           </Button>
-          <Button variant="ghost" size="md" disabled={importing} on:click={handleCancel}>
-            Cancel
-          </Button>
+          {#if currentEventIndex < parsedEvents.length - 1}
+            <Button
+              variant="primary"
+              size="md"
+              on:click={nextEvent}
+            >
+              Next Event
+            </Button>
+          {:else}
+            <Button
+              variant="primary"
+              size="md"
+              on:click={proceedToConfirm}
+              disabled={!canProceedToConfirm}
+            >
+              Review & Confirm
+            </Button>
+          {/if}
         </div>
       </div>
     {:else if step === 'confirm'}
       <div class="confirm-container">
         <h3 class="confirm-title">Confirm Import</h3>
         <p class="confirm-hint">
-          Review the details below. Click "Import Events" to finalize.
+          Review the details below. Click any event to edit it, or click "Import Events" to finalize.
         </p>
 
         <div class="confirm-summary">
@@ -565,7 +722,7 @@
 
         <div class="confirm-events">
           {#each parsedEvents as event, i}
-            <div class="confirm-event-row">
+            <button class="confirm-event-row" on:click={() => jumpToEvent(i)}>
               <div class="confirm-event-main">
                 <strong>{event.title}</strong>
                 <span class="confirm-event-date">{event.date}{#if event.end_date} – {event.end_date}{/if}</span>
@@ -581,7 +738,8 @@
                   {/if}
                 </span>
               </div>
-            </div>
+              <span class="confirm-edit-hint">Edit</span>
+            </button>
           {/each}
         </div>
 
@@ -598,7 +756,7 @@
           >
             {importing ? 'Importing...' : 'Import Events'}
           </Button>
-          <Button variant="ghost" size="md" disabled={importing} on:click={backToPreview}>
+          <Button variant="ghost" size="md" disabled={importing} on:click={backToEdit}>
             Back
           </Button>
         </div>
@@ -640,8 +798,8 @@
     padding: var(--spacing-2xl);
   }
 
-  .preview-container,
-  .confirm-container {
+  /* Event editor */
+  .editor-container {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
@@ -650,166 +808,145 @@
     border-radius: var(--border-radius-lg);
   }
 
-  .preview-title,
-  .confirm-title {
+  .editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+  }
+
+  .editor-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .editor-title {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     margin: 0;
   }
 
-  .confirm-hint {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
-
-  .preview-list,
-  .confirm-events {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .preview-item {
-    padding: var(--spacing-sm);
-    background-color: var(--color-bg-primary);
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .preview-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--spacing-sm);
-  }
-
-  .preview-date {
-    color: var(--color-text-secondary);
+  .progress-pill {
     font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    padding: 0.15rem 0.5rem;
     white-space: nowrap;
   }
 
-  .preview-item-type {
-    max-width: 280px;
+  .progress-bar {
+    height: 4px;
+    background: var(--color-bg-primary);
+    border-radius: 2px;
+    overflow: hidden;
   }
 
-  .event-type-label {
-    display: block;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    margin-bottom: var(--spacing-xxs);
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--color-primary);
+    transition: width 0.3s ease;
   }
 
-  .preview-actions {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
-  }
-
-  .confirm-summary {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-md);
-    background-color: var(--color-bg-primary);
-    border-radius: var(--border-radius-md);
-  }
-
-  .confirm-summary-row {
-    display: flex;
-    gap: var(--spacing-sm);
-    font-size: var(--font-size-sm);
-  }
-
-  .confirm-label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-secondary);
-    min-width: 80px;
-  }
-
-  .confirm-event-row {
-    padding: var(--spacing-sm);
-    background-color: var(--color-bg-primary);
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-  }
-
-  .confirm-event-main {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxs);
-  }
-
-  .confirm-event-date {
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-xs);
-  }
-
-  .confirm-event-details {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxs);
-    text-align: right;
-    font-size: var(--font-size-xs);
-  }
-
-  .confirm-detail-label {
-    color: var(--color-text-muted);
-  }
-
-  .location-resolution {
+  .event-card {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
   }
 
-  .resolution-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    margin: 0;
+  .event-card.complete {
+    border-color: var(--color-success);
   }
 
-  .resolution-hint {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
-
-  .resolution-item {
+  .event-card-header {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .event-card-dates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .event-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .field-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+  }
+
+  .event-desc {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm, 4px);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    resize: vertical;
+    box-sizing: border-box;
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+  }
+
+  .event-desc:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+
+  /* Location resolution inline */
+  .location-resolution-inline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
   }
 
-  .resolution-location-name {
+  .resolution-notice {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
     font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
+    color: var(--color-text-secondary);
   }
 
-  .resolution-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
+  .resolution-notice-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--color-warning, #f59e0b);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
   }
 
   .resolution-tabs {
@@ -823,7 +960,7 @@
     font-weight: var(--font-weight-medium);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-bg-primary);
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: all var(--transition-base);
@@ -840,6 +977,12 @@
     color: white;
   }
 
+  .resolution-skip-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
   .create-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -851,7 +994,7 @@
     flex-direction: column;
     gap: var(--spacing-xs);
     padding: var(--spacing-sm);
-    background-color: var(--color-bg-secondary);
+    background-color: var(--color-bg-primary);
     border-radius: var(--border-radius-sm);
   }
 
@@ -879,8 +1022,171 @@
     gap: var(--spacing-xs);
   }
 
+  /* Navigation dots */
+  .event-nav-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: var(--spacing-xs) 0;
+  }
+
+  .nav-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    color: var(--color-text-muted);
+    font-size: 11px;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nav-dot:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .nav-dot.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+  }
+
+  .nav-dot.done {
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+
+  .nav-dot.done.active {
+    background: var(--color-success);
+    color: white;
+  }
+
+  .editor-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xs);
+  }
+
+  /* Confirm step */
+  .confirm-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--border-radius-lg);
+  }
+
+  .confirm-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .confirm-hint {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .confirm-summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--border-radius-md);
+  }
+
+  .confirm-summary-row {
+    display: flex;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+  }
+
+  .confirm-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    min-width: 80px;
+  }
+
+  .confirm-events {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .confirm-event-row {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+    text-align: left;
+    width: 100%;
+  }
+
+  .confirm-event-row:hover {
+    border-color: var(--color-primary);
+  }
+
+  .confirm-event-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .confirm-event-date {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+  }
+
+  .confirm-event-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    text-align: right;
+    font-size: var(--font-size-xs);
+  }
+
+  .confirm-detail-label {
+    color: var(--color-text-muted);
+  }
+
+  .confirm-edit-hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-primary);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+  }
+
+  .preview-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+  }
+
   @media (max-width: 640px) {
-    .create-fields {
+    .create-fields,
+    .event-card-dates {
       grid-template-columns: 1fr;
     }
 
@@ -890,6 +1196,10 @@
 
     .confirm-event-details {
       text-align: left;
+    }
+
+    .editor-actions {
+      flex-direction: column-reverse;
     }
   }
 </style>
