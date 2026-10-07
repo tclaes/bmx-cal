@@ -11,6 +11,7 @@
   import SaveCalendarModal from './SaveCalendarModal.svelte';
   import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';
+  import { supabase } from '@data/supabase';
   import { t, locale, interpolate } from '../../i18n';
 
   let events: EventWithDetails[] = [];
@@ -22,6 +23,7 @@
   let pushSupported = false;
   let pushEnabled = false;
   let enablingPush = false;
+  let sendingTestPush = false;
 
 
   $: isLoggedIn = !!$authStore.user;
@@ -144,6 +146,21 @@
     }
   }
 
+  async function handleTestPush() {
+    sendingTestPush = true;
+    try {
+      const { error: invokeError } = await supabase.functions.invoke('send-push-notifications', {
+        body: { test: true },
+      });
+      if (invokeError) throw invokeError;
+      error = '';
+    } catch (e) {
+      error = e instanceof Error ? e.message : $t.myEvents.notifTestFailed;
+    } finally {
+      sendingTestPush = false;
+    }
+  }
+
   function exportToCalendar() {
     if ($selectedCount === 0) {
       error = $t.myEvents.selectAtLeastOne;
@@ -213,9 +230,14 @@
       {:else}
         <p class="notif-enabled">{$t.myEvents.notifPushEnabled}</p>
         <p class="notif-description">{$t.myEvents.notifDescription}</p>
-        <Button variant="secondary" on:click={handleDisablePush} disabled={enablingPush}>
-          {$t.myEvents.notifDisablePush}
-        </Button>
+        <div class="notif-actions">
+          <Button variant="secondary" on:click={handleTestPush} disabled={sendingTestPush || enablingPush}>
+            {sendingTestPush ? $t.myEvents.notifTesting : $t.myEvents.notifTestPush}
+          </Button>
+          <Button variant="secondary" on:click={handleDisablePush} disabled={enablingPush || sendingTestPush}>
+            {$t.myEvents.notifDisablePush}
+          </Button>
+        </div>
       {/if}
     </div>
   {/if}
