@@ -587,6 +587,7 @@
 
   .notif-section {
     margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
