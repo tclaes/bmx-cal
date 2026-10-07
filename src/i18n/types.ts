@@ -175,6 +175,7 @@ export interface Translations {
     notifDescription: string;
     notifEnablePush: string;
     notifPushEnabled: string;
+    notifDisablePush: string;
     notifPushUnsupported: string;
     notifSelectTypes: string;
     notifNoTypes: string;

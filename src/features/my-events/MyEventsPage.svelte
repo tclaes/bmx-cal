@@ -6,8 +6,7 @@
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
   import { authStore } from '../../shared/stores/auth.store';
-  import { notificationPrefStore, preferredEventTypeIds } from '../../shared/stores/notification-preference.store';
-  import { notificationPreferenceService } from '../../shared/services/notification-preference.service';
+
   import { PushService } from '../../shared/services/push.service';
   import SaveCalendarModal from './SaveCalendarModal.svelte';
   import SavedCalendarsList from './SavedCalendarsList.svelte';
@@ -23,7 +22,7 @@
   let pushSupported = false;
   let pushEnabled = false;
   let enablingPush = false;
-  let notifiableTypes: EventType[] = [];
+
 
   $: isLoggedIn = !!$authStore.user;
 
@@ -69,9 +68,7 @@
       if ($authStore.user) {
         pushSupported = PushService.isSupported();
         pushEnabled = pushSupported && await PushService.isSubscribed();
-        const allTypes = await EventsService.getEventTypes();
-        notifiableTypes = notificationPreferenceService.filterNotifiableTypes(allTypes);
-        await notificationPrefStore.load();
+
       }
     } catch (e) {
       error = e instanceof Error ? e.message : $t.myEvents.failedToLoad;
@@ -137,8 +134,14 @@
     }
   }
 
-  async function handleToggleNotifType(typeId: string, enabled: boolean) {
-    await notificationPrefStore.toggle(typeId, enabled);
+  async function handleDisablePush() {
+    enablingPush = true;
+    try {
+      await PushService.unsubscribe();
+      pushEnabled = false;
+    } finally {
+      enablingPush = false;
+    }
   }
 
   function exportToCalendar() {
@@ -209,31 +212,10 @@
         </Button>
       {:else}
         <p class="notif-enabled">{$t.myEvents.notifPushEnabled}</p>
-        {#if notifiableTypes.length > 0}
-          <span class="type-selector-label">{$t.myEvents.notifSelectTypes}</span>
-          <div class="type-buttons">
-            {#each notifiableTypes as type (type.id)}
-              {@const checked = $preferredEventTypeIds.has(type.id)}
-              <button
-                class="type-btn"
-                class:fully-selected={checked}
-                style="--type-color: {type.color_code}"
-                on:click={() => handleToggleNotifType(type.id, !checked)}
-                aria-pressed={checked}
-              >
-                <span class="type-dot"></span>
-                <span class="type-name">{type.name}</span>
-                {#if checked}
-                  <svg class="type-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                {/if}
-              </button>
-            {/each}
-          </div>
-        {:else}
-          <p class="notif-no-types">{$t.myEvents.notifNoTypes}</p>
-        {/if}
+        <p class="notif-description">{$t.myEvents.notifDescription}</p>
+        <Button variant="secondary" on:click={handleDisablePush} disabled={enablingPush}>
+          {$t.myEvents.notifDisablePush}
+        </Button>
       {/if}
     </div>
   {/if}
