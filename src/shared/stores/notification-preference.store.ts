@@ -45,10 +45,16 @@ function createNotificationPrefStore() {
           await notificationPreferenceService.disable(eventTypeId);
         }
       } catch (err) {
-        update(s => ({
-          ...s,
-          error: err instanceof Error ? err.message : 'Failed to update notification preference',
-        }));
+        update(s => {
+          const next = new Set(s.preferredEventTypeIds);
+          if (enabled) next.delete(eventTypeId);
+          else next.add(eventTypeId);
+          return {
+            ...s,
+            preferredEventTypeIds: next,
+            error: err instanceof Error ? err.message : 'Failed to update notification preference',
+          };
+        });
       }
     },
     reset: () => set(initialState),
@@ -57,7 +63,6 @@ function createNotificationPrefStore() {
 
 const baseStore = createNotificationPrefStore();
 
-export const notificationPrefStore = {
-  ...baseStore,
-  preferredIds: derived(baseStore, $s => $s.preferredEventTypeIds),
-};
+export const notificationPrefStore = baseStore;
+
+export const preferredEventTypeIds = derived(baseStore, $s => $s.preferredEventTypeIds);

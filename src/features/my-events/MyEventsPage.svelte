@@ -6,7 +6,7 @@
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
   import { authStore } from '../../shared/stores/auth.store';
-  import { notificationPrefStore } from '../../shared/stores/notification-preference.store';
+  import { notificationPrefStore, preferredEventTypeIds } from '../../shared/stores/notification-preference.store';
   import { notificationPreferenceService } from '../../shared/services/notification-preference.service';
   import { PushService } from '../../shared/services/push.service';
   import SaveCalendarModal from './SaveCalendarModal.svelte';
@@ -27,9 +27,9 @@
 
   $: isLoggedIn = !!$authStore.user;
 
-  $: sortedEvents = [...events].sort((a, b) =>
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  $: sortedEvents = [...events]
+    .filter(e => new Date(e.date) >= new Date(new Date().toDateString()))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   $: eventTypes = (() => {
     const map = new Map<string, { type: EventType; ids: string[] }>();
@@ -213,7 +213,7 @@
           <span class="type-selector-label">{$t.myEvents.notifSelectTypes}</span>
           <div class="type-buttons">
             {#each notifiableTypes as type (type.id)}
-              {@const checked = $notificationPrefStore.preferredIds.has(type.id)}
+              {@const checked = $preferredEventTypeIds.has(type.id)}
               <button
                 class="type-btn"
                 class:fully-selected={checked}
