@@ -173,6 +173,13 @@ export const nl: Translations = {
     selectAtLeastOne: 'Selecteer minimaal één evenement',
     selectAtLeastOneSave: 'Selecteer minimaal één evenement voor het opslaan',
     exportFailed: 'Exporteren mislukt',
+    notifTitle: 'Deadline meldingen',
+    notifDescription: 'Kies voor welke nationale wedstrijden je inschrijvingsdeadline-herinneringen wilt. Je krijgt een pushmelding 7 dagen en 1 dag voor de deadline.',
+    notifEnablePush: 'Meldingen inschakelen',
+    notifPushEnabled: 'Meldingen ingeschakeld',
+    notifPushUnsupported: 'Pushmeldingen worden niet ondersteund in deze browser.',
+    notifSelectTypes: 'Selecteer wedstrijdtypes',
+    notifNoTypes: 'Geen wedstrijdtypes beschikbaar voor meldingen.',
   },
   myEventsDemo: {
     docTitle: 'Mijn kalender maken - BMX Kalender',

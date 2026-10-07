@@ -173,6 +173,13 @@ export const en: Translations = {
     selectAtLeastOne: 'Please select at least one event',
     selectAtLeastOneSave: 'Please select at least one event before saving',
     exportFailed: 'Export failed',
+    notifTitle: 'Deadline notifications',
+    notifDescription: 'Choose which national races you want registration deadline reminders for. You\'ll get a push notification 7 days and 1 day before the deadline.',
+    notifEnablePush: 'Enable notifications',
+    notifPushEnabled: 'Notifications enabled',
+    notifPushUnsupported: 'Push notifications are not supported in this browser.',
+    notifSelectTypes: 'Select race types',
+    notifNoTypes: 'No race types available for notifications.',
   },
   myEventsDemo: {
     docTitle: 'Create my calendar - BMX Calendar',

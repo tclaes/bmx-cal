@@ -19,7 +19,12 @@ interface EventRow {
   title: string;
   registration_deadline: string | null;
   registration_url: string | null;
-  event_type: { name: string } | null;
+  event_type: { id: string; name: string } | null;
+}
+
+interface NotificationPreferenceRow {
+  user_id: string;
+  event_type_id: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -166,7 +171,41 @@ Deno.serve(async (req: Request) => {
     }
 
     const daysBefore = body.daysBefore ?? [7, 1];
-    const eventTypes = body.eventTypes ?? ["European Cup", "3 Nations Cup"];
+
+    // Fetch per-user notification preferences so each subscriber only
+    // receives reminders for the race types they opted into. No rows
+    // means no notifications — fully opt-in.
+    const { data: prefs, error: prefsError } = await supabase
+      .from("notification_preferences")
+      .select("user_id, event_type_id");
+
+    if (prefsError) {
+      console.error("Error fetching notification preferences:", prefsError);
+      return new Response(
+        JSON.stringify({ error: "Failed to fetch notification preferences" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Map: user_id → Set of event type IDs they want reminders for.
+    const userPrefs = new Map<string, Set<string>>();
+    for (const p of (prefs ?? []) as NotificationPreferenceRow[]) {
+      if (!userPrefs.has(p.user_id)) userPrefs.set(p.user_id, new Set());
+      userPrefs.get(p.user_id)!.add(p.event_type_id);
+    }
+
+    // Collect all preferred event type IDs to scope the events query.
+    const preferredEventTypeIds = new Set<string>();
+    for (const ids of userPrefs.values()) {
+      for (const id of ids) preferredEventTypeIds.add(id);
+    }
+
+    if (preferredEventTypeIds.size === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent: 0, message: "No notification preferences set" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const today = new Date();
     const targetDates: string[] = [];
@@ -184,10 +223,11 @@ Deno.serve(async (req: Request) => {
         title,
         registration_deadline,
         registration_url,
-        event_type:event_types!events_event_type_id_fkey(name)
+        event_type:event_types!events_event_type_id_fkey(id, name)
       `)
       .not("registration_deadline", "is", null)
-      .in("registration_deadline", targetDates);
+      .in("registration_deadline", targetDates)
+      .in("event_type_id", Array.from(preferredEventTypeIds));
 
     if (eventsError) {
       console.error("Error fetching events:", eventsError);
@@ -198,7 +238,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const filteredEvents = (events as EventRow[]).filter(e =>
-      e.event_type && eventTypes.includes(e.event_type.name)
+      e.event_type && preferredEventTypeIds.has((e.event_type as { id: string }).id)
     );
 
     if (filteredEvents.length === 0) {
@@ -210,8 +250,12 @@ Deno.serve(async (req: Request) => {
 
     for (const event of filteredEvents) {
       const daysLabel = getDaysLabel(event.registration_deadline, today);
+      const eventTypeId = (event.event_type as { id: string }).id;
 
       for (const sub of subscriptions as PushSubscriptionRow[]) {
+        // Only send to users who opted into this event type.
+        const myPrefs = userPrefs.get(sub.user_id);
+        if (!myPrefs || !myPrefs.has(eventTypeId)) continue;
         const payload = JSON.stringify({
           title: `Inschrijvingsdeadline: ${event.title}`,
           body: `De inschrijving sluit over ${daysLabel}. Schrijf je nu in!`,

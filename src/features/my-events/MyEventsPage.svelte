@@ -6,6 +6,9 @@
   import Button from '../../shared/components/Button.svelte';
   import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
   import { authStore } from '../../shared/stores/auth.store';
+  import { notificationPrefStore } from '../../shared/stores/notification-preference.store';
+  import { notificationPreferenceService } from '../../shared/services/notification-preference.service';
+  import { PushService } from '../../shared/services/push.service';
   import SaveCalendarModal from './SaveCalendarModal.svelte';
   import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';
@@ -17,6 +20,10 @@
   let exporting = false;
   let showSaveModal = false;
   let savedCalendarsRefresh = 0;
+  let pushSupported = false;
+  let pushEnabled = false;
+  let enablingPush = false;
+  let notifiableTypes: EventType[] = [];
 
   $: isLoggedIn = !!$authStore.user;
 
@@ -58,6 +65,14 @@
     try {
       events = await EventsService.getAllEvents();
       await loadUserSelections();
+
+      if ($authStore.user) {
+        pushSupported = PushService.isSupported();
+        pushEnabled = pushSupported && await PushService.isSubscribed();
+        const allTypes = await EventsService.getEventTypes();
+        notifiableTypes = notificationPreferenceService.filterNotifiableTypes(allTypes);
+        await notificationPrefStore.load();
+      }
     } catch (e) {
       error = e instanceof Error ? e.message : $t.myEvents.failedToLoad;
     } finally {
@@ -108,6 +123,22 @@
     for (const id of eventIds) {
       await toggleEventSelection(id);
     }
+  }
+
+  async function handleEnablePush() {
+    enablingPush = true;
+    try {
+      await PushService.subscribe();
+      pushEnabled = true;
+    } catch {
+      pushEnabled = false;
+    } finally {
+      enablingPush = false;
+    }
+  }
+
+  async function handleToggleNotifType(typeId: string, enabled: boolean) {
+    await notificationPrefStore.toggle(typeId, enabled);
   }
 
   function exportToCalendar() {
@@ -163,6 +194,48 @@
       refreshTrigger={savedCalendarsRefresh}
       on:load={(e) => handleLoadCalendar(e.detail)}
     />
+  {/if}
+
+  {#if isLoggedIn && !loading}
+    <div class="notif-section">
+      <h2 class="notif-title">{$t.myEvents.notifTitle}</h2>
+      <p class="notif-description">{$t.myEvents.notifDescription}</p>
+
+      {#if !pushSupported}
+        <p class="notif-unsupported">{$t.myEvents.notifPushUnsupported}</p>
+      {:else if !pushEnabled}
+        <Button variant="secondary" on:click={handleEnablePush} disabled={enablingPush}>
+          {$t.myEvents.notifEnablePush}
+        </Button>
+      {:else}
+        <p class="notif-enabled">{$t.myEvents.notifPushEnabled}</p>
+        {#if notifiableTypes.length > 0}
+          <span class="type-selector-label">{$t.myEvents.notifSelectTypes}</span>
+          <div class="type-buttons">
+            {#each notifiableTypes as type (type.id)}
+              {@const checked = $notificationPrefStore.preferredIds.has(type.id)}
+              <button
+                class="type-btn"
+                class:fully-selected={checked}
+                style="--type-color: {type.color_code}"
+                on:click={() => handleToggleNotifType(type.id, !checked)}
+                aria-pressed={checked}
+              >
+                <span class="type-dot"></span>
+                <span class="type-name">{type.name}</span>
+                {#if checked}
+                  <svg class="type-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {:else}
+          <p class="notif-no-types">{$t.myEvents.notifNoTypes}</p>
+        {/if}
+      {/if}
+    </div>
   {/if}
 
   {#if loading}
@@ -510,6 +583,42 @@
     content: '•';
     margin-right: var(--spacing-sm);
     color: var(--color-border);
+  }
+
+  .notif-section {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+  }
+
+  .notif-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-sm) 0;
+  }
+
+  .notif-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-md) 0;
+    line-height: 1.5;
+  }
+
+  .notif-enabled {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-success);
+    margin: 0 0 var(--spacing-sm) 0;
+  }
+
+  .notif-unsupported,
+  .notif-no-types {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
   }
 
   @media (max-width: 640px) {

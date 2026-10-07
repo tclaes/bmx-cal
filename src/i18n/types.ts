@@ -171,6 +171,13 @@ export interface Translations {
     selectAtLeastOne: string;
     selectAtLeastOneSave: string;
     exportFailed: string;
+    notifTitle: string;
+    notifDescription: string;
+    notifEnablePush: string;
+    notifPushEnabled: string;
+    notifPushUnsupported: string;
+    notifSelectTypes: string;
+    notifNoTypes: string;
   };
   myEventsDemo: {
     docTitle: string;
