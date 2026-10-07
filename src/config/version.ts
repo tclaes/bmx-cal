@@ -1,4 +1,4 @@
-export const APP_VERSION = '0.0.9';
-export const MIN_VERSION = '0.0.9';
+export const APP_VERSION = '0.1.0';
+export const MIN_VERSION = '0.1.0';
 export const FORCE_UPDATE = true;
-export const RELEASE_NOTES = 'Require account for personal calendar creation';
+export const RELEASE_NOTES = 'Push notifications update';
