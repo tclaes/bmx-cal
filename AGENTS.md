@@ -35,3 +35,7 @@ references `docs/env.md`
 ## Cron Jobs
 
 references `docs/cron.md`
+
+## File imports
+
+references `docs/file-import.md`
