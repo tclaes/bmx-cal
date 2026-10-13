@@ -39,3 +39,7 @@ references `docs/cron.md`
 ## File imports
 
 references `docs/file-import.md`
+
+## Contribute
+
+references `docs/contribute.md`
