@@ -39,18 +39,6 @@ Live site: [bmxkalender.be](https://bmxkalender.be)
 - View import history and sync logs
 - Bug report triage with GitHub issue integration
 
-## Tech Stack
-
-- **Svelte 4** - Reactive UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **Supabase** - PostgreSQL database, Auth, Edge Functions, and storage
-- **Navaid** - Lightweight client-side router
-- **Sheriff** - Module boundary enforcement
-- **PapaParse** - CSV parsing
-- **SheetJS** - Excel parsing
-- **Vitest** - Unit testing
-
 ## Getting Started
 
 ### Prerequisites
