@@ -15,3 +15,7 @@
 ## Architecture
 
 references `Docs\architecture.md`
+
+## Features
+
+references `Docs\features.md`
