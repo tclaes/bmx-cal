@@ -23,3 +23,7 @@ references `docs/features.md`
 ## Edge functions
 
 references `docs/edge-functions.md`
+
+## Database
+
+references `docs/db.md`
