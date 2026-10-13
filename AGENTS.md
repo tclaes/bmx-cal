@@ -14,8 +14,8 @@
 
 ## Architecture
 
-references `Docs\architecture.md`
+references `docs\architecture.md`
 
 ## Features
 
-references `Docs\features.md`
+references `docs\features.md`
