@@ -27,3 +27,7 @@ references `docs/edge-functions.md`
 ## Database
 
 references `docs/db.md`
+
+## Environments
+
+references `docs/env.md`
