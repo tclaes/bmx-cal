@@ -14,8 +14,12 @@
 
 ## Architecture
 
-references `docs\architecture.md`
+references `docs/architecture.md`
 
 ## Features
 
-references `docs\features.md`
+references `docs/features.md`
+
+## Edge functions
+
+references `docs/edge-functions.md`
