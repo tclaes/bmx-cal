@@ -9,7 +9,6 @@ Live site: [bmxkalender.be](https://bmxkalender.be)
 ### Prerequisites
 
 - Node.js 22 or higher
-- A Supabase project (URL and anon key)
 
 ### Installation
 
