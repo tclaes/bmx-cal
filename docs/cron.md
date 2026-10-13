@@ -1,6 +1,6 @@
 ## Cron Jobs
 
-Two `pg_cron` jobs run automated background tasks. See [CRON_JOBS.md](./CRON_JOBS.md) for full details, monitoring queries, and troubleshooting.
+Two `pg_cron` jobs run automated background tasks. See [CRON_JOBS.md](CRON_JOBS.md) for full details, monitoring queries, and troubleshooting.
 
 | Job | Schedule | Purpose |
 |-----|----------|---------|
