@@ -3,10 +3,12 @@
   import { Card, Button, Input, Select, Alert, LoadingSpinner, LocationPicker } from '@shared/components';
   import { authStore } from '@shared/stores';
   import TeamMemberManager from '../admin/TeamMemberManager.svelte';
+  import DocumentUpload from '../admin/DocumentUpload.svelte';
   import { EventsService, TeamService } from '@shared/services';
   import type { TeamMemberWithEmail } from '@shared/services';
   import { supabase } from '@data/supabase';
   import { getInitialTeamExpandedState } from '@shared/utils';
+  import { toUserMessage } from '@shared/utils/error-message';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let allEvents: EventWithDetails[] = [];
@@ -22,12 +24,14 @@
   let members: TeamMemberWithEmail[] = [];
   let loadingMembers = false;
   let removingMemberId: string | null = null;
+  let confirmingRemoveId: string | null = null;
   let memberError = '';
   let memberSuccess = '';
 
   let showForm = false;
   let editingEvent: EventWithDetails | null = null;
   let deletingEventId: string | null = null;
+  let confirmingDeleteId: string | null = null;
 
   let teamMembers: Record<string, TeamMemberWithEmail[]> = {};
   let loadingMembersMap: Record<string, boolean> = {};
@@ -92,7 +96,7 @@
         }
       }
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load data';
+      error = toUserMessage(err, 'Failed to load data');
     } finally {
       loading = false;
     }
@@ -109,8 +113,16 @@
     }
   }
 
-  async function handleRemoveMember(member: TeamMemberWithEmail, team: Team) {
-    if (!confirm(`Remove ${member.user_email} from ${team.name}?`)) return;
+  function requestRemoveConfirm(memberId: string) {
+    confirmingRemoveId = memberId;
+  }
+
+  function cancelRemoveConfirm() {
+    confirmingRemoveId = null;
+  }
+
+  async function confirmRemoveMember(member: TeamMemberWithEmail, team: Team) {
+    confirmingRemoveId = null;
     removingMemberId = member.id;
     memberError = '';
     memberSuccess = '';
@@ -119,7 +131,7 @@
       memberSuccess = `${member.user_email} removed from ${team.name}`;
       await loadMembersForTeam(team.id);
     } catch (err) {
-      memberError = err instanceof Error ? err.message : 'Failed to remove member';
+      memberError = toUserMessage(err, 'Failed to remove member');
     } finally {
       removingMemberId = null;
     }
@@ -213,14 +225,22 @@
       const evts = await EventsService.getAllEvents();
       allEvents = evts.filter(e => e.team_id !== null);
     } catch (err) {
-      formError = err instanceof Error ? err.message : 'Failed to save event';
+      formError = toUserMessage(err, 'Failed to save event');
     } finally {
       saving = false;
     }
   }
 
-  async function handleDelete(event: EventWithDetails) {
-    if (!confirm(`Delete "${event.title}"? This cannot be undone.`)) return;
+  function requestDeleteConfirm(eventId: string) {
+    confirmingDeleteId = eventId;
+  }
+
+  function cancelDeleteConfirm() {
+    confirmingDeleteId = null;
+  }
+
+  async function confirmDelete(event: EventWithDetails) {
+    confirmingDeleteId = null;
     deletingEventId = event.id;
     error = '';
     successMessage = '';
@@ -230,7 +250,7 @@
       const evts = await EventsService.getAllEvents();
       allEvents = evts.filter(e => e.team_id !== null);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete event';
+      error = toUserMessage(err, 'Failed to delete event');
     } finally {
       deletingEventId = null;
     }
@@ -279,6 +299,31 @@
       {:else if allTeams.length === 0}
         <p class="empty-state">No teams found.</p>
       {:else}
+        <Card padding="none" shadow="md">
+          <details class="collapsible-section">
+            <summary class="collapsible-header">
+              <span class="collapsible-title">Import Events from File</span>
+              <svg
+                class="collapsible-chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="collapsible-body">
+              <DocumentUpload
+                isAdmin={isAdmin}
+                teams={allTeams}
+                fixedTeamId={isAdmin ? null : (allTeams.length > 0 ? allTeams[0].id : null)}
+              />
+            </div>
+          </details>
+        </Card>
+
         {#each allTeams as team (team.id)}
           {@const teamEvts = eventsByTeam[team.id] ?? []}
           {@const teamMbrs = teamMembers[team.id] ?? []}
@@ -313,14 +358,33 @@
                         </div>
                         <div class="event-actions">
                           <Button variant="secondary" size="sm" on:click={() => openEditForm(event)}>Edit</Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            disabled={deletingEventId === event.id}
-                            on:click={() => handleDelete(event)}
-                          >
-                            {deletingEventId === event.id ? '...' : 'Delete'}
-                          </Button>
+                          {#if confirmingDeleteId === event.id}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={() => confirmDelete(event)}
+                            >
+                              {deletingEventId === event.id ? '...' : 'Confirm?'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={cancelDeleteConfirm}
+                            >
+                              Cancel
+                            </Button>
+                          {:else}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId !== null}
+                              on:click={() => requestDeleteConfirm(event.id)}
+                            >
+                              Delete
+                            </Button>
+                          {/if}
                         </div>
                       </div>
                     {/each}
@@ -349,14 +413,35 @@
                               <span class="member-email">{member.user_email}</span>
                               <span class="member-since">Member since {formatDate(member.created_at)}</span>
                             </div>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              disabled={removingMemberId === member.id}
-                              on:click={() => handleRemoveMember(member, team)}
-                            >
-                              {removingMemberId === member.id ? '...' : 'Remove'}
-                            </Button>
+                            <div class="member-actions">
+                              {#if confirmingRemoveId === member.id}
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  disabled={removingMemberId === member.id}
+                                  on:click={() => confirmRemoveMember(member, team)}
+                                >
+                                  {removingMemberId === member.id ? '...' : 'Confirm?'}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={removingMemberId === member.id}
+                                  on:click={cancelRemoveConfirm}
+                                >
+                                  Cancel
+                                </Button>
+                              {:else}
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  disabled={removingMemberId !== null}
+                                  on:click={() => requestRemoveConfirm(member.id)}
+                                >
+                                  Remove
+                                </Button>
+                              {/if}
+                            </div>
                           </div>
                         {/each}
                       </div>
@@ -933,5 +1018,55 @@
       flex-direction: column;
       align-items: flex-start;
     }
+  }
+
+  .collapsible-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .collapsible-section > summary {
+    list-style: none;
+  }
+
+  .collapsible-section > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .collapsible-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-radius: var(--border-radius-md);
+    user-select: none;
+  }
+
+  .collapsible-header:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .collapsible-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  .collapsible-chevron {
+    color: var(--color-text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  details[open] .collapsible-chevron {
+    transform: rotate(180deg);
+  }
+
+  .collapsible-body {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
   }
 </style>

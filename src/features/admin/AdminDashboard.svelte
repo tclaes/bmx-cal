@@ -1,12 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
   import { authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
+  import { supabase } from '@data/supabase';
   import { groupEventsByYear, getDefaultOpenYears } from '@shared/utils';
-  import type { EventWithType } from '@types';
+  import type { EventWithType, Team } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
   import BugReportsPanel from './BugReportsPanel.svelte';
+  import TeamMemberManager from './TeamMemberManager.svelte';
 
   let events: EventWithType[] = [];
   let loading = false;
@@ -14,6 +17,8 @@
   let deleteError = '';
   let deleteSuccess = '';
   let deletingEventId: string | null = null;
+  let confirmingDeleteId: string | null = null;
+  let allTeams: Team[] = [];
 
   const currentYear = new Date().getFullYear();
 
@@ -24,18 +29,25 @@
     error = '';
     try {
       events = await EventsService.getUpcomingEvents();
+      const { data: teams } = await supabase.from('teams').select('*').order('name');
+      allTeams = teams ?? [];
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load events';
+      error = toUserMessage(err, 'Failed to load events');
     } finally {
       loading = false;
     }
   }
 
-  async function handleDeleteEvent(eventId: string, eventTitle: string) {
-    if (!confirm(`Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`)) {
-      return;
-    }
+  function requestDeleteConfirm(eventId: string) {
+    confirmingDeleteId = eventId;
+  }
 
+  function cancelDeleteConfirm() {
+    confirmingDeleteId = null;
+  }
+
+  async function confirmDeleteEvent(eventId: string, eventTitle: string) {
+    confirmingDeleteId = null;
     deleteError = '';
     deleteSuccess = '';
     deletingEventId = eventId;
@@ -45,7 +57,7 @@
       deleteSuccess = `Event "${eventTitle}" has been deleted successfully.`;
       await loadEvents();
     } catch (err) {
-      deleteError = err instanceof Error ? err.message : 'Failed to delete event';
+      deleteError = toUserMessage(err, 'Failed to delete event');
     } finally {
       deletingEventId = null;
     }
@@ -97,7 +109,28 @@
           </svg>
         </summary>
         <div class="collapsible-body">
-          <DocumentUpload />
+          <DocumentUpload isAdmin={true} teams={allTeams} />
+        </div>
+      </details>
+    </Card>
+
+    <Card padding="none" shadow="md">
+      <details class="collapsible-section">
+        <summary class="collapsible-header">
+          <span class="collapsible-title">Team Management</span>
+          <svg
+            class="collapsible-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </summary>
+        <div class="collapsible-body">
+          <TeamMemberManager />
         </div>
       </details>
     </Card>
@@ -179,14 +212,33 @@
                           {/if}
                         </div>
                         <div class="event-actions">
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            disabled={deletingEventId === event.id}
-                            on:click={() => handleDeleteEvent(event.id, event.title)}
-                          >
-                            {deletingEventId === event.id ? 'Deleting...' : 'Delete'}
-                          </Button>
+                          {#if confirmingDeleteId === event.id}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={() => confirmDeleteEvent(event.id, event.title)}
+                            >
+                              {deletingEventId === event.id ? 'Deleting...' : 'Confirm?'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={deletingEventId === event.id}
+                              on:click={cancelDeleteConfirm}
+                            >
+                              Cancel
+                            </Button>
+                          {:else}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={deletingEventId !== null}
+                              on:click={() => requestDeleteConfirm(event.id)}
+                            >
+                              Delete
+                            </Button>
+                          {/if}
                         </div>
                       </div>
                     {/each}

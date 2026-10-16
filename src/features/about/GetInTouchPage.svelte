@@ -1,5 +1,6 @@
 <script lang="ts">
   import { navigate } from '../../router';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { t, interpolate } from '../../i18n';
 
   let name = '';
@@ -41,7 +42,7 @@
 
       submitted = true;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      error = toUserMessage(err, 'Something went wrong. Please try again.');
     } finally {
       submitting = false;
     }

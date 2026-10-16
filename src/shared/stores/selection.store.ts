@@ -63,32 +63,28 @@ export async function clearAllSelections() {
   selectedEventIds.set(new Set());
 }
 
-export async function selectEventsByType(eventIds: string[]) {
+async function mutateByType(eventIds: string[], mode: 'add' | 'remove') {
   const loggedIn = await isLoggedIn();
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
-    eventIds.forEach(id => newIds.add(id));
+    eventIds.forEach(id => mode === 'add' ? newIds.add(id) : newIds.delete(id));
     selectionService.saveLocalSelections(Array.from(newIds));
     return newIds;
   });
 
   if (loggedIn) {
-    await Promise.all(eventIds.map(id => selectionService.addRemoteSelection(id)));
+    const remoteFn = mode === 'add'
+      ? selectionService.addRemoteSelection
+      : selectionService.removeRemoteSelection;
+    await Promise.all(eventIds.map(id => remoteFn.call(selectionService, id)));
   }
 }
 
+export async function selectEventsByType(eventIds: string[]) {
+  await mutateByType(eventIds, 'add');
+}
+
 export async function deselectEventsByType(eventIds: string[]) {
-  const loggedIn = await isLoggedIn();
-
-  selectedEventIds.update(ids => {
-    const newIds = new Set(ids);
-    eventIds.forEach(id => newIds.delete(id));
-    selectionService.saveLocalSelections(Array.from(newIds));
-    return newIds;
-  });
-
-  if (loggedIn) {
-    await Promise.all(eventIds.map(id => selectionService.removeRemoteSelection(id)));
-  }
+  await mutateByType(eventIds, 'remove');
 }

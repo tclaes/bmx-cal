@@ -13,6 +13,34 @@ interface ContactPayload {
   message: string;
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const MAX_NAME = 120;
+const MAX_CLUB = 120;
+const MAX_EMAIL = 254;
+const MAX_MESSAGE = 5000;
+
+// Best-effort per-IP throttle so the form cannot be used as a mail flooder.
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const recentSubmissions = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (recentSubmissions.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+
+  if (hits.length >= RATE_LIMIT_MAX) {
+    recentSubmissions.set(ip, hits);
+    return true;
+  }
+
+  hits.push(now);
+  recentSubmissions.set(ip, hits);
+
+  if (recentSubmissions.size > 5000) recentSubmissions.clear();
+
+  return false;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -35,6 +63,31 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (
+      name.trim().length > MAX_NAME ||
+      email.trim().length > MAX_EMAIL ||
+      (clubName ?? "").trim().length > MAX_CLUB ||
+      message.trim().length > MAX_MESSAGE ||
+      !EMAIL_PATTERN.test(email.trim())
+    ) {
+      return new Response(
+        JSON.stringify({ error: "Invalid input" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
+
+    if (isRateLimited(clientIp)) {
+      return new Response(
+        JSON.stringify({ error: "Too many messages. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

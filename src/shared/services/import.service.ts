@@ -6,7 +6,8 @@ export class ImportService {
   static async importEvents(
     events: ParsedEvent[],
     filename: string,
-    userId: string
+    userId: string,
+    teamId?: string
   ): Promise<ImportResult> {
     const errors: Array<{ row: number; error: string }> = [];
     const validEvents: CreateEventInput[] = [];
@@ -19,17 +20,10 @@ export class ImportService {
     const eventTypeMap = new Map(eventTypes.map(et => [et.name.toLowerCase(), et.id]));
     const locationMap = new Map(locations.map(loc => [loc.name.toLowerCase().trim(), loc.id]));
 
-    console.log('Event types:', eventTypes);
-    console.log('Locations:', locations);
-    console.log('Validating events:', events);
-
     events.forEach((event, index) => {
       try {
-        const validatedEvent = this.validateEvent(event, eventTypeMap, locationMap);
-        console.log(`Validated event ${index + 1}:`, validatedEvent);
-        validEvents.push(validatedEvent);
+        validEvents.push(this.validateEvent(event, eventTypeMap, locationMap, teamId));
       } catch (error) {
-        console.error(`Validation error for event ${index + 1}:`, error);
         errors.push({
           row: index + 1,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -37,17 +31,12 @@ export class ImportService {
       }
     });
 
-    console.log('Valid events to import:', validEvents);
-    console.log('Validation errors:', errors);
-
     let imported = 0;
     if (validEvents.length > 0) {
       try {
         const result = await this.upsertEvents(validEvents);
-        console.log('Upserted events:', result);
         imported = result.created + result.updated;
       } catch (error) {
-        console.error('Upsert error:', error);
         errors.push({
           row: 0,
           error: error instanceof Error ? error.message : 'Failed to upsert events',
@@ -83,15 +72,12 @@ export class ImportService {
     events.forEach(event => {
       const key = `${event.title.toLowerCase()}|${event.date}`;
       const existingId = existingMap.get(key);
-
       if (existingId) {
         toUpdate.push({ id: existingId, data: event });
       } else {
         toCreate.push(event);
       }
     });
-
-    console.log(`Creating ${toCreate.length} new events, updating ${toUpdate.length} existing events`);
 
     let created = 0;
     let updated = 0;
@@ -101,7 +87,6 @@ export class ImportService {
         .from('events')
         .insert(toCreate)
         .select();
-
       if (error) throw error;
       created = data?.length || 0;
     }
@@ -111,12 +96,7 @@ export class ImportService {
         .from('events')
         .update(data)
         .eq('id', id);
-
-      if (error) {
-        console.error(`Failed to update event ${id}:`, error);
-      } else {
-        updated++;
-      }
+      if (!error) updated++;
     }
 
     return { created, updated };
@@ -125,15 +105,11 @@ export class ImportService {
   private static validateEvent(
     event: ParsedEvent,
     eventTypeMap: Map<string, string>,
-    locationMap: Map<string, string>
+    locationMap: Map<string, string>,
+    teamId?: string
   ): CreateEventInput {
-    if (!event.title || event.title.trim() === '') {
-      throw new Error('Title is required');
-    }
-
-    if (!event.date) {
-      throw new Error('Date is required');
-    }
+    if (!event.title?.trim()) throw new Error('Title is required');
+    if (!event.date) throw new Error('Date is required');
 
     const datePattern = /^\d{4}-\d{2}-\d{2}$/;
     if (!datePattern.test(event.date)) {
@@ -141,43 +117,48 @@ export class ImportService {
     }
 
     let eventTypeId: string | undefined;
-    if (event.event_type) {
+    if (event.event_type_id) {
+      eventTypeId = event.event_type_id;
+    } else if (event.event_type) {
       const eventTypeLower = event.event_type.toLowerCase().trim();
-
       eventTypeId = eventTypeMap.get(eventTypeLower);
 
       if (!eventTypeId) {
-        if (eventTypeLower.includes('race') || eventTypeLower.includes('racing') ||
-            eventTypeLower.includes('competition') || eventTypeLower.includes('championship')) {
-          eventTypeId = eventTypeMap.get('race');
-        } else if (eventTypeLower.includes('freestyle')) {
-          eventTypeId = eventTypeMap.get('freestyle');
-        } else if (eventTypeLower.includes('park')) {
-          eventTypeId = eventTypeMap.get('park');
-        } else if (eventTypeLower.includes('street')) {
-          eventTypeId = eventTypeMap.get('street');
-        } else if (eventTypeLower.includes('dirt')) {
-          eventTypeId = eventTypeMap.get('dirt');
-        } else if (eventTypeLower.includes('flatland')) {
-          eventTypeId = eventTypeMap.get('flatland');
+        for (const [etName, etId] of eventTypeMap.entries()) {
+          if (eventTypeLower.includes(etName) || etName.includes(eventTypeLower)) {
+            eventTypeId = etId;
+            break;
+          }
         }
       }
 
-      console.log(`Matched event type "${event.event_type}" to ID:`, eventTypeId);
+      if (!eventTypeId) {
+        const words = eventTypeLower.split(/\s+/).filter(w => w.length >= 3);
+        for (const [etName, etId] of eventTypeMap.entries()) {
+          const etWords = etName.split(/\s+/);
+          if (words.some(w => etWords.some(ew => ew.includes(w) || w.includes(ew)))) {
+            eventTypeId = etId;
+            break;
+          }
+        }
+      }
     }
 
     let locationId: string | undefined;
     const locationText = event.location?.trim() || 'TBD';
-    const locationLower = locationText.toLowerCase();
 
-    locationId = locationMap.get(locationLower);
+    if (event.location_id) {
+      locationId = event.location_id;
+    } else {
+      const locationLower = locationText.toLowerCase();
+      locationId = locationMap.get(locationLower);
 
-    if (!locationId) {
-      for (const [locName, locId] of locationMap.entries()) {
-        if (locationLower.includes(locName) || locName.includes(locationLower)) {
-          locationId = locId;
-          console.log(`Fuzzy matched location "${locationText}" to "${locName}"`);
-          break;
+      if (!locationId) {
+        for (const [locName, locId] of locationMap.entries()) {
+          if (locationLower.includes(locName) || locName.includes(locationLower)) {
+            locationId = locId;
+            break;
+          }
         }
       }
     }
@@ -186,11 +167,13 @@ export class ImportService {
       title: event.title.trim(),
       description: event.description?.trim() || '',
       date: event.date,
+      end_date: event.end_date || undefined,
       start_time: event.start_time || null,
       end_time: event.end_time || null,
       location: locationText,
       location_id: locationId,
       event_type_id: eventTypeId,
+      team_id: teamId || undefined,
       status: 'upcoming',
     };
   }
@@ -218,7 +201,6 @@ export class ImportService {
       .select('*')
       .order('imported_at', { ascending: false })
       .limit(50);
-
     if (error) throw error;
     return data;
   }

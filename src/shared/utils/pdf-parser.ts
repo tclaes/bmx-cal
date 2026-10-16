@@ -1,3 +1,4 @@
+import { supabase } from '@data/supabase';
 import type { ParsedEvent } from '@types';
 
 interface PDFAnalysisResponse {
@@ -6,6 +7,8 @@ interface PDFAnalysisResponse {
     title: string;
     start_date: string;
     end_date?: string;
+    start_time?: string;
+    end_time?: string;
     location?: string;
     description?: string;
     event_type?: string;
@@ -25,56 +28,53 @@ export async function parsePDF(file: File): Promise<ParsedEvent[]> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  console.log('Supabase URL:', supabaseUrl);
-  console.log('Has Anon Key:', !!supabaseAnonKey);
-
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error('Supabase configuration missing');
   }
 
   const apiUrl = `${supabaseUrl}/functions/v1/analyze-pdf`;
-  console.log('Calling edge function:', apiUrl);
 
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-      },
-      body: formData,
-    });
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
 
-    console.log('Response status:', response.status);
-    console.log('Response ok:', response.ok);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      let error;
-      try {
-        error = JSON.parse(errorText);
-      } catch {
-        error = { error: errorText };
-      }
-      throw new Error(error.error || 'Failed to analyze PDF');
-    }
-
-    const data: PDFAnalysisResponse = await response.json();
-    console.log('PDF analysis response:', data);
-
-    if (!data.success || !data.events) {
-      throw new Error('Failed to extract events from PDF');
-    }
-
-    return data.events.map((event, index) => ({
-      title: event.title || `Event ${index + 1}`,
-      date: event.start_date,
-      location: event.location || '',
-      description: event.description || '',
-      event_type: event.event_type || 'race',
-    }));
-  } catch (error) {
-    console.error('PDF parsing error:', error);
-    throw error;
+  if (!accessToken) {
+    throw new Error('You need to be signed in to import a document.');
   }
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'apikey': supabaseAnonKey,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let error;
+    try {
+      error = JSON.parse(errorText);
+    } catch {
+      error = { error: errorText };
+    }
+    throw new Error(error.error || 'Failed to analyze PDF');
+  }
+
+  const data: PDFAnalysisResponse = await response.json();
+
+  if (!data.success || !data.events) {
+    throw new Error('Failed to extract events from PDF');
+  }
+
+  return data.events.map((event, index) => ({
+    title: event.title || `Event ${index + 1}`,
+    date: event.start_date,
+    end_date: event.end_date,
+    start_time: event.start_time || null,
+    end_time: event.end_time || null,
+    location: event.location || '',
+    description: event.description || '',
+    event_type: event.event_type || 'race',
+  }));
 }

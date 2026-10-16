@@ -5,6 +5,10 @@ export interface TeamMemberWithEmail extends TeamMember {
   user_email: string;
 }
 
+export interface TeamManagerWithEmail extends TeamManager {
+  user_email: string;
+}
+
 export class TeamService {
   static async getTeams(): Promise<Team[]> {
     const { data, error } = await supabase
@@ -13,6 +17,48 @@ export class TeamService {
       .order('name', { ascending: true });
     if (error) throw error;
     return data;
+  }
+
+  static async getTeamManagers(teamId: string): Promise<TeamManagerWithEmail[]> {
+    const { data, error } = await supabase
+      .from('team_managers')
+      .select('id, user_id, team_id, created_at')
+      .eq('team_id', teamId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+
+    const userIds = (data ?? []).map(m => m.user_id);
+    if (userIds.length === 0) return [];
+
+    const { data: users, error: usersError } = await supabase
+      .rpc('get_users_by_ids', { user_ids: userIds });
+
+    const emailMap: Record<string, string> = {};
+    if (!usersError && users) {
+      for (const u of users) {
+        emailMap[u.id] = u.email;
+      }
+    }
+
+    return (data ?? []).map(m => ({
+      ...m,
+      user_email: emailMap[m.user_id] ?? m.user_id,
+    }));
+  }
+
+  static async addTeamManager(userId: string, teamId: string): Promise<void> {
+    const { error } = await supabase
+      .from('team_managers')
+      .insert({ user_id: userId, team_id: teamId });
+    if (error) throw error;
+  }
+
+  static async removeTeamManager(managerId: string): Promise<void> {
+    const { error } = await supabase
+      .from('team_managers')
+      .delete()
+      .eq('id', managerId);
+    if (error) throw error;
   }
 
   static async getTeamMembers(teamId: string): Promise<TeamMemberWithEmail[]> {
