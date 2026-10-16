@@ -16,7 +16,7 @@ The reset URL is HTML-escaped before it is inserted into the email template.
 Recovery tokens are URL-encoded in the reset link.
 
 ### Rate limiting
-Each client IP may request at most 5 resets per hour (in-memory, per function instance).
+Each client IP may request at most 5 resets per hour. This is best effort: counts are kept in memory per function instance (not shared across instances), and the IP is taken from the first `X-Forwarded-For` entry, which a client can set, so the limit can be bypassed by spoofing that header.
 
 ### User enumeration protection
 The function returns success for unknown email addresses.
