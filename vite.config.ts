@@ -19,6 +19,14 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/tests/setup.ts'],
     include: ['src/tests/**/*.test.ts'],
+    // Let tests import Supabase Edge Functions, which use Deno-style specifiers
+    alias: [
+      { find: /^(npm|jsr):@supabase\/supabase-js@2$/, replacement: '@supabase/supabase-js' },
+      {
+        find: /^jsr:@supabase\/functions-js\/edge-runtime\.d\.ts$/,
+        replacement: path.resolve(__dirname, './src/tests/stubs/empty.ts'),
+      },
+    ],
   },
   build: {
     rollupOptions: {

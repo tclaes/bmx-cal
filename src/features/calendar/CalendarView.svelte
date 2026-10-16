@@ -103,7 +103,7 @@
   }
 
   @media (max-width: 768px) {
-    .calendar-layout {
+    .calendar-layout:not(.no-sidebar) {
       grid-template-columns: 1fr;
     }
 
