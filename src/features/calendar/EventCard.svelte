@@ -63,7 +63,6 @@
   }
 
   function handleEdit() {
-    console.log('Edit button clicked for event:', event.id);
     dispatch('edit', event);
   }
 

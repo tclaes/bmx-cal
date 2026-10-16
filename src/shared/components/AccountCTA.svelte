@@ -13,8 +13,10 @@
   <ul class="cta-benefits" aria-label="Account benefits">
     <li>{$t.cta.benefit1}</li>
     <li>{$t.cta.benefit2}</li>
-    <li>{$t.cta.benefit3}</li>
-    <li>{$t.cta.benefit4}</li>
+    <li>
+      <span class="benefit-text">{$t.cta.benefit3}</span>
+      <span class="benefit-badge">{$t.cta.benefit3Badge}</span>
+    </li>
   </ul>
 
   <div class="cta-actions">
@@ -32,9 +34,6 @@
     </button>
   </div>
 
-  <p class="cta-future">
-    {$t.cta.future}
-  </p>
 </aside>
 
 <style>
@@ -93,6 +92,23 @@
     color: var(--color-text-secondary);
     padding-inline-start: var(--spacing-md);
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .benefit-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 1px var(--spacing-xs);
+    border-radius: var(--border-radius-full);
+    border: 1px solid #a7f3d0;
   }
 
   .cta-benefits li::before {
@@ -143,11 +159,4 @@
     background-color: var(--color-primary-light);
   }
 
-  .cta-future {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
-    margin: 0;
-    text-align: center;
-    font-style: italic;
-  }
 </style>

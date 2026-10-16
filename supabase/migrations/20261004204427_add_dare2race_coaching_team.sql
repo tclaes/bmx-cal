@@ -1,0 +1,1 @@
+INSERT INTO teams (name) VALUES ('Dare2Race Coaching');

@@ -23,16 +23,13 @@ function createUpdateStore() {
         const hasUpdate = await manualUpdateCheck();
         const versionInfo = checkForUpdate();
 
-        if (hasUpdate || versionInfo.hasUpdate) {
-          update(state => ({
-            ...state,
-            available: true,
-            forceUpdate: versionInfo.forceUpdate,
-            checking: false
-          }));
-        } else {
-          update(state => ({ ...state, checking: false }));
-        }
+        const hasAnyUpdate = hasUpdate || versionInfo.hasUpdate;
+        update(state => ({
+          ...state,
+          available: hasAnyUpdate,
+          forceUpdate: hasAnyUpdate ? versionInfo.forceUpdate : state.forceUpdate,
+          checking: false,
+        }));
 
         return versionInfo;
       } catch (error) {

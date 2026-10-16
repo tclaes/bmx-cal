@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { Card, Input, Button, Alert } from '@shared/components';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
@@ -84,7 +85,7 @@
       await supabase.auth.signOut();
       success = true;
     } catch (err) {
-      error = err instanceof Error ? err.message : $t.profile.failedToUpdate;
+      error = toUserMessage(err, $t.profile.failedToUpdate);
     } finally {
       loading = false;
     }

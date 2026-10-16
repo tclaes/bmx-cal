@@ -73,6 +73,7 @@ export interface TeamManager {
   team_id: string;
   created_at: string;
   team?: Team;
+  user_email?: string;
 }
 
 export interface TeamMember {
@@ -119,14 +120,40 @@ export interface ParsedEvent {
   title: string;
   description?: string;
   date: string;
+  end_date?: string;
   start_time?: string;
   end_time?: string;
   location?: string;
+  location_id?: string;
   event_type?: string;
+  event_type_id?: string;
 }
 
 export interface ImportResult {
   success: boolean;
   imported: number;
   errors: Array<{ row: number; error: string }>;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string;
+  author: string;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PushSubscription {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+  updated_at: string;
 }

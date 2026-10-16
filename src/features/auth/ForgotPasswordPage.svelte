@@ -1,11 +1,21 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { navigate } from '../../router';
   import { supabase } from '@data/supabase';
   import { t, interpolate } from '../../i18n';
 
   let email = '';
   let error = '';
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
   let success = false;
   let loading = false;
 
@@ -28,7 +38,7 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${anonKey}`,
         },
-        body: JSON.stringify({ email: email.trim(), appUrl: window.location.origin }),
+        body: JSON.stringify({ email: email.trim() }),
       });
 
       if (!response.ok) {
@@ -38,7 +48,7 @@
 
       success = true;
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Something went wrong';
+      error = toUserMessage(err, 'Something went wrong');
     } finally {
       loading = false;
     }
@@ -60,7 +70,7 @@
             </svg>
           </div>
           <h2 class="success-title">{$t.auth.checkEmail}</h2>
-          <p class="success-message">{@html interpolate($t.auth.resetLinkSent, { email: `<strong>${email}</strong>` })}</p>
+          <p class="success-message">{@html interpolate($t.auth.resetLinkSent, { email: `<strong>${escapeHtml(email)}</strong>` })}</p>
           <Button variant="secondary" on:click={() => navigate('/login')}>{$t.auth.backToSignIn}</Button>
         </div>
       {:else}

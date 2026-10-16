@@ -4,7 +4,7 @@ export function searchEvents(
   events: EventWithDetails[],
   query: string
 ): EventWithDetails[] {
-  if (!query || query.trim() === '') {
+  if (!query?.trim()) {
     return events;
   }
 

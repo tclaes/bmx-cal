@@ -5,6 +5,7 @@ export interface Translations {
     myCalendar: string;
     about: string;
     guide: string;
+    news: string;
     admin: string;
     teamManager: string;
     profile: string;
@@ -33,6 +34,7 @@ export interface Translations {
   footer: {
     copyright: string;
     about: string;
+    guide: string;
     getInTouch: string;
     reportBug: string;
     support: string;
@@ -137,6 +139,21 @@ export interface Translations {
     failedToUpdate: string;
     newPasswordMinLength: string;
     newPasswordsDoNotMatch: string;
+    notificationsTitle: string;
+    notificationsDescription: string;
+    notificationsEnable: string;
+    notificationsEnabled: string;
+    notificationsDisabled: string;
+    notificationsEnabling: string;
+    notificationsDisabling: string;
+    notificationsUnsupported: string;
+    notificationsPermissionDenied: string;
+    notificationsError: string;
+    notificationsInfo: string;
+    notificationsSendTest: string;
+    notificationsTestSending: string;
+    notificationsTestSent: string;
+    notificationsTestFailed: string;
   };
   myEvents: {
     title: string;
@@ -154,6 +171,17 @@ export interface Translations {
     selectAtLeastOne: string;
     selectAtLeastOneSave: string;
     exportFailed: string;
+    notifTitle: string;
+    notifDescription: string;
+    notifEnablePush: string;
+    notifPushEnabled: string;
+    notifDisablePush: string;
+    notifTestPush: string;
+    notifTesting: string;
+    notifTestFailed: string;
+    notifPushUnsupported: string;
+    notifSelectTypes: string;
+    notifNoTypes: string;
   };
   myEventsDemo: {
     docTitle: string;
@@ -252,10 +280,9 @@ export interface Translations {
     benefit1: string;
     benefit2: string;
     benefit3: string;
-    benefit4: string;
+    benefit3Badge: string;
     createAccount: string;
     signIn: string;
-    future: string;
   };
   pwa: {
     installTitle: string;

@@ -1,62 +1,84 @@
-# Send Password Reset Function
+# Send Password Reset Edge Function
 
-This Edge Function handles password reset email requests with security measures to prevent token exfiltration attacks.
+## Overview
+
+This Edge Function generates and sends password reset emails with secure recovery tokens. It implements strict origin validation to prevent password-reset poisoning attacks.
 
 ## Security Features
 
 ### Origin Validation
-The function validates that password reset links are only sent to trusted origins to prevent password-reset poisoning attacks where an attacker could exfiltrate recovery tokens to their own domain.
+The function validates all requested origins against an allowlist to prevent token exfiltration attacks. Only origins explicitly configured in the `ALLOWED_ORIGINS` environment variable (or the Supabase URL as a fallback) are permitted.
 
 ### HTML Escaping
 All URLs are HTML-escaped before being inserted into email templates to prevent email injection attacks.
 
+### URL Encoding
+Recovery tokens are properly URL-encoded to prevent parsing issues and injection attacks.
+
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `RESEND_API_KEY` | Yes | API key for Resend email service |
-| `SUPABASE_URL` | Yes | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
-| `ALLOWED_ORIGINS` | No | Comma-separated list of allowed origins for password reset links. If not set, defaults to `SUPABASE_URL`. |
+### Required
+- `RESEND_API_KEY` - API key for the Resend email service
+- `SUPABASE_URL` - Your Supabase project URL (automatically included in allowlist)
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin operations
 
-### Example Configuration
+### Optional
+- `ALLOWED_ORIGINS` - Comma-separated list of allowed origins for password reset links
+  - Example: `https://bmxcalendar.com,https://www.bmxcalendar.com,https://staging.bmxcalendar.com`
+  - If not set, only the `SUPABASE_URL` will be allowed
+  - The `SUPABASE_URL` is always included in the allowlist automatically
 
-```bash
-# Single origin (production only)
-ALLOWED_ORIGINS=https://bmxcalendar.be
-
-# Multiple origins (production + staging)
-ALLOWED_ORIGINS=https://bmxcalendar.be,https://staging.bmxcalendar.be
-
-# Development (include localhost)
-ALLOWED_ORIGINS=https://bmxcalendar.be,http://localhost:5173
-```
-
-## Usage
-
-The function expects a POST request with the following JSON body:
+## Request Format
 
 ```json
 {
   "email": "user@example.com",
-  "appUrl": "https://bmxcalendar.be"
+  "appUrl": "https://bmxcalendar.com"  // Optional, must be in allowlist
 }
 ```
 
-- `email` (required): The email address to send the password reset link to
-- `appUrl` (optional): The origin to use for the reset link. If not provided, falls back to the `Origin` header. Must be in the `ALLOWED_ORIGINS` list.
+## Response Format
 
-## Response Codes
+### Success
+```json
+{
+  "success": true
+}
+```
 
-- `200`: Success - email sent (or user not found, to prevent email enumeration)
-- `400`: Bad request - missing email
-- `403`: Forbidden - invalid origin
-- `500`: Internal server error
-- `503`: Service unavailable - email service not configured
+### Error
+```json
+{
+  "error": "Error message"
+}
+```
 
 ## Security Considerations
 
-1. **Origin Allowlist**: Always configure `ALLOWED_ORIGINS` in production to include only your trusted domains.
-2. **Token Expiration**: Recovery tokens expire after 1 hour (configured in Supabase Auth settings).
-3. **Email Enumeration Protection**: The function returns success even if the user doesn't exist to prevent attackers from discovering valid email addresses.
-4. **Logging**: Invalid origin attempts are logged with a warning for security monitoring.
+1. **Origin Validation**: The function validates the `appUrl` parameter and `Origin` header against the allowlist. If neither is valid, it falls back to `SUPABASE_URL`.
+
+2. **Token Protection**: Recovery tokens are only sent to validated origins, preventing token exfiltration to attacker-controlled domains.
+
+3. **User Enumeration Protection**: The function returns success even for non-existent users to prevent email enumeration attacks.
+
+4. **HTML Injection Prevention**: All URLs are HTML-escaped before insertion into email templates.
+
+## Deployment
+
+When deploying this function, ensure the `ALLOWED_ORIGINS` environment variable is set to include all legitimate frontend domains:
+
+```bash
+# Example for Supabase CLI
+supabase secrets set ALLOWED_ORIGINS="https://bmxcalendar.com,https://www.bmxcalendar.com"
+```
+
+## Testing
+
+To test the function locally:
+
+```bash
+curl -X POST http://localhost:54321/functions/v1/send-password-reset \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -d '{"email":"test@example.com","appUrl":"https://bmxcalendar.com"}'
+```

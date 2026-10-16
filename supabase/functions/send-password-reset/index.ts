@@ -7,41 +7,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-/**
- * Validates that the provided origin is in the allowlist.
- * Prevents password-reset token exfiltration to attacker-controlled domains.
- */
-function validateOrigin(requestedOrigin: string | null, allowedOrigins: string[]): string | null {
-  if (!requestedOrigin) {
-    return null;
+// Password reset links may only ever point at an origin we control. The request
+// body and the Origin header are attacker-controlled, so they are never trusted.
+const DEFAULT_SITE_URL = "https://bmxkalender.be";
+
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const recentResets = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (recentResets.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (hits.length >= RATE_LIMIT_MAX) {
+    recentResets.set(ip, hits);
+    return true;
   }
-
-  try {
-    const url = new URL(requestedOrigin);
-    const normalizedOrigin = url.origin; // Ensures proper format (protocol + host + port)
-
-    // Check if the normalized origin is in the allowlist
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      return normalizedOrigin;
-    }
-
-    return null;
-  } catch {
-    // Invalid URL format
-    return null;
-  }
+  hits.push(now);
+  recentResets.set(ip, hits);
+  if (recentResets.size > 5000) recentResets.clear();
+  return false;
 }
 
-/**
- * HTML-escapes a string to prevent injection attacks in email templates.
- */
-function escapeHtml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function resolveSiteOrigin(): string {
+  const configured = Deno.env.get("SITE_URL")?.trim();
+  if (!configured) return DEFAULT_SITE_URL;
+  try {
+    const url = new URL(configured);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return DEFAULT_SITE_URL;
+    return url.origin;
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -62,13 +58,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Parse allowed origins from environment variable (comma-separated list)
-    // Falls back to supabaseUrl if not configured
-    const allowedOrigins = allowedOriginsEnv
-      ? allowedOriginsEnv.split(",").map(o => o.trim()).filter(o => o.length > 0)
-      : [supabaseUrl];
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
 
-    const { email, appUrl } = await req.json();
+    if (isRateLimited(clientIp)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { email } = await req.json();
 
     if (!email?.trim()) {
       return new Response(
@@ -110,12 +112,23 @@ Deno.serve(async (req: Request) => {
     }
 
     const tokenHash = linkData.properties?.hashed_token;
+    const origin = resolveSiteOrigin();
 
     if (!tokenHash) {
       throw new Error("Failed to generate reset token");
     }
 
-    const resetUrl = `${validatedOrigin}/reset-password?token_hash=${tokenHash}&type=recovery`;
+    // Validate the requested origin against the allowlist
+    // Priority: appUrl from request body, then Origin header, then supabaseUrl
+    const requestedOrigin = appUrl || req.headers.get("origin");
+    const validatedOrigin = validateOrigin(requestedOrigin, allowedOrigins);
+    
+    // Use validated origin or fall back to supabaseUrl
+    const origin = validatedOrigin || supabaseUrl;
+
+    const resetUrl = `${origin}/reset-password?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`;
+    
+    // HTML-escape the URL for safe inclusion in the email template
     const escapedResetUrl = escapeHtml(resetUrl);
 
     const htmlBody = `
@@ -158,7 +171,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("Unexpected error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal server error", detail: String(err) }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

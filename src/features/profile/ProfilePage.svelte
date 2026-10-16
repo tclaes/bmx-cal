@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@shared/components';
+  import { toUserMessage } from '@shared/utils/error-message';
   import { authStore, updateStore } from '@shared/stores';
   import { AuthService } from '@shared/services';
   import { supabase } from '@data/supabase';
@@ -87,7 +88,7 @@
       newPassword = '';
       confirmPassword = '';
     } catch (err) {
-      passwordError = err instanceof Error ? err.message : $t.profile.failedToUpdate;
+      passwordError = toUserMessage(err, $t.profile.failedToUpdate);
     } finally {
       passwordLoading = false;
     }
@@ -110,7 +111,7 @@
       authStore.logout();
       navigate('/');
     } catch (err) {
-      deleteError = err instanceof Error ? err.message : $t.profile.failedToDelete;
+      deleteError = toUserMessage(err, $t.profile.failedToDelete);
     } finally {
       deleteLoading = false;
     }
@@ -282,4 +283,5 @@
     color: var(--color-text-secondary);
     margin: 0 0 var(--spacing-lg);
   }
+
 </style>

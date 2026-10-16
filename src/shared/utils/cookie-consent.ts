@@ -58,10 +58,10 @@ export function applyConsentToGoogle(state: ConsentState): void {
   });
 }
 
-export function acceptAll(): ConsentState {
+function setConsent(analytics: ConsentStatus, ads: ConsentStatus): ConsentState {
   const state: ConsentState = {
-    analytics: 'granted',
-    ads: 'granted',
+    analytics,
+    ads,
     decidedAt: new Date().toISOString(),
   };
   saveConsent(state);
@@ -69,13 +69,10 @@ export function acceptAll(): ConsentState {
   return state;
 }
 
+export function acceptAll(): ConsentState {
+  return setConsent('granted', 'granted');
+}
+
 export function rejectAll(): ConsentState {
-  const state: ConsentState = {
-    analytics: 'denied',
-    ads: 'denied',
-    decidedAt: new Date().toISOString(),
-  };
-  saveConsent(state);
-  applyConsentToGoogle(state);
-  return state;
+  return setConsent('denied', 'denied');
 }
