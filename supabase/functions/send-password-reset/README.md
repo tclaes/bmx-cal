@@ -2,38 +2,44 @@
 
 ## Overview
 
-This Edge Function generates and sends password reset emails with secure recovery tokens. It implements strict origin validation to prevent password-reset poisoning attacks.
+This Edge Function generates a Supabase recovery token and emails the user a password reset link via Resend.
 
 ## Security Features
 
-### Origin Validation
-The function validates all requested origins against an allowlist to prevent token exfiltration attacks. Only origins explicitly configured in the `ALLOWED_ORIGINS` environment variable (or the Supabase URL as a fallback) are permitted.
+### Fixed reset-link origin
+The reset link always points at the origin configured in the `SITE_URL` secret (default `https://bmxkalender.be`). The request body and the `Origin` header are attacker-controlled, so they are never used to build the link. This prevents password-reset poisoning (sending a valid token to an attacker's domain).
 
 ### HTML Escaping
-All URLs are HTML-escaped before being inserted into email templates to prevent email injection attacks.
+The reset URL is HTML-escaped before it is inserted into the email template.
 
 ### URL Encoding
-Recovery tokens are properly URL-encoded to prevent parsing issues and injection attacks.
+Recovery tokens are URL-encoded in the reset link.
+
+### Rate limiting
+Each client IP may request at most 5 resets per hour (in-memory, per function instance).
+
+### User enumeration protection
+The function returns success for unknown email addresses.
 
 ## Environment Variables
 
 ### Required
 - `RESEND_API_KEY` - API key for the Resend email service
-- `SUPABASE_URL` - Your Supabase project URL (automatically included in allowlist)
+- `SUPABASE_URL` - Your Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin operations
 
 ### Optional
-- `ALLOWED_ORIGINS` - Comma-separated list of allowed origins for password reset links
-  - Example: `https://bmxcalendar.com,https://www.bmxcalendar.com,https://staging.bmxcalendar.com`
-  - If not set, only the `SUPABASE_URL` will be allowed
-  - The `SUPABASE_URL` is always included in the allowlist automatically
+- `SITE_URL` - Frontend origin used in reset links (e.g. `https://bmxkalender.be`). Only its origin is used; invalid or non-http(s) values fall back to `https://bmxkalender.be`.
+
+```bash
+supabase secrets set SITE_URL="https://bmxkalender.be"
+```
 
 ## Request Format
 
 ```json
 {
-  "email": "user@example.com",
-  "appUrl": "https://bmxcalendar.com"  // Optional, must be in allowlist
+  "email": "user@example.com"
 }
 ```
 
@@ -53,24 +59,7 @@ Recovery tokens are properly URL-encoded to prevent parsing issues and injection
 }
 ```
 
-## Security Considerations
-
-1. **Origin Validation**: The function validates the `appUrl` parameter and `Origin` header against the allowlist. If neither is valid, it falls back to `SUPABASE_URL`.
-
-2. **Token Protection**: Recovery tokens are only sent to validated origins, preventing token exfiltration to attacker-controlled domains.
-
-3. **User Enumeration Protection**: The function returns success even for non-existent users to prevent email enumeration attacks.
-
-4. **HTML Injection Prevention**: All URLs are HTML-escaped before insertion into email templates.
-
-## Deployment
-
-When deploying this function, ensure the `ALLOWED_ORIGINS` environment variable is set to include all legitimate frontend domains:
-
-```bash
-# Example for Supabase CLI
-supabase secrets set ALLOWED_ORIGINS="https://bmxcalendar.com,https://www.bmxcalendar.com"
-```
+Status codes: `400` missing email, `429` rate limited, `503` email service not configured, `500` unexpected error.
 
 ## Testing
 
@@ -80,5 +69,5 @@ To test the function locally:
 curl -X POST http://localhost:54321/functions/v1/send-password-reset \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ANON_KEY" \
-  -d '{"email":"test@example.com","appUrl":"https://bmxcalendar.com"}'
+  -d '{"email":"test@example.com"}'
 ```

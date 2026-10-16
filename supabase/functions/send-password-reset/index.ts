@@ -40,6 +40,15 @@ function resolveSiteOrigin(): string {
   }
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -49,7 +58,6 @@ Deno.serve(async (req: Request) => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const allowedOriginsEnv = Deno.env.get("ALLOWED_ORIGINS");
 
     if (!resendApiKey) {
       return new Response(
@@ -106,16 +114,8 @@ Deno.serve(async (req: Request) => {
       throw new Error("Failed to generate reset token");
     }
 
-    // Validate the requested origin against the allowlist
-    // Priority: appUrl from request body, then Origin header, then supabaseUrl
-    const requestedOrigin = appUrl || req.headers.get("origin");
-    const validatedOrigin = validateOrigin(requestedOrigin, allowedOrigins);
-    
-    // Use validated origin or fall back to supabaseUrl
-    const origin = validatedOrigin || supabaseUrl;
-
     const resetUrl = `${origin}/reset-password?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`;
-    
+
     // HTML-escape the URL for safe inclusion in the email template
     const escapedResetUrl = escapeHtml(resetUrl);
 

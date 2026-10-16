@@ -1,156 +1,57 @@
 # Security Fix Deployment Guide
 
-## Password Reset Security Enhancement
+## Password Reset Security
 
-This deployment guide covers the security fix for password-reset poisoning vulnerability (CVE-TBD).
+The `send-password-reset` Edge Function builds reset links only from the `SITE_URL` secret. It never uses the request body or the `Origin` header, so an attacker cannot make a reset email point at their own domain (password-reset poisoning). See `supabase/functions/send-password-reset/README.md` for details.
 
-## What Changed
-
-The `send-password-reset` Edge Function now validates all requested origins against an allowlist to prevent attackers from exfiltrating password reset tokens to attacker-controlled domains.
-
-### Key Changes:
-1. **Origin Validation**: All `appUrl` parameters and `Origin` headers are validated against an allowlist
-2. **HTML Escaping**: URLs are HTML-escaped before insertion into email templates
-3. **URL Encoding**: Recovery tokens are properly URL-encoded
-4. **Secure Fallback**: Invalid origins fall back to the Supabase URL
+### Key properties
+1. **Fixed origin**: reset links use `SITE_URL` (default `https://bmxkalender.be`)
+2. **HTML Escaping**: the reset URL is HTML-escaped before insertion into the email template
+3. **URL Encoding**: recovery tokens are URL-encoded
+4. **Rate limiting**: at most 5 reset requests per IP per hour
+5. **No user enumeration**: unknown emails still get a success response
 
 ## Deployment Steps
 
-### 1. Set the ALLOWED_ORIGINS Environment Variable
+### 1. Set the SITE_URL secret
 
-The function requires the `ALLOWED_ORIGINS` environment variable to be set with a comma-separated list of legitimate frontend domains.
-
-#### Using Supabase Dashboard:
-1. Go to your Supabase project dashboard
-2. Navigate to **Settings** → **Edge Functions**
-3. Add a new secret:
-   - Name: `ALLOWED_ORIGINS`
-   - Value: `https://bmxkalender.be,https://www.bmxkalender.be` (adjust to your domains)
-
-#### Using Supabase CLI:
 ```bash
-supabase secrets set ALLOWED_ORIGINS="https://bmxkalender.be,https://www.bmxkalender.be"
+supabase secrets set SITE_URL="https://bmxkalender.be"
 ```
 
-#### For Local Development:
-Add to your `.env` file:
+`ALLOWED_ORIGINS` is not used; if it was set for an earlier version of this guide, it can be removed:
+
 ```bash
-ALLOWED_ORIGINS=http://localhost:5173,http://localhost:4173
+supabase secrets unset ALLOWED_ORIGINS
 ```
 
-### 2. Deploy the Updated Function
+### 2. Deploy the function
 
 ```bash
-# Deploy the function
 supabase functions deploy send-password-reset
-
-# Verify deployment
-supabase functions list
 ```
 
-### 3. Verify the Fix
+### 3. Verify
 
-Test that the function properly validates origins:
-
-#### Test 1: Valid Origin (Should Succeed)
 ```bash
 curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/send-password-reset \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_ANON_KEY" \
-  -d '{
-    "email": "test@example.com",
-    "appUrl": "https://bmxkalender.be"
-  }'
+  -H "Origin: https://attacker-controlled.com" \
+  -d '{"email": "test@example.com"}'
 ```
 
-Expected: Success response, email sent with legitimate origin
-
-#### Test 2: Invalid Origin (Should Fall Back to Supabase URL)
-```bash
-curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/send-password-reset \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_ANON_KEY" \
-  -d '{
-    "email": "test@example.com",
-    "appUrl": "https://attacker-controlled.com"
-  }'
-```
-
-Expected: Success response, but email sent with Supabase URL (not attacker's URL)
-
-#### Test 3: No Origin Provided (Should Use Supabase URL)
-```bash
-curl -X POST https://YOUR_PROJECT.supabase.co/functions/v1/send-password-reset \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_ANON_KEY" \
-  -d '{
-    "email": "test@example.com"
-  }'
-```
-
-Expected: Success response, email sent with Supabase URL
-
-### 4. Update Frontend (If Needed)
-
-The frontend code in `src/features/auth/ForgotPasswordPage.svelte` already sends `window.location.origin` as `appUrl`, which is correct. No changes needed unless you want to remove the `appUrl` parameter entirely and rely on the `Origin` header.
-
-## Security Considerations
-
-### What This Fix Prevents:
-1. **Password-Reset Poisoning**: Attackers can no longer cause reset emails to contain links to attacker-controlled domains
-2. **Token Exfiltration**: Recovery tokens are only sent to validated, trusted origins
-3. **Email Injection**: HTML special characters are escaped to prevent email template injection
-4. **Open Redirects**: URL validation prevents redirect attacks
-
-### What This Fix Does NOT Prevent:
-- **Email Enumeration**: The function still returns success for non-existent users (by design, to prevent enumeration)
-- **Rate Limiting**: Consider implementing rate limiting at the API gateway level
-- **Brute Force**: Consider implementing CAPTCHA or rate limiting for password reset requests
+Expected: success response, and the email's link points at `SITE_URL`, not the `Origin` header.
 
 ## Monitoring
 
-After deployment, monitor the following:
-
-1. **Function Logs**: Check for any validation failures or errors
-   ```bash
-   supabase functions logs send-password-reset
-   ```
-
-2. **Email Delivery**: Verify that legitimate password reset emails are being delivered correctly
-
-3. **User Reports**: Monitor for any user complaints about not receiving reset emails
-
-## Rollback Plan
-
-If issues arise, you can quickly rollback:
-
-1. Revert the function code to the previous version
-2. Redeploy:
-   ```bash
-   git checkout <previous-commit>
-   supabase functions deploy send-password-reset
-   ```
-
-## Additional Recommendations
-
-1. **Rate Limiting**: Implement rate limiting on the Edge Function to prevent abuse
-2. **CAPTCHA**: Consider adding CAPTCHA to the forgot-password form
-3. **Monitoring**: Set up alerts for unusual patterns in password reset requests
-4. **Audit Logging**: Log all password reset attempts for security auditing
-
-## Questions or Issues?
-
-If you encounter any issues during deployment, check:
-1. Function logs: `supabase functions logs send-password-reset`
-2. Environment variables: Verify `ALLOWED_ORIGINS` is set correctly
-3. DNS/Domain: Ensure your domains are accessible and properly configured
+```bash
+supabase functions logs send-password-reset
+```
 
 ## Testing Checklist
 
-- [ ] `ALLOWED_ORIGINS` environment variable is set
+- [ ] `SITE_URL` secret is set
 - [ ] Function deploys without errors
-- [ ] Password reset emails are received with correct origin
-- [ ] Invalid origins are rejected and fall back to Supabase URL
-- [ ] HTML in emails is properly escaped
+- [ ] Reset emails link to `SITE_URL` regardless of the request's `Origin`
 - [ ] Frontend password reset flow works end-to-end
-- [ ] Monitoring and logging are in place
