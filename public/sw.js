@@ -111,17 +111,19 @@ self.addEventListener('notificationclick', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
+      const hadPreviousVersion = cacheNames.some(name => name !== CACHE_NAME);
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
-      );
-    }).then(() => {
-      return self.clients.claim();
-    }).then(() => {
-      return self.clients.matchAll({ type: 'window' });
+      ).then(() => {
+        return self.clients.claim();
+      }).then(() => {
+        if (!hadPreviousVersion) return [];
+        return self.clients.matchAll({ type: 'window' });
+      });
     }).then(clients => {
       clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
     })

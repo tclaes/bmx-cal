@@ -23,7 +23,9 @@ if ('serviceWorker' in navigator) {
           if (event.source !== navigator.serviceWorker.controller) return;
           if (event.data?.type === 'SW_UPDATED') {
             const updatedVersionInfo = checkForUpdate();
-            updateStore.setAvailable(true, updatedVersionInfo.forceUpdate);
+            if (updatedVersionInfo.hasUpdate) {
+              updateStore.setAvailable(true, updatedVersionInfo.forceUpdate);
+            }
           }
         });
 
