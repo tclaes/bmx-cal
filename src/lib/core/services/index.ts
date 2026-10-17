@@ -5,7 +5,7 @@ export { selectionService } from './selection.service';
 export { CalendarService } from './calendar.service';
 export type { SavedCalendar } from './calendar.service';
 export { TeamService } from './team.service';
-export type { TeamMemberWithEmail } from './team.service';
+export type { TeamMemberWithEmail, TeamManagerWithEmail } from './team.service';
 export { PushService } from './push.service';
 export { notificationPreferenceService } from './notification-preference.service';
 export type { NotificationPreference } from './notification-preference.service';

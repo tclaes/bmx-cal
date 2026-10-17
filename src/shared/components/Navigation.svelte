@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { authStore, selectedEventIds } from '@shared/stores';
-  import { AuthService } from '@shared/services';
-  import { selectionService } from '@shared/services/selection.service';
+  import { authStore, selectedEventIds } from '@core/stores';
+  import { AuthService } from '@core/services';
+  import { selectionService } from '@core/services/selection.service';
   import { currentRoute, navigate } from '../../router';
   import { locale, t } from '../../i18n';
   import type { Locale } from '../../i18n';

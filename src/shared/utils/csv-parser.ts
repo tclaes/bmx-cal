@@ -7,14 +7,14 @@ export async function parseCSV(file: File): Promise<ParsedEvent[]> {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
+      complete: (results: Papa.ParseResult<Record<string, string>>) => {
         try {
-          resolve(results.data.map((row: any) => normalizeRow(row)));
+          resolve(results.data.map((row) => normalizeRow(row)));
         } catch {
           reject(new Error('Failed to parse CSV file'));
         }
       },
-      error: (error) => {
+      error: (error: Papa.ParseError) => {
         reject(new Error(`CSV parsing error: ${error.message}`));
       },
     });

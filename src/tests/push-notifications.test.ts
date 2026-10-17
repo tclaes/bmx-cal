@@ -50,7 +50,7 @@ vi.mock('@data/supabase', () => ({
   },
 }));
 
-import { PushService } from '@shared/services/push.service';
+import { PushService } from '@core/services/push.service';
 
 describe('PushService', () => {
   beforeEach(() => {

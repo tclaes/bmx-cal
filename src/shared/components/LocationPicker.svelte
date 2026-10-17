@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
   import type { Location } from '@types';
-  import { EventsService } from '@shared/services';
+  import { EventsService } from '@core/services';
   import Input from '@ui/Input.svelte';
   import Button from '@ui/Button.svelte';
   import Alert from '@ui/Alert.svelte';

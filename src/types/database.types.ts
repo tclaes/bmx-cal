@@ -95,21 +95,21 @@ export interface AdminUser {
 
 export interface CreateEventInput {
   title: string;
-  description?: string;
+  description?: string | null;
   date: string;
-  end_date?: string;
-  start_time?: string;
-  end_time?: string;
+  end_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   location: string;
-  location_id?: string;
-  event_type_id?: string;
-  related_event_type_id?: string;
-  team_id?: string;
+  location_id?: string | null;
+  event_type_id?: string | null;
+  related_event_type_id?: string | null;
+  team_id?: string | null;
   status?: 'upcoming' | 'completed' | 'cancelled';
-  registration_url?: string;
-  registration_opens?: string;
-  registration_deadline?: string;
-  registration_status?: string;
+  registration_url?: string | null;
+  registration_opens?: string | null;
+  registration_deadline?: string | null;
+  registration_status?: string | null;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {

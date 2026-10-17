@@ -66,7 +66,7 @@ function parseICalText(text: string): ParsedEvent[] {
   return events;
 }
 
-function parseDateTimeValue(value: string): { date: string; time: string | null } {
+function parseDateTimeValue(value: string): { date: string; time?: string } {
   const cleanValue = value.replace(/[^0-9T]/g, '');
 
   if (cleanValue.length >= 8) {
@@ -75,7 +75,7 @@ function parseDateTimeValue(value: string): { date: string; time: string | null 
     const day = cleanValue.substring(6, 8);
     const date = `${year}-${month}-${day}`;
 
-    let time: string | null = null;
+    let time: string | undefined;
     if (cleanValue.length >= 13 && cleanValue.includes('T')) {
       const hour = cleanValue.substring(9, 11);
       const minute = cleanValue.substring(11, 13);
@@ -85,5 +85,5 @@ function parseDateTimeValue(value: string): { date: string; time: string | null 
     return { date, time };
   }
 
-  return { date: '', time: null };
+  return { date: '', time: undefined };
 }

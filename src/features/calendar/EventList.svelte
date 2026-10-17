@@ -31,7 +31,7 @@
 
     if (filters.selectedEventTypes.length > 0) {
       result = result.filter(event =>
-        filters.selectedEventTypes.includes(event.event_type_id)
+        event.event_type_id !== null && filters.selectedEventTypes.includes(event.event_type_id)
       );
     }
 

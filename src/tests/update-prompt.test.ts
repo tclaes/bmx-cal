@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { get } from 'svelte/store';
-import { updateStore } from '@shared/stores/pwa.store';
+import { updateStore } from '@core/stores/pwa.store';
 
 describe('UpdateStore', () => {
   beforeEach(() => {

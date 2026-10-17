@@ -158,7 +158,7 @@
         {/if}
 
         {#if deleteError}
-          <Alert type="error" message={deleteError} />
+          <Alert type="danger" message={deleteError} />
         {/if}
 
         {#if loading}
@@ -166,7 +166,7 @@
             <LoadingSpinner size="lg" />
           </div>
         {:else if error}
-          <Alert type="error" message={error} />
+          <Alert type="danger" message={error} />
         {:else if events.length === 0}
           <p class="no-events">No upcoming events found.</p>
         {:else}

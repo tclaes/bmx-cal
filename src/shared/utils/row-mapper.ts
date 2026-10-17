@@ -60,13 +60,16 @@ function formatTimeValue(value: string): string {
 
 export function normalizeRow(row: Row, formatDate?: (value: any) => string): ParsedEvent {
   const rawDate = pick(row, DATE_KEYS);
+  const startTime = formatTimeValue(pick(row, START_TIME_KEYS));
+  const endTime = formatTimeValue(pick(row, END_TIME_KEYS));
+  const eventType = pick(row, TYPE_KEYS);
   return {
     title: pick(row, TITLE_KEYS),
     description: pick(row, DESCRIPTION_KEYS),
     date: formatDate ? formatDate(rawDate) : rawDate,
-    start_time: formatTimeValue(pick(row, START_TIME_KEYS)) || null,
-    end_time: formatTimeValue(pick(row, END_TIME_KEYS)) || null,
+    start_time: startTime || undefined,
+    end_time: endTime || undefined,
     location: pick(row, LOCATION_KEYS),
-    event_type: pick(row, TYPE_KEYS) || null,
+    event_type: eventType || undefined,
   };
 }

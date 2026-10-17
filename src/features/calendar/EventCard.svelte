@@ -107,13 +107,14 @@
       <h3 class="event-title">{event.title}</h3>
       <div class="event-header-right">
         {#if event.event_type}
+          {@const eventType = event.event_type}
           <button
             class="badge-button"
-            on:click={() => handleEventTypeClick(event.event_type.id)}
-            title={interpolate($t.calendar.filterByType, { name: event.event_type.name })}
-            aria-label={interpolate($t.calendar.filterByType, { name: event.event_type.name })}
+            on:click={() => handleEventTypeClick(eventType.id)}
+            title={interpolate($t.calendar.filterByType, { name: eventType.name })}
+            aria-label={interpolate($t.calendar.filterByType, { name: eventType.name })}
           >
-            <Badge label={getEventTypeAbbreviation(event.event_type.name)} color={event.event_type.color_code} />
+            <Badge label={getEventTypeAbbreviation(eventType.name)} color={eventType.color_code} />
           </button>
         {/if}
         {#if canEdit}

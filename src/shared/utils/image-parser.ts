@@ -79,5 +79,5 @@ export async function parseImage(file: File): Promise<ParsedEvent[]> {
     location: event.location || '',
     description: event.description || '',
     event_type: event.event_type || 'race',
-  }));
+  })) as ParsedEvent[];
 }

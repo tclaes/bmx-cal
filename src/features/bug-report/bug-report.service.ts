@@ -185,14 +185,14 @@ export const adminBugReportService = {
 
       if (shouldBeResolved) {
         updates.push(
-          supabase.from('bug_reports').update({ status: 'resolved' }).eq('id', report.id).then(() => {})
+          supabase.from('bug_reports').update({ status: 'resolved' }).eq('id', report.id).then(() => {}) as Promise<void>
         );
         return { ...report, status: 'resolved' };
       }
 
       if (shouldBeOpen) {
         updates.push(
-          supabase.from('bug_reports').update({ status: 'open' }).eq('id', report.id).then(() => {})
+          supabase.from('bug_reports').update({ status: 'open' }).eq('id', report.id).then(() => {}) as Promise<void>
         );
         return { ...report, status: 'open' };
       }

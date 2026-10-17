@@ -76,5 +76,5 @@ export async function parsePDF(file: File): Promise<ParsedEvent[]> {
     location: event.location || '',
     description: event.description || '',
     event_type: event.event_type || 'race',
-  }));
+  })) as ParsedEvent[];
 }

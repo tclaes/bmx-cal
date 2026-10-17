@@ -1,6 +1,6 @@
 import './app.css'
 import App from './App.svelte'
-import { updateStore } from '@shared/stores/pwa.store';
+import { updateStore } from '@core/stores/pwa.store';
 import { checkForUpdate, storeCurrentVersion } from '@shared/utils/version-checker';
 
 const app = new App({

@@ -14,11 +14,11 @@ async function fetchUserTeams(userId: string): Promise<{ allTeams: Team[]; manag
   ]);
 
   const managedTeams: Team[] = (managersResult.data ?? [])
-    .map((row: { team: Team }) => row.team)
-    .filter(Boolean);
+    .map((row: { team: Team | Team[] }) => Array.isArray(row.team) ? row.team[0] : row.team)
+    .filter((team): team is Team => Boolean(team));
   const memberTeams: Team[] = (membersResult.data ?? [])
-    .map((row: { team: Team }) => row.team)
-    .filter(Boolean);
+    .map((row: { team: Team | Team[] }) => Array.isArray(row.team) ? row.team[0] : row.team)
+    .filter((team): team is Team => Boolean(team));
 
   const allTeams = [...new Map([...managedTeams, ...memberTeams].map(t => [t.id, t])).values()];
   return { allTeams, managedTeams };
@@ -65,7 +65,7 @@ export class AuthService {
   }
 
   private static async toAdminUser(user: { id: string; email?: string; app_metadata?: Record<string, unknown> }): Promise<AdminUser> {
-    const role = user.app_metadata?.role || 'user';
+    const role = (user.app_metadata?.role as string) || 'user';
     const { allTeams, managedTeams } = await fetchUserTeams(user.id);
     return { id: user.id, email: user.email || '', role, teams: allTeams, managedTeams };
   }

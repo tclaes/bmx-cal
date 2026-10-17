@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { installPromptStore } from '@shared/stores/pwa.store';
+import { installPromptStore } from '@core/stores/pwa.store';
 
 describe('InstallPromptStore', () => {
   beforeEach(() => {
