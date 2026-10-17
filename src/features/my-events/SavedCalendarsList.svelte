@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { CalendarService } from '../../shared/services/calendar.service';
-  import type { SavedCalendar } from '../../shared/services/calendar.service';
+  import { CalendarService } from '@core/services/calendar.service';
+  import type { SavedCalendar } from '@core/services/calendar.service';
   import Button from '@ui/Button.svelte';
 
   export let refreshTrigger = 0;

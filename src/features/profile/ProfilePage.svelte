@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@ui';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { authStore, updateStore } from '@shared/stores';
-  import { AuthService } from '@shared/services';
+  import { authStore, updateStore } from '@core/stores';
+  import { AuthService } from '@core/services';
   import { supabase } from '@data/supabase';
   import { navigate } from '../../router';
   import { APP_VERSION } from '@config/version';

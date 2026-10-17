@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { Card, Badge, Button } from '@ui';
   import type { EventWithDetails } from '@types';
-  import { filtersStore } from '@shared/stores';
+  import { filtersStore } from '@core/stores';
   import { getRegistrationStatus, getFridayBefore } from '@shared/utils/registration-status';
   import { t, locale, interpolate } from '../../i18n';
 

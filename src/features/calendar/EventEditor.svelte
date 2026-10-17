@@ -3,7 +3,7 @@
   import type { Event, EventType, Location } from '@types';
   import { Modal, Button, Input, Select } from '@ui';
   import { LocationPicker } from '@shared/components';
-  import { EventsService } from '@shared/services';
+  import { EventsService } from '@core/services';
 
   export let event: Event | null = null;
   export let eventTypes: EventType[] = [];

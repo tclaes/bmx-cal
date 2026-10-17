@@ -2,8 +2,8 @@
   import { createEventDispatcher } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
   import { Card, Input, Button, Alert } from '@ui';
-  import { AuthService } from '@shared/services';
-  import { authStore } from '@shared/stores';
+  import { AuthService } from '@core/services';
+  import { authStore } from '@core/stores';
 
   const dispatch = createEventDispatcher();
 

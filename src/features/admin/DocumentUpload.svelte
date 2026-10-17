@@ -1,8 +1,8 @@
 <script lang="ts">
   import { FileUpload, Button, Alert, LoadingSpinner, Select, Input } from '@ui';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { importStore, authStore } from '@shared/stores';
-  import { ImportService, EventsService } from '@shared/services';
+  import { importStore, authStore } from '@core/stores';
+  import { ImportService, EventsService } from '@core/services';
   import { parseFile, getSupportedFileTypes } from '@shared/utils';
   import type { ParsedEvent, Location, EventType, Team } from '@types';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { currentRoute, startRouter, navigate } from './router';
-  import { authStore, updateStore } from '@shared/stores';
-  import { AuthService } from '@shared/services';
+  import { authStore, updateStore } from '@core/stores';
+  import { AuthService } from '@core/services';
   import Navigation from '@shared/components/Navigation.svelte';
   import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
   import InstallPrompt from '@shared/components/InstallPrompt.svelte';

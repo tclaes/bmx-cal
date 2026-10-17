@@ -2,8 +2,8 @@
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
   import { Card, Button, LoadingSpinner, Alert } from '@ui';
-  import { authStore } from '@shared/stores';
-  import { EventsService } from '@shared/services';
+  import { authStore } from '@core/stores';
+  import { EventsService } from '@core/services';
   import { supabase } from '@data/supabase';
   import { groupEventsByYear, getDefaultOpenYears } from '@shared/utils';
   import type { EventWithType, Team } from '@types';

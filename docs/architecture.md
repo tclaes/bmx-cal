@@ -5,10 +5,11 @@
 Sheriff enforces strict import boundaries between modules to prevent circular dependencies:
 
 ```
-features/calendar   → can import → [components, services, data, types]
-features/admin      → can import → [components, services, data, types]
-shared/components   → can import → [types]
-shared/services     → can import → [data, types]
+features/calendar   → can import → [ui, components, services, stores, data, types]
+features/admin      → can import → [ui, components, services, stores, data, types]
+shared/components   → can import → [ui, services, stores, types]
+lib/core/services   → can import → [data, types]
+lib/core/stores     → can import → [services, utils, types]
 data                → can import → [types]
 types               → no dependencies
 ```
@@ -37,10 +38,14 @@ src/
 │   ├── guide/              # Guide, FAQ, race-day checklist, tracks pages
 │   └── legal/              # Privacy policy and terms pages
 │
+├── lib/                     # Reusable libraries
+│   ├── ui/                 # Dumb/presentational components (Button, Input, Modal, etc.)
+│   └── core/               # App-wide services and stores
+│       ├── services/       # Business logic (events, auth, import, calendar, team, selection)
+│       └── stores/         # Svelte stores (auth, events, filters, import, pwa, selection)
+│
 ├── shared/                  # Shared code across features
-│   ├── components/         # Dumb/presentational components (Button, Input, Modal, etc.)
-│   ├── services/          # Business logic (events, auth, import, calendar, team, selection)
-│   ├── stores/             # Svelte stores (auth, events, filters, import, pwa, selection)
+│   ├── components/         # App-specific widgets (Navigation, InstallPrompt, LocationPicker, etc.)
 │   └── utils/              # Utilities (parsers, analytics, iCal export, permissions, etc.)
 │
 ├── data/                    # Supabase client and data layer

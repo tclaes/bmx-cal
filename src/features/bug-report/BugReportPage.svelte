@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@ui';
-  import { authStore } from '@shared/stores';
+  import { authStore } from '@core/stores';
   import { toUserMessage } from '@shared/utils/error-message';
   import { bugReportService } from './bug-report.service';
 

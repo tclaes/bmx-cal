@@ -2,11 +2,11 @@
   import { onMount } from 'svelte';
   import { Card, Button, Input, Select, Alert, LoadingSpinner } from '@ui';
   import { LocationPicker } from '@shared/components';
-  import { authStore } from '@shared/stores';
+  import { authStore } from '@core/stores';
   import TeamMemberManager from '../admin/TeamMemberManager.svelte';
   import DocumentUpload from '../admin/DocumentUpload.svelte';
-  import { EventsService, TeamService } from '@shared/services';
-  import type { TeamMemberWithEmail } from '@shared/services';
+  import { EventsService, TeamService } from '@core/services';
+  import type { TeamMemberWithEmail } from '@core/services';
   import { supabase } from '@data/supabase';
   import { getInitialTeamExpandedState } from '@shared/utils';
   import { toUserMessage } from '@shared/utils/error-message';

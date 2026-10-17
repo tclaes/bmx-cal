@@ -1,5 +1,5 @@
 import { supabase } from '@data/supabase';
-import type { Team, TeamMember } from '@types';
+import type { Team, TeamMember, TeamManager } from '@types';
 
 export interface TeamMemberWithEmail extends TeamMember {
   user_email: string;

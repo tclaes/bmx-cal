@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '../../shared/stores';
-  import { EventsService } from '../../shared/services/events.service';
+  import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
+  import { EventsService } from '@core/services/events.service';
   import { generateICalContent, downloadICalFile } from '../../shared/utils/ical-exporter';
   import Button from '@ui/Button.svelte';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
-  import { authStore } from '../../shared/stores/auth.store';
+  import { authStore } from '@core/stores/auth.store';
 
-  import { PushService } from '../../shared/services/push.service';
+  import { PushService } from '@core/services/push.service';
   import SaveCalendarModal from './SaveCalendarModal.svelte';
   import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';

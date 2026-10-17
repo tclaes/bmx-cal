@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Input, Dropdown, CheckboxItem } from '@ui';
-  import { filtersStore } from '@shared/stores';
-  import { eventsStore } from '@shared/stores';
+  import { filtersStore } from '@core/stores';
+  import { eventsStore } from '@core/stores';
   import type { EventType } from '@types';
   import { t } from '../../i18n';
 

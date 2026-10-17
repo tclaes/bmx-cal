@@ -4,8 +4,8 @@
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
   import { LoadingSpinner, Alert } from '@ui';
-  import { eventsStore, filtersStore, authStore } from '@shared/stores';
-  import { EventsService } from '@shared/services';
+  import { eventsStore, filtersStore, authStore } from '@core/stores';
+  import { EventsService } from '@core/services';
   import { canEditEvent } from '@shared/utils/permissions';
   import { searchEvents } from '@shared/utils/event-search';
   import type { EventWithDetails, Event } from '@types';

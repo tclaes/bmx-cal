@@ -2,9 +2,9 @@
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
   import { Button, Alert, LoadingSpinner } from '@ui';
-  import { TeamService } from '@shared/services';
+  import { TeamService } from '@core/services';
   import type { Team } from '@types';
-  import type { TeamMemberWithEmail, TeamManagerWithEmail } from '@shared/services';
+  import type { TeamMemberWithEmail, TeamManagerWithEmail } from '@core/services';
 
   type Tab = 'members' | 'managers';
 

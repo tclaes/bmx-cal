@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { NewsService } from '@shared/services';
+  import { NewsService } from '@core/services';
   import { navigate, routeParams } from '../../router';
   import { toUserMessage } from '@shared/utils/error-message';
   import { LoadingSpinner, Alert, Button } from '@ui';

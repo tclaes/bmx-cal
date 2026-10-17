@@ -3,7 +3,7 @@
   import EventList from './EventList.svelte';
   import ExportButton from './ExportButton.svelte';
   import AccountCTA from '@shared/components/AccountCTA.svelte';
-  import { authStore } from '@shared/stores';
+  import { authStore } from '@core/stores';
   import { t } from '../../i18n';
 
   $: isAuthenticated = $authStore.user !== null;
