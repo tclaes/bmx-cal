@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { navigate } from '../../router';
+  import { navigate } from '../router';
   import { APP_VERSION } from '@config/version';
   import { updateStore } from '@core/stores';
-  import { t, interpolate } from '../../i18n';
+  import { t, interpolate } from '../i18n';
 
   function openCookieSettings() {
     window.dispatchEvent(new Event('open-cookie-settings'));

@@ -1,15 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { startRouter } from './router';
-  import RouteOutlet from './router/RouteOutlet.svelte';
+  import { startRouter } from '../router';
+  import RouteOutlet from '../router/RouteOutlet.svelte';
   import { authStore } from '@core/stores';
   import { AuthService } from '@core/services';
   import Navigation from '@shared/components/Navigation.svelte';
-  import Footer from '@shared/components/Footer.svelte';
+  import Footer from './Footer.svelte';
   import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
   import InstallPrompt from '@shared/components/InstallPrompt.svelte';
   import CookieConsent from '@shared/components/CookieConsent.svelte';
-  import { locale } from './i18n';
+  import { locale } from '../i18n';
 
   $: if (typeof document !== 'undefined') {
     document.documentElement.lang = $locale;
