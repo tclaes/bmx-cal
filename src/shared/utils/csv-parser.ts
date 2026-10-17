@@ -3,8 +3,9 @@ import type { ParsedEvent } from '@types';
 import { normalizeRow } from './row-mapper';
 
 export async function parseCSV(file: File): Promise<ParsedEvent[]> {
+  const text = await file.text();
   return new Promise((resolve, reject) => {
-    Papa.parse(file, {
+    Papa.parse<Record<string, string>>(text, {
       header: true,
       skipEmptyLines: true,
       complete: (results: Papa.ParseResult<Record<string, string>>) => {
@@ -14,7 +15,7 @@ export async function parseCSV(file: File): Promise<ParsedEvent[]> {
           reject(new Error('Failed to parse CSV file'));
         }
       },
-      error: (error: Papa.ParseError) => {
+      error: (error: Error) => {
         reject(new Error(`CSV parsing error: ${error.message}`));
       },
     });

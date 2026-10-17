@@ -5,6 +5,7 @@ import type { EventWithDetails } from '@types';
 const createMockEvent = (overrides?: Partial<EventWithDetails>): EventWithDetails => ({
   id: '1',
   title: 'Test Event',
+  status: 'upcoming',
   date: '2026-04-01',
   end_date: null,
   location: 'Test Track',
@@ -20,7 +21,6 @@ const createMockEvent = (overrides?: Partial<EventWithDetails>): EventWithDetail
   location_id: '1',
   team_id: null,
   related_event_type_id: null,
-  created_by: null,
   created_at: '2026-01-01',
   updated_at: '2026-01-01',
   event_type: null,

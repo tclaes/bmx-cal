@@ -167,6 +167,18 @@
     }
   }
 
+  function inputTargetValue(e: Event): string {
+    return (e.currentTarget as HTMLInputElement).value;
+  }
+
+  function selectTargetValue(e: Event): string {
+    return (e.currentTarget as HTMLSelectElement).value;
+  }
+
+  function textareaTargetValue(e: Event): string {
+    return (e.currentTarget as HTMLTextAreaElement).value;
+  }
+
   async function detectUnknownLocations() {
     allLocations = await EventsService.getLocations();
     const locationMap = new Map(allLocations.map(loc => [loc.name.toLowerCase().trim(), loc.id]));
@@ -501,7 +513,7 @@
                 <Input
                   label="Title"
                   value={currentEvent.title}
-                  on:input={(e) => updateCurrentEvent('title', (e.currentTarget as HTMLInputElement).value)}
+                  on:input={(e) => updateCurrentEvent('title', inputTargetValue(e))}
                 />
               </div>
               <div class="event-card-dates">
@@ -509,13 +521,13 @@
                   label="Date"
                   type="date"
                   value={currentEvent.date}
-                  on:input={(e) => updateCurrentEvent('date', (e.currentTarget as HTMLInputElement).value)}
+                  on:input={(e) => updateCurrentEvent('date', inputTargetValue(e))}
                 />
                 <Input
                   label="End Date"
                   type="date"
                   value={currentEvent.end_date ?? ''}
-                  on:input={(e) => updateCurrentEvent('end_date', (e.currentTarget as HTMLInputElement).value)}
+                  on:input={(e) => updateCurrentEvent('end_date', inputTargetValue(e))}
                 />
               </div>
               <div class="event-card-dates">
@@ -523,13 +535,13 @@
                   label="Start Time"
                   type="time"
                   value={currentEvent.start_time ?? ''}
-                  on:input={(e) => updateCurrentEvent('start_time', (e.currentTarget as HTMLInputElement).value)}
+                  on:input={(e) => updateCurrentEvent('start_time', inputTargetValue(e))}
                 />
                 <Input
                   label="End Time"
                   type="time"
                   value={currentEvent.end_time ?? ''}
-                  on:input={(e) => updateCurrentEvent('end_time', (e.currentTarget as HTMLInputElement).value)}
+                  on:input={(e) => updateCurrentEvent('end_time', inputTargetValue(e))}
                 />
               </div>
             </div>
@@ -541,7 +553,7 @@
                   id="event-type-select"
                   value={currentEvent.event_type_id ?? ''}
                   options={eventTypeOptions}
-                  on:change={(e) => setEventTypeForCurrent((e.currentTarget as HTMLSelectElement).value)}
+                  on:change={(e) => setEventTypeForCurrent(selectTargetValue(e))}
                 />
               </div>
 
@@ -551,7 +563,7 @@
                   id="event-location-input"
                   value={currentEvent.location ?? ''}
                   placeholder="Location name"
-                  on:input={(e) => updateCurrentEvent('location', (e.currentTarget as HTMLInputElement).value)}
+                  on:input={(e) => updateCurrentEvent('location', inputTargetValue(e))}
                 />
               </div>
 
@@ -591,29 +603,29 @@
                       value={locationResolutions[currentLocationText]?.locationId ?? ''}
                       options={locationSelectOptions}
                       placeholder="Select a location"
-                      on:change={(e) => setMatchLocation(currentLocationText, (e.currentTarget as HTMLSelectElement).value)}
+                      on:change={(e) => setMatchLocation(currentLocationText, selectTargetValue(e))}
                     />
                   {:else if locationResolutions[currentLocationText]?.action === 'create'}
                     <div class="create-fields">
                       <Input
                         label="Location name"
                         value={locationResolutions[currentLocationText]?.newName ?? currentLocationText}
-                        on:input={(e) => setCreateLocationField(currentLocationText, 'newName', (e.currentTarget as HTMLInputElement).value)}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'newName', inputTargetValue(e))}
                       />
                       <Input
                         label="City"
                         value={locationResolutions[currentLocationText]?.city ?? ''}
-                        on:input={(e) => setCreateLocationField(currentLocationText, 'city', (e.currentTarget as HTMLInputElement).value)}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'city', inputTargetValue(e))}
                       />
                       <Input
                         label="Address"
                         value={locationResolutions[currentLocationText]?.address ?? ''}
-                        on:input={(e) => setCreateLocationField(currentLocationText, 'address', (e.currentTarget as HTMLInputElement).value)}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'address', inputTargetValue(e))}
                       />
                       <Input
                         label="Country"
                         value={locationResolutions[currentLocationText]?.country ?? ''}
-                        on:input={(e) => setCreateLocationField(currentLocationText, 'country', (e.currentTarget as HTMLInputElement).value)}
+                        on:input={(e) => setCreateLocationField(currentLocationText, 'country', inputTargetValue(e))}
                       />
                     </div>
                     <div class="maps-preview">
@@ -670,7 +682,7 @@
                   class="event-desc"
                   value={currentEvent.description ?? ''}
                   placeholder="Optional description"
-                  on:input={(e) => updateCurrentEvent('description', (e.currentTarget as HTMLTextAreaElement).value)}
+                  on:input={(e) => updateCurrentEvent('description', textareaTargetValue(e))}
                   rows="3"
                 ></textarea>
               </div>
