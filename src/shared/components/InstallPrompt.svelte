@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { installPromptStore } from '@shared/stores';
-  import Button from './Button.svelte';
+  import Button from '@ui/Button.svelte';
   import { t } from '../../i18n';
 
   let showPrompt = false;

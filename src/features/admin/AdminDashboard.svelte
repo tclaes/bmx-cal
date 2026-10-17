@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { Card, Button, LoadingSpinner, Alert } from '@shared/components';
+  import { Card, Button, LoadingSpinner, Alert } from '@ui';
   import { authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
   import { supabase } from '@data/supabase';

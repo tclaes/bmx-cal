@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { Button, Alert, LoadingSpinner } from '@shared/components';
+  import { Button, Alert, LoadingSpinner } from '@ui';
   import { TeamService } from '@shared/services';
   import type { Team } from '@types';
   import type { TeamMemberWithEmail, TeamManagerWithEmail } from '@shared/services';

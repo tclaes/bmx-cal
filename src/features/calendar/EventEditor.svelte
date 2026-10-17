@@ -1,7 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import type { Event, EventType, Location } from '@types';
-  import { Modal, Button, Input, Select, LocationPicker } from '@shared/components';
+  import { Modal, Button, Input, Select } from '@ui';
+  import { LocationPicker } from '@shared/components';
   import { EventsService } from '@shared/services';
 
   export let event: Event | null = null;

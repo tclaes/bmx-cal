@@ -3,9 +3,9 @@
   import { toUserMessage } from '@shared/utils/error-message';
   import type { Location } from '@types';
   import { EventsService } from '@shared/services';
-  import Input from './Input.svelte';
-  import Button from './Button.svelte';
-  import Alert from './Alert.svelte';
+  import Input from '@ui/Input.svelte';
+  import Button from '@ui/Button.svelte';
+  import Alert from '@ui/Alert.svelte';
 
   export let locations: Location[] = [];
   export let selectedLocationId: string = '';

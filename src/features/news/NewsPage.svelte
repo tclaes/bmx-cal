@@ -3,7 +3,7 @@
   import { NewsService } from '@shared/services';
   import { navigate } from '../../router';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { LoadingSpinner, Alert } from '@shared/components';
+  import { LoadingSpinner, Alert } from '@ui';
   import type { NewsArticle } from '@types';
 
   let articles: NewsArticle[] = [];

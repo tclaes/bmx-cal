@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Card, Button, Input, Select, Alert, LoadingSpinner, LocationPicker } from '@shared/components';
+  import { Card, Button, Input, Select, Alert, LoadingSpinner } from '@ui';
+  import { LocationPicker } from '@shared/components';
   import { authStore } from '@shared/stores';
   import TeamMemberManager from '../admin/TeamMemberManager.svelte';
   import DocumentUpload from '../admin/DocumentUpload.svelte';

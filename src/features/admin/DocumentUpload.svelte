@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FileUpload, Button, Alert, LoadingSpinner, Select, Input } from '@shared/components';
+  import { FileUpload, Button, Alert, LoadingSpinner, Select, Input } from '@ui';
   import { toUserMessage } from '@shared/utils/error-message';
   import { importStore, authStore } from '@shared/stores';
   import { ImportService, EventsService } from '@shared/services';

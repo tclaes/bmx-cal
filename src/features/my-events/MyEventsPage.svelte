@@ -3,8 +3,8 @@
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '../../shared/stores';
   import { EventsService } from '../../shared/services/events.service';
   import { generateICalContent, downloadICalFile } from '../../shared/utils/ical-exporter';
-  import Button from '../../shared/components/Button.svelte';
-  import LoadingSpinner from '../../shared/components/LoadingSpinner.svelte';
+  import Button from '@ui/Button.svelte';
+  import LoadingSpinner from '@ui/LoadingSpinner.svelte';
   import { authStore } from '../../shared/stores/auth.store';
 
   import { PushService } from '../../shared/services/push.service';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { darkenColorForWhiteText } from '../utils/color-contrast';
+  import { darkenColorForWhiteText } from '@shared/utils/color-contrast';
 
   export let color = '#3b82f6';
   export let label = '';

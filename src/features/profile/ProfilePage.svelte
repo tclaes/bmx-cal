@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Card, Input, Button, Alert } from '@shared/components';
+  import { Card, Input, Button, Alert } from '@ui';
   import { toUserMessage } from '@shared/utils/error-message';
   import { authStore, updateStore } from '@shared/stores';
   import { AuthService } from '@shared/services';

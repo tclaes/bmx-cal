@@ -2,7 +2,7 @@
   import { eventsStore } from '@shared/stores';
   import { filtersStore } from '@shared/stores/filters.store';
   import { generateICalContent, downloadICalFile } from '@shared/utils';
-  import Button from '@shared/components/Button.svelte';
+  import Button from '@ui/Button.svelte';
   import type { EventWithDetails } from '@types';
 
   $: filteredEvents = getFilteredEvents($eventsStore.events, $filtersStore);

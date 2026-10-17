@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Input, Dropdown, CheckboxItem } from '@shared/components';
+  import { Input, Dropdown, CheckboxItem } from '@ui';
   import { filtersStore } from '@shared/stores';
   import { eventsStore } from '@shared/stores';
   import type { EventType } from '@types';

@@ -1,9 +1,14 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
     "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "verbatimModuleSyntax": true,
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": true,
@@ -11,13 +16,37 @@
     "moduleDetection": "force",
     "baseUrl": ".",
     "paths": {
-      "@features/*": ["src/features/*"],
-      "@shared/*": ["src/shared/*"],
-      "@data/*": ["src/data/*"],
-      "@types/*": ["src/types/*"],
-      "@config/*": ["src/config/*"]
+      "@features/*": [
+        "src/features/*"
+      ],
+      "@ui/*": [
+        "src/lib/ui/*"
+      ],
+      "@ui": [
+        "src/lib/ui"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@data/*": [
+        "src/data/*"
+      ],
+      "@types/*": [
+        "src/types/*"
+      ],
+      "@config/*": [
+        "src/config/*"
+      ]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.svelte"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

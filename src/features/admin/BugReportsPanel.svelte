@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils/error-message';
-  import { Button, Alert, LoadingSpinner, Badge } from '@shared/components';
+  import { Button, Alert, LoadingSpinner, Badge } from '@ui';
   import { adminBugReportService } from '@features/bug-report/bug-report.service';
   import type { BugReport } from '@features/bug-report/bug-report.service';
 

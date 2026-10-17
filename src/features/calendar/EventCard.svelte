@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { Card, Badge, Button } from '@shared/components';
+  import { Card, Badge, Button } from '@ui';
   import type { EventWithDetails } from '@types';
   import { filtersStore } from '@shared/stores';
   import { getRegistrationStatus, getFridayBefore } from '@shared/utils/registration-status';

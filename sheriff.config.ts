@@ -1,4 +1,6 @@
-import { noDependencies, sameTag, tag } from '@softarc/sheriff-core';
+import { noDependencies, sameTag } from '@softarc/sheriff-core';
+
+const tag = (name: string) => [name];
 
 export const sheriffConfig = {
   tagging: {
@@ -9,6 +11,7 @@ export const sheriffConfig = {
     'src/features/my-events': tag('my-events'),
     'src/features/profile': tag('profile'),
     'src/features/team-manager': tag('team-manager'),
+    'src/lib/ui': tag('ui'),
     'src/shared/components': tag('components'),
     'src/shared/services': tag('services'),
     'src/shared/stores': tag('stores'),
@@ -20,14 +23,16 @@ export const sheriffConfig = {
     'src/i18n': tag('i18n'),
   },
   depRules: {
-    calendar: ['components', 'services', 'stores', 'utils', 'data', 'types'],
-    admin: ['components', 'services', 'stores', 'utils', 'data', 'types', 'bug-report'],
-    auth: ['components', 'services', 'stores', 'utils', 'data', 'types'],
-    'bug-report': ['components', 'stores', 'data', 'types'],
-    'my-events': ['components', 'services', 'stores', 'utils', 'types'],
-    profile: ['components', 'services', 'stores', 'utils', 'data', 'types', 'config'],
-    'team-manager': ['components', 'services', 'stores', 'utils', 'data', 'types'],
-    components: ['stores', 'services', 'utils', 'types'],
+    root: noDependencies,
+    calendar: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types'],
+    admin: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types', 'bug-report'],
+    auth: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types'],
+    'bug-report': ['ui', 'components', 'stores', 'data', 'types'],
+    'my-events': ['ui', 'components', 'services', 'stores', 'utils', 'types'],
+    profile: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types', 'config'],
+    'team-manager': ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types'],
+    components: ['ui', 'stores', 'services', 'utils', 'types'],
+    ui: ['utils', 'types'],
     services: ['data', 'types'],
     stores: ['services', 'utils', 'types'],
     utils: ['data', 'types', 'config'],

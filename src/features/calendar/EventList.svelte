@@ -3,7 +3,7 @@
   import { toUserMessage } from '@shared/utils/error-message';
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
-  import { LoadingSpinner, Alert } from '@shared/components';
+  import { LoadingSpinner, Alert } from '@ui';
   import { eventsStore, filtersStore, authStore } from '@shared/stores';
   import { EventsService } from '@shared/services';
   import { canEditEvent } from '@shared/utils/permissions';
