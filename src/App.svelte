@@ -1,126 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { currentRoute, startRouter, navigate } from './router';
+  import { startRouter, navigate } from './router';
+  import RouteOutlet from './router/RouteOutlet.svelte';
   import { authStore, updateStore } from '@core/stores';
   import { AuthService } from '@core/services';
   import Navigation from '@shared/components/Navigation.svelte';
   import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
   import InstallPrompt from '@shared/components/InstallPrompt.svelte';
-  import CalendarView from '@features/calendar/CalendarView.svelte';
-  import AdminDashboard from '@features/admin/AdminDashboard.svelte';
-  import Login from '@features/admin/Login.svelte';
-  import MyEventsPage from './features/my-events/MyEventsPage.svelte';
-  import MyEventsDemoPage from './features/my-events/MyEventsDemoPage.svelte';
-  import RegisterPage from './features/auth/RegisterPage.svelte';
-  import LoginPage from './features/auth/LoginPage.svelte';
-  import ForgotPasswordPage from './features/auth/ForgotPasswordPage.svelte';
-  import ResetPasswordPage from './features/auth/ResetPasswordPage.svelte';
-  import ProfilePage from './features/profile/ProfilePage.svelte';
-  import TeamManagerDashboard from './features/team-manager/TeamManagerDashboard.svelte';
-  import BugReportPage from './features/bug-report/BugReportPage.svelte';
-  import AboutPage from './features/about/AboutPage.svelte';
-  import GetInTouchPage from './features/about/GetInTouchPage.svelte';
-  import GuidePage from './features/guide/GuidePage.svelte';
-  import FaqPage from './features/guide/FaqPage.svelte';
-  import RaceDayPage from './features/guide/RaceDayPage.svelte';
-  import TracksPage from './features/guide/TracksPage.svelte';
-  import NewsPage from './features/news/NewsPage.svelte';
-  import NewsArticlePage from './features/news/NewsArticlePage.svelte';
-  import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage.svelte';
-  import TermsPage from './features/legal/TermsPage.svelte';
   import CookieConsent from '@shared/components/CookieConsent.svelte';
   import { APP_VERSION } from '@config/version';
-  import { canAccessMyCalendar } from '@shared/utils/permissions';
   import { locale, t, interpolate } from './i18n';
-
-  const routeMeta: Record<string, { title: string; description: string }> = {
-    '/': {
-      title: 'BMX Calendar - BMX events, races and competitions in Belgium',
-      description: 'Discover upcoming BMX races, cups and shows across Belgium. Browse the shared calendar by date, club or type, build a personal schedule and export it to your calendar app.',
-    },
-    '/my-events': {
-      title: 'Create my BMX calendar - BMX Calendar',
-      description: 'Build a personal BMX season calendar: pick your races, export to Apple, Google or Outlook, and never miss a registration deadline.',
-    },
-    '/about': {
-      title: 'About - BMX Calendar',
-      description: 'Learn about BMX Calendar, a community project for Belgian BMX events.',
-    },
-    '/guide': {
-      title: 'BMX Racing Guide - BMX Calendar',
-      description: 'A complete beginner guide to BMX racing in Belgium: event types, categories, registration, equipment, and useful links.',
-    },
-    '/faq': {
-      title: 'BMX Racing FAQ - BMX Calendar',
-      description: 'Frequently asked questions about BMX racing in Belgium: age requirements, costs, licensing, race format, and rankings.',
-    },
-    '/race-day': {
-      title: 'Race Day Checklist - BMX Calendar',
-      description: 'Everything you need for a BMX race day: preparation checklist, race format, nutrition tips, and weather advice.',
-    },
-    '/tracks': {
-      title: 'BMX Tracks in Belgium - BMX Calendar',
-      description: 'Discover BMX tracks across Belgium: locations, track features, and club information for over 15 circuits.',
-    },
-    '/get-in-touch': {
-      title: 'Get in touch - BMX Calendar',
-      description: 'Contact the BMX Calendar team for questions, feedback or partnerships.',
-    },
-    '/news': {
-      title: 'News & Updates - BMX Calendar',
-      description: 'Stay up to date with the latest features, improvements, and announcements from BMX Calendar.',
-    },
-    '/privacy-policy': {
-      title: 'Privacy Policy - BMX Calendar',
-      description: 'How BMX Calendar handles your personal data, cookies and advertising.',
-    },
-    '/terms': {
-      title: 'Terms of Service - BMX Calendar',
-      description: 'The terms and conditions for using BMX Calendar.',
-    },
-    '/report-bug': {
-      title: 'Report a bug - BMX Calendar',
-      description: 'Report an issue or suggest improvements for BMX Calendar.',
-    },
-  };
-
-  function updateDocumentMeta(path: string) {
-    const meta = routeMeta[path];
-    if (!meta) return;
-    document.title = meta.title;
-    const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute('content', meta.description);
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.setAttribute('href', `https://bmxkalender.be${path === '/' ? '/' : path}`);
-  }
-
-  // Routes that are utility/auth screens with no publisher content.
-  // AdSense must not serve ads on these pages.
-  const NO_AD_ROUTES = new Set([
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/reset-password',
-    '/profile',
-    '/my-events',
-    '/team-manager',
-    '/admin',
-    '/admin/login',
-    '/profile',
-    '/my-events',
-    '/team-manager',
-  ]);
-
-  // News article pages have no publisher content for ads
-  const NO_AD_ROUTE_PREFIXES = ['/news/'];
-
-  $: suppressAds = NO_AD_ROUTES.has($currentRoute) || NO_AD_ROUTE_PREFIXES.some(p => $currentRoute.startsWith(p));
 
   function openCookieSettings() {
     window.dispatchEvent(new Event('open-cookie-settings'));
   }
 
-  $: updateDocumentMeta($currentRoute);
   $: if (typeof document !== 'undefined') {
     document.documentElement.lang = $locale;
   }
@@ -162,14 +56,6 @@
     })();
   });
 
-  function handleLoginSuccess() {
-    navigate('/admin');
-  }
-
-  $: isAuthenticated = $authStore.user !== null;
-  $: isAdmin = $authStore.user?.role === 'admin';
-  $: isTeamManager = isAdmin || ($authStore.user?.managedTeams?.length ?? 0) > 0;
-
   async function handleCheckForUpdates() {
     showUpdateMessage = false;
 
@@ -192,13 +78,6 @@
   }
 </script>
 
-<svelte:head>
-  {#if suppressAds}
-    <!-- Tell AdSense not to serve ads on utility/auth screens that have no publisher content -->
-    <meta name="google" content="noad" />
-  {/if}
-</svelte:head>
-
 <UpdatePrompt />
 <InstallPrompt />
 <CookieConsent />
@@ -211,70 +90,7 @@
     </header>
 
     <main id="main-content" class="main-content">
-      {#if $currentRoute === '/'}
-        <CalendarView />
-      {:else if $currentRoute === '/my-events'}
-        {#if canAccessMyCalendar($authStore.user)}
-          <MyEventsPage />
-        {:else}
-          <MyEventsDemoPage />
-        {/if}
-      {:else if $currentRoute === '/login'}
-        <LoginPage />
-      {:else if $currentRoute === '/register'}
-        <RegisterPage />
-      {:else if $currentRoute === '/forgot-password'}
-        <ForgotPasswordPage />
-      {:else if $currentRoute === '/reset-password'}
-        <ResetPasswordPage />
-      {:else if $currentRoute === '/admin/login'}
-        <Login on:loginSuccess={handleLoginSuccess} />
-      {:else if $currentRoute === '/admin'}
-        {#if isAuthenticated && isAdmin}
-          <AdminDashboard />
-        {:else}
-          <Login on:loginSuccess={handleLoginSuccess} />
-        {/if}
-      {:else if $currentRoute === '/profile'}
-        {#if isAuthenticated}
-          <ProfilePage />
-        {:else}
-          <LoginPage />
-        {/if}
-      {:else if $currentRoute === '/team-manager'}
-        {#if isAuthenticated && isTeamManager}
-          <TeamManagerDashboard />
-        {:else}
-          <LoginPage />
-        {/if}
-      {:else if $currentRoute === '/report-bug'}
-        <BugReportPage />
-      {:else if $currentRoute === '/about'}
-        <AboutPage />
-      {:else if $currentRoute === '/guide'}
-        <GuidePage />
-      {:else if $currentRoute === '/faq'}
-        <FaqPage />
-      {:else if $currentRoute === '/race-day'}
-        <RaceDayPage />
-      {:else if $currentRoute === '/tracks'}
-        <TracksPage />
-      {:else if $currentRoute === '/news'}
-        <NewsPage />
-      {:else if $currentRoute.startsWith('/news/')}
-        <NewsArticlePage />
-      {:else if $currentRoute === '/get-in-touch'}
-        <GetInTouchPage />
-      {:else if $currentRoute === '/privacy-policy'}
-        <PrivacyPolicyPage />
-      {:else if $currentRoute === '/terms'}
-        <TermsPage />
-      {:else}
-        <div class="not-found">
-          <h1>{$t.notFound.title}</h1>
-          <p>{$t.notFound.description}</p>
-        </div>
-      {/if}
+      <RouteOutlet />
     </main>
 
     <footer class="footer">
@@ -420,26 +236,5 @@
   .main-content {
     flex: 1;
     min-height: calc(100vh - 60px);
-  }
-
-  .not-found {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 50vh;
-    text-align: center;
-    color: var(--color-text-secondary);
-  }
-
-  .not-found h1 {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-md);
-  }
-
-  .not-found p {
-    font-size: var(--font-size-lg);
   }
 </style>

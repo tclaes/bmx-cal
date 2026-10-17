@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import path from 'path'
 
@@ -12,7 +12,6 @@ export default defineConfig({
       '@core': path.resolve(__dirname, './src/lib/core'),
       '@shared': path.resolve(__dirname, './src/shared'),
       '@data': path.resolve(__dirname, './src/data'),
-      '@types': path.resolve(__dirname, './src/types'),
       '@types': path.resolve(__dirname, './src/types'),
       '@config': path.resolve(__dirname, './src/config'),
     },
@@ -34,9 +33,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['@supabase/supabase-js'],
-          'utils': ['papaparse', 'xlsx']
+        manualChunks: (id) => {
+          if (id.includes('@supabase/supabase-js')) return 'vendor';
+          if (id.includes('papaparse') || id.includes('xlsx')) return 'utils';
+          return undefined;
         }
       }
     }

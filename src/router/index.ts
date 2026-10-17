@@ -1,6 +1,7 @@
 import navaid from 'navaid';
 import { writable } from 'svelte/store';
 import { trackPageView } from '@shared/utils/analytics';
+import { routes } from './routes';
 
 export const currentRoute = writable<string>('/');
 export const routeParams = writable<Record<string, string>>({});
@@ -16,32 +17,8 @@ function setRoute(path: string, params?: Record<string, string>) {
   trackPageView(path);
 }
 
-const ROUTES = [
-  '/',
-  '/my-events',
-  '/admin',
-  '/admin/login',
-  '/register',
-  '/login',
-  '/forgot-password',
-  '/reset-password',
-  '/profile',
-  '/team-manager',
-  '/report-bug',
-  '/about',
-  '/guide',
-  '/faq',
-  '/race-day',
-  '/tracks',
-  '/get-in-touch',
-  '/news',
-  '/news/:slug',
-  '/privacy-policy',
-  '/terms',
-];
-
-for (const path of ROUTES) {
-  router.on(path, (params) => setRoute(path, params));
+for (const route of routes) {
+  router.on(route.path, (params) => setRoute(route.path, params));
 }
 
 // Canonical URL is /privacy-policy; redirect so AdSense crawlers always land on the real page
