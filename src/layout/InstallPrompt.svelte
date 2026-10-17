@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { installPromptStore } from '@core/stores';
   import Button from '@ui/Button.svelte';
-  import { t } from '../../i18n';
+  import { t } from '../i18n';
 
   let showPrompt = false;
   let deferredPrompt: any = null;

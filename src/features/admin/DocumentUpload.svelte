@@ -3,7 +3,7 @@
   import { toUserMessage } from '@shared/utils/error-message';
   import { importStore, authStore } from '@core/stores';
   import { ImportService, EventsService } from '@core/services';
-  import { parseFile, getSupportedFileTypes } from '@shared/utils';
+  import { parseFile, getSupportedFileTypes } from './parsers/file-parser';
   import type { ParsedEvent, Location, EventType, Team } from '@types';
 
   export let isAdmin = false;

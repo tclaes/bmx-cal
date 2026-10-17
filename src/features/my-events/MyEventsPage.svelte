@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
   import { EventsService } from '@core/services/events.service';
-  import { generateICalContent, downloadICalFile } from '../../shared/utils/ical-exporter';
+  import { generateICalContent, downloadICalFile } from '@shared/utils';
   import Button from '@ui/Button.svelte';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
   import { authStore } from '@core/stores/auth.store';

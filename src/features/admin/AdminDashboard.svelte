@@ -5,7 +5,7 @@
   import { authStore } from '@core/stores';
   import { EventsService } from '@core/services';
   import { supabase } from '@data/supabase';
-  import { groupEventsByYear, getDefaultOpenYears } from '@shared/utils';
+  import { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
   import type { EventWithType, Team } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';
   import BugReportsPanel from './BugReportsPanel.svelte';

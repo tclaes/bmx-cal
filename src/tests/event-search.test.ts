@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { searchEvents } from '@shared/utils/event-search';
+import { searchEvents } from '../features/calendar/event-search';
 import type { EventWithDetails } from '@types';
 
 const createMockEvent = (overrides?: Partial<EventWithDetails>): EventWithDetails => ({

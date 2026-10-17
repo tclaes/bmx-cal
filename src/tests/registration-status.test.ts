@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getRegistrationStatus, getFridayBefore } from '@shared/utils/registration-status';
+import { getRegistrationStatus, getFridayBefore } from '../features/calendar/registration-status';
 
 const FUTURE_EVENT_DATE = '2099-06-15';
 const PAST_DEADLINE = '2020-01-01';

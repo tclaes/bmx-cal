@@ -3,7 +3,7 @@
   import { Card, Badge, Button } from '@ui';
   import type { EventWithDetails } from '@types';
   import { filtersStore } from '@core/stores';
-  import { getRegistrationStatus, getFridayBefore } from '@shared/utils/registration-status';
+  import { getRegistrationStatus, getFridayBefore } from './registration-status';
   import { t, locale, interpolate } from '../../i18n';
 
   export let event: EventWithDetails;

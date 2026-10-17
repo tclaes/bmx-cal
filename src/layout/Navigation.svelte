@@ -2,9 +2,9 @@
   import { authStore, selectedEventIds } from '@core/stores';
   import { AuthService } from '@core/services';
   import { selectionService } from '@core/services/selection.service';
-  import { currentRoute, navigate } from '../../router';
-  import { locale, t } from '../../i18n';
-  import type { Locale } from '../../i18n';
+  import { currentRoute, navigate } from '../router';
+  import { locale, t } from '../i18n';
+  import type { Locale } from '../i18n';
 
   let menuOpen = false;
   let navEl: HTMLElement;

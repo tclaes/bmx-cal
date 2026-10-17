@@ -6,8 +6,8 @@
     acceptAll,
     rejectAll,
     applyConsentToGoogle,
-  } from '../utils/cookie-consent';
-  import { navigate } from '../../router';
+  } from './cookie-consent';
+  import { navigate } from '../router';
 
   let visible = false;
 

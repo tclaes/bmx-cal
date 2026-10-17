@@ -4,11 +4,11 @@
   import RouteOutlet from '../router/RouteOutlet.svelte';
   import { authStore } from '@core/stores';
   import { AuthService } from '@core/services';
-  import Navigation from '@shared/components/Navigation.svelte';
+  import Navigation from './Navigation.svelte';
   import Footer from './Footer.svelte';
-  import UpdatePrompt from '@shared/components/UpdatePrompt.svelte';
-  import InstallPrompt from '@shared/components/InstallPrompt.svelte';
-  import CookieConsent from '@shared/components/CookieConsent.svelte';
+  import UpdatePrompt from './UpdatePrompt.svelte';
+  import InstallPrompt from './InstallPrompt.svelte';
+  import CookieConsent from './CookieConsent.svelte';
   import { locale } from '../i18n';
 
   $: if (typeof document !== 'undefined') {

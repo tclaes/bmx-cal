@@ -1,6 +1,6 @@
 <script lang="ts">
   import { updateStore } from '@core/stores/pwa.store';
-  import { t } from '../../i18n';
+  import { t } from '../i18n';
 
   async function reload() {
     updateStore.confirmUpdate();

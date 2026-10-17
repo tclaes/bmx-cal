@@ -7,7 +7,7 @@
   import { eventsStore, filtersStore, authStore } from '@core/stores';
   import { EventsService } from '@core/services';
   import { canEditEvent } from '@shared/utils/permissions';
-  import { searchEvents } from '@shared/utils/event-search';
+  import { searchEvents } from './event-search';
   import type { EventWithDetails, Event } from '@types';
   import { t } from '../../i18n';
 

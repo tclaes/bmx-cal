@@ -1,4 +1,4 @@
-import { noDependencies, sameTag } from '@softarc/sheriff-core';
+import { noDependencies } from '@softarc/sheriff-core';
 
 const tag = (name: string) => [name];
 
@@ -14,9 +14,8 @@ export const sheriffConfig = {
     'src/lib/ui': tag('ui'),
     'src/lib/core/services': tag('services'),
     'src/lib/core/stores': tag('stores'),
-    'src/shared/components': tag('components'),
+    'src/shared': tag('shared'),
     'src/layout': tag('layout'),
-    'src/shared/utils': tag('utils'),
     'src/data': tag('data'),
     'src/types': tag('types'),
     'src/config': tag('config'),
@@ -25,23 +24,22 @@ export const sheriffConfig = {
   },
   depRules: {
     root: noDependencies,
-    calendar: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types'],
-    admin: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types', 'bug-report'],
-    auth: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types'],
-    'bug-report': ['ui', 'components', 'stores', 'data', 'types'],
-    'my-events': ['ui', 'components', 'services', 'stores', 'utils', 'types'],
-    profile: ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types', 'config'],
-    'team-manager': ['ui', 'components', 'services', 'stores', 'utils', 'data', 'types'],
-    components: ['ui', 'stores', 'services', 'utils', 'types'],
-    layout: ['components', 'services', 'stores', 'utils', 'types', 'config', 'router', 'i18n'],
-    ui: ['utils', 'types'],
+    calendar: ['ui', 'shared', 'services', 'stores', 'data', 'types'],
+    admin: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'bug-report'],
+    auth: ['ui', 'shared', 'services', 'stores', 'data', 'types'],
+    'bug-report': ['ui', 'stores', 'data', 'types'],
+    'my-events': ['ui', 'shared', 'services', 'stores', 'types'],
+    profile: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'config'],
+    'team-manager': ['ui', 'shared', 'services', 'stores', 'data', 'types'],
+    shared: ['ui', 'stores', 'services', 'types'],
+    layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
+    ui: ['types', 'shared'],
     services: ['data', 'types'],
-    stores: ['services', 'utils', 'types'],
-    utils: ['data', 'types', 'config'],
+    stores: ['services', 'shared', 'types'],
     data: ['types'],
     types: noDependencies,
     config: noDependencies,
-    router: ['utils'],
+    router: ['shared'],
     i18n: noDependencies,
   },
 };
