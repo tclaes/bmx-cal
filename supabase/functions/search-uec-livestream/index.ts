@@ -54,7 +54,18 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
-    if (bearer !== serviceRoleKey) {
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // The scheduled cron run authenticates with a shared token from
+    // cron_auth_tokens (survives service-role key rotations).
+    const { data: tokenRow } = await supabase
+      .from("cron_auth_tokens")
+      .select("token")
+      .eq("name", "search-uec-livestream")
+      .maybeSingle();
+    const cronToken = tokenRow?.token ?? "";
+
+    if (bearer !== serviceRoleKey && !(cronToken.length > 0 && bearer === cronToken)) {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
@@ -67,8 +78,6 @@ Deno.serve(async (req: Request) => {
         );
       }
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const testEventId: string | undefined = body.event_id;

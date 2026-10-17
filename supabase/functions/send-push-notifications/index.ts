@@ -60,8 +60,18 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
-    // The scheduled broadcast is invoked by pg_cron with the service-role key.
-    const isScheduledRun = bearer.length > 0 && bearer === serviceRoleKey;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // The scheduled broadcast is invoked by pg_cron with a shared cron token
+    // stored in cron_auth_tokens (survives service-role key rotations).
+    const { data: tokenRow } = await supabase
+      .from("cron_auth_tokens")
+      .select("token")
+      .eq("name", "send-push-notifications")
+      .maybeSingle();
+    const cronToken = tokenRow?.token ?? "";
+
+    const isScheduledRun = bearer.length > 0 && (bearer === serviceRoleKey || (cronToken.length > 0 && bearer === cronToken));
 
     let callerUserId: string | null = null;
     let callerIsAdmin = false;
@@ -92,8 +102,6 @@ Deno.serve(async (req: Request) => {
         );
       }
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     let subscriptionQuery = supabase
       .from("push_subscriptions")

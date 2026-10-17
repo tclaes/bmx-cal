@@ -275,7 +275,18 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get("Authorization") ?? "";
     const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
 
-    if (bearer !== supabaseKey) {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // The scheduled cron run authenticates with a shared token from
+    // cron_auth_tokens (survives service-role key rotations).
+    const { data: tokenRow } = await supabase
+      .from("cron_auth_tokens")
+      .select("token")
+      .eq("name", "sync-jstiming")
+      .maybeSingle();
+    const cronToken = tokenRow?.token ?? "";
+
+    if (bearer !== supabaseKey && !(cronToken.length > 0 && bearer === cronToken)) {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
@@ -288,8 +299,6 @@ Deno.serve(async (req: Request) => {
         );
       }
     }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const results: Array<{
       organizer: string;
