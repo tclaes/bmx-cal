@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { eventsStore } from '../lib/core/stores/events.store';
+import { eventsStore } from '../libs/core/stores/events.store';
 import type { EventType, Location } from '../types';
 
 const eventType1: EventType = { id: 'et-1', name: 'Team Race', team_id: 'team-1' } as EventType;

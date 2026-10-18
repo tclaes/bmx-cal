@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { authStore, isAdmin, isTeamManager, userTeams, userManagedTeams } from '../lib/core/stores/auth.store';
+import { authStore, isAdmin, isTeamManager, userTeams, userManagedTeams } from '../libs/core/stores/auth.store';
 import type { AdminUser, Team } from '../types';
 
 const team1: Team = { id: 'team-1', name: 'Team Alpha', created_at: '2026-01-01T00:00:00Z' };

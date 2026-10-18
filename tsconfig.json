@@ -20,16 +20,16 @@
         "src/features/*"
       ],
       "@ui/*": [
-        "src/lib/ui/*"
+        "src/libs/ui/*"
       ],
       "@ui": [
-        "src/lib/ui"
+        "src/libs/ui"
       ],
       "@core/*": [
-        "src/lib/core/*"
+        "src/libs/core/*"
       ],
       "@core": [
-        "src/lib/core"
+        "src/libs/core"
       ],
       "@shared/*": [
         "src/shared/*"

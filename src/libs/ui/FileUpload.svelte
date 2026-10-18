@@ -39,26 +39,15 @@
   function handleDragLeave() {
     isDragging = false;
   }
-
-  function handleClick() {
-    if (!disabled) {
-      fileInput.click();
-    }
-  }
 </script>
 
-<div
+<label
   class="file-upload"
   class:dragging={isDragging}
   class:disabled
-  role="button"
-  tabindex={disabled ? -1 : 0}
   on:drop={handleDrop}
   on:dragover={handleDragOver}
   on:dragleave={handleDragLeave}
-  on:click={handleClick}
-  on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
-  aria-label="{label} - Click or drag and drop to upload"
 >
   <input
     type="file"
@@ -67,10 +56,8 @@
     bind:this={fileInput}
     on:change={handleFileSelect}
     class="file-input"
-    aria-hidden="true"
-    tabindex="-1"
   />
-  <div class="upload-content" aria-hidden="true">
+  <div class="upload-content">
     <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
       <polyline points="17 8 12 3 7 8"></polyline>
@@ -79,10 +66,11 @@
     <p class="upload-text">{label}</p>
     <p class="upload-hint">Click or drag and drop to upload</p>
   </div>
-</div>
+</label>
 
 <style>
   .file-upload {
+    display: block;
     border: 2px dashed var(--color-border);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-xl);
@@ -96,7 +84,7 @@
     background-color: var(--color-bg-secondary);
   }
 
-  .file-upload:focus-visible {
+  .file-upload:focus-within {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
@@ -112,7 +100,12 @@
   }
 
   .file-input {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .upload-content {

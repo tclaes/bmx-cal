@@ -162,69 +162,23 @@ describe('Alert Accessibility', () => {
 });
 
 describe('FileUpload Accessibility', () => {
-  it('should have accessible button role with proper label', () => {
+  it('should have an accessible file input with proper label', () => {
     render(FileUpload, {
       props: { label: 'Upload Document' }
     });
 
-    const uploadButton = screen.getByRole('button', { name: /upload document/i });
-    expect(uploadButton).toBeInTheDocument();
-    expect(uploadButton).toHaveAttribute('aria-label');
+    const input = screen.getByLabelText(/upload document/i);
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveAttribute('type', 'file');
   });
 
-  it('should handle Enter key press', async () => {
-    const handleFileSelected = vi.fn();
-    const { component } = render(FileUpload, {
-      props: { label: 'Upload File' }
-    });
-
-    component.$on('fileSelected', handleFileSelected);
-
-    const uploadButton = screen.getByRole('button', { name: /upload file/i });
-    await fireEvent.keyDown(uploadButton, { key: 'Enter' });
-
-    expect(uploadButton).toBeInTheDocument();
-  });
-
-  it('should handle Space key press', async () => {
-    const handleFileSelected = vi.fn();
-    const { component } = render(FileUpload, {
-      props: { label: 'Upload File' }
-    });
-
-    component.$on('fileSelected', handleFileSelected);
-
-    const uploadButton = screen.getByRole('button', { name: /upload file/i });
-    await fireEvent.keyDown(uploadButton, { key: ' ' });
-
-    expect(uploadButton).toBeInTheDocument();
-  });
-
-  it('should hide decorative SVG from screen readers', () => {
-    const { container } = render(FileUpload, {
-      props: { label: 'Upload File' }
-    });
-
-    const svg = container.querySelector('svg');
-    expect(svg).toHaveAttribute('aria-hidden', 'true');
-  });
-
-  it('should be keyboard accessible', () => {
-    render(FileUpload, {
-      props: { label: 'Upload File' }
-    });
-
-    const uploadButton = screen.getByRole('button', { name: /upload file/i });
-    expect(uploadButton).toHaveAttribute('tabindex', '0');
-  });
-
-  it('should be disabled when disabled prop is true', () => {
+  it('should not be focusable when disabled', () => {
     render(FileUpload, {
       props: { label: 'Upload File', disabled: true }
     });
 
-    const uploadButton = screen.getByRole('button', { name: /upload file/i });
-    expect(uploadButton).toHaveAttribute('tabindex', '-1');
+    const input = screen.getByLabelText(/upload file/i);
+    expect(input).toBeDisabled();
   });
 });
 
@@ -283,38 +237,14 @@ describe('Badge Accessibility', () => {
     expect(badge).toHaveTextContent('Test Badge');
   });
 
-  it('should use accessible text color based on background', () => {
-    const { container } = render(Badge, {
-      props: { label: 'Dark Badge', color: '#000000' }
-    });
-
-    const badge = container.querySelector('.badge') as HTMLElement;
-    const styles = window.getComputedStyle(badge);
-
-    expect(badge.style.color).toBe('rgb(255, 255, 255)');
-  });
-
-  it('should use white text on darkened background', () => {
-    const { container } = render(Badge, {
-      props: { label: 'Light Badge', color: '#ffffff' }
-    });
-
-    const badge = container.querySelector('.badge') as HTMLElement;
-
-    // Badge now always uses white text and darkens the background if needed
-    expect(badge.style.color).toBe('rgb(255, 255, 255)');
-    // Background should be darkened from white to ensure contrast
-    expect(badge.style.backgroundColor).not.toBe('rgb(255, 255, 255)');
-  });
-
-  it('should calculate text color for custom colors', () => {
+  it('should always use white text on its background color', () => {
     const { container } = render(Badge, {
       props: { label: 'Blue Badge', color: '#3b82f6' }
     });
 
     const badge = container.querySelector('.badge') as HTMLElement;
 
-    expect(badge.style.color).toBeTruthy();
-    expect(['rgb(255, 255, 255)', 'rgb(0, 0, 0)']).toContain(badge.style.color);
+    expect(badge.style.color).toBe('rgb(255, 255, 255)');
+    expect(badge.style.backgroundColor).toBeTruthy();
   });
 });

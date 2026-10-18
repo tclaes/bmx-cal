@@ -1,22 +1,19 @@
 <script lang="ts">
-  import { darkenColorForWhiteText } from '@shared/utils/color-contrast';
-
   export let color = '#3b82f6';
   export let label = '';
   export let variant: 'default' | 'success' | 'warning' | 'error' | undefined = undefined;
 
   const variantColors: Record<NonNullable<typeof variant>, string> = {
     default: '#3b82f6',
-    success: '#16a34a',
-    warning: '#d97706',
-    error: '#dc2626',
+    success: '#15803d',
+    warning: '#b45309',
+    error: '#b91c1c',
   };
 
   $: effectiveColor = variant ? variantColors[variant] : color;
-  $: adjustedBgColor = darkenColorForWhiteText(effectiveColor);
 </script>
 
-<span class="badge" style="background-color: {adjustedBgColor}; color: #ffffff;">
+<span class="badge" style="background-color: {effectiveColor}; color: #ffffff;">
   {label}
 </span>
 
