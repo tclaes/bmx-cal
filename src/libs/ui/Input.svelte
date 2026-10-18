@@ -11,6 +11,16 @@
 
   $: errorId = id ? `${id}-error` : '';
   $: describedBy = error ? errorId : undefined;
+  $: inputProps = {
+    id,
+    placeholder,
+    disabled,
+    required,
+    readonly,
+    class: `input${error ? ' error' : ''}`,
+    'aria-invalid': !!error || undefined,
+    'aria-describedby': describedBy,
+  };
 </script>
 
 <div class="input-wrapper">
@@ -18,107 +28,17 @@
     <label for={id} class="label">{label}</label>
   {/if}
   {#if type === 'text'}
-    <input
-      type="text"
-      {id}
-      {placeholder}
-      {disabled}
-      {required}
-      {readonly}
-      class="input"
-      class:error={!!error}
-      aria-invalid={!!error || undefined}
-      aria-describedby={describedBy}
-      bind:value
-      on:input
-      on:change
-      on:blur
-    />
+    <input type="text" {...inputProps} bind:value on:input on:change on:blur />
   {:else if type === 'email'}
-    <input
-      type="email"
-      {id}
-      {placeholder}
-      {disabled}
-      {required}
-      {readonly}
-      class="input"
-      class:error={!!error}
-      aria-invalid={!!error || undefined}
-      aria-describedby={describedBy}
-      bind:value
-      on:input
-      on:change
-      on:blur
-    />
+    <input type="email" {...inputProps} bind:value on:input on:change on:blur />
   {:else if type === 'password'}
-    <input
-      type="password"
-      {id}
-      {placeholder}
-      {disabled}
-      {required}
-      {readonly}
-      class="input"
-      class:error={!!error}
-      aria-invalid={!!error || undefined}
-      aria-describedby={describedBy}
-      bind:value
-      on:input
-      on:change
-      on:blur
-    />
+    <input type="password" {...inputProps} bind:value on:input on:change on:blur />
   {:else if type === 'date'}
-    <input
-      type="date"
-      {id}
-      {placeholder}
-      {disabled}
-      {required}
-      {readonly}
-      class="input"
-      class:error={!!error}
-      aria-invalid={!!error || undefined}
-      aria-describedby={describedBy}
-      bind:value
-      on:input
-      on:change
-      on:blur
-    />
+    <input type="date" {...inputProps} bind:value on:input on:change on:blur />
   {:else if type === 'time'}
-    <input
-      type="time"
-      {id}
-      {placeholder}
-      {disabled}
-      {required}
-      {readonly}
-      class="input"
-      class:error={!!error}
-      aria-invalid={!!error || undefined}
-      aria-describedby={describedBy}
-      bind:value
-      on:input
-      on:change
-      on:blur
-    />
-  {:else if type === 'url'}
-    <input
-      type="url"
-      {id}
-      {placeholder}
-      {disabled}
-      {required}
-      {readonly}
-      class="input"
-      class:error={!!error}
-      aria-invalid={!!error || undefined}
-      aria-describedby={describedBy}
-      bind:value
-      on:input
-      on:change
-      on:blur
-    />
+    <input type="time" {...inputProps} bind:value on:input on:change on:blur />
+  {:else}
+    <input type="url" {...inputProps} bind:value on:input on:change on:blur />
   {/if}
   {#if error}
     <span id={errorId} class="error-message">{error}</span>

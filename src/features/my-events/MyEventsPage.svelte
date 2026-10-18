@@ -12,7 +12,8 @@
   import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';
   import { supabase } from '@data/supabase';
-  import { t, locale, interpolate } from '../../i18n';
+  import { t, interpolate } from '../../i18n';
+  import { formatDate } from '@shared/utils';
 
   let events: EventWithDetails[] = [];
   let loading = true;
@@ -95,18 +96,6 @@
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to clear selections';
     }
-  }
-
-  const localeMap: Record<string, string> = { en: 'en-US', nl: 'nl-BE', fr: 'fr-BE' };
-
-  function formatDate(dateStr: string): string {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString(localeMap[$locale] ?? 'nl-BE', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
   }
 
   function handleSaveCalendar() {

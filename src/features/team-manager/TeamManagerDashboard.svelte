@@ -8,8 +8,7 @@
   import { EventsService, TeamService } from '@core/services';
   import type { TeamMemberWithEmail } from '@core/services';
   import { supabase } from '@data/supabase';
-  import { getInitialTeamExpandedState } from '@shared/utils';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { getInitialTeamExpandedState, formatDate, toUserMessage } from '@shared/utils';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 
   let allEvents: EventWithDetails[] = [];
@@ -255,14 +254,6 @@
     } finally {
       deletingEventId = null;
     }
-  }
-
-  function formatDate(d: string) {
-    return new Date(d).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
   }
 
   onMount(() => {

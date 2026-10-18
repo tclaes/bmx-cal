@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage, formatDate } from '@shared/utils';
   import { Button, Alert, LoadingSpinner } from '@ui';
   import { TeamService } from '@core/services';
   import type { Team } from '@types';
@@ -132,14 +132,6 @@
     } finally {
       removingId = null;
     }
-  }
-
-  function formatDate(d: string) {
-    return new Date(d).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
   }
 
   onMount(() => {

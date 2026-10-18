@@ -3,6 +3,7 @@
   import { CalendarService } from '@core/services/calendar.service';
   import type { SavedCalendar } from '@core/services/calendar.service';
   import Button from '@ui/Button.svelte';
+  import { formatDate } from '@shared/utils';
 
   export let refreshTrigger = 0;
 
@@ -39,14 +40,6 @@
   async function handleLoad(id: string) {
     const eventIds = await CalendarService.getCalendarEventIds(id);
     dispatch('load', eventIds);
-  }
-
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('nl-BE', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
   }
 </script>
 

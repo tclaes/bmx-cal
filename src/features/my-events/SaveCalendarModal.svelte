@@ -6,6 +6,7 @@
   import Alert from '@ui/Alert.svelte';
   import { CalendarService } from '@core/services/calendar.service';
   import type { SavedCalendar } from '@core/services/calendar.service';
+  import { formatLongDate } from '@shared/utils';
 
   export let open = false;
   export let selectedEventIds: string[] = [];
@@ -73,7 +74,7 @@
       <div class="meta">
         <span class="meta-label">Saved on</span>
         <span class="meta-value">
-          {new Date().toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {formatLongDate(new Date().toISOString())}
         </span>
       </div>
 

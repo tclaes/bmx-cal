@@ -31,7 +31,7 @@ export const sheriffConfig = {
     'my-events': ['ui', 'shared', 'services', 'stores', 'types'],
     profile: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'config'],
     'team-manager': ['ui', 'shared', 'services', 'stores', 'data', 'types'],
-    shared: ['ui', 'stores', 'services', 'types'],
+    shared: ['ui', 'stores', 'services', 'types', 'i18n'],
     layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
     ui: ['types', 'shared'],
     services: ['data', 'types'],

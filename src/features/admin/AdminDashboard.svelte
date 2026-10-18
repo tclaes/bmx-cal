@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage, formatDate } from '@shared/utils';
   import { Card, Button, LoadingSpinner, Alert } from '@ui';
   import { authStore } from '@core/stores';
   import { EventsService } from '@core/services';
@@ -61,16 +61,6 @@
     } finally {
       deletingEventId = null;
     }
-  }
-
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   }
 
   function isCurrentOrFutureYear(year: number): boolean {

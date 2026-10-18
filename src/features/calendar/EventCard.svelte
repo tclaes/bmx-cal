@@ -4,23 +4,13 @@
   import type { EventWithDetails } from '@types';
   import { filtersStore } from '@core/stores';
   import { getRegistrationStatus, getFridayBefore } from './registration-status';
-  import { t, locale, interpolate } from '../../i18n';
+  import { t, interpolate } from '../../i18n';
+  import { formatDate, formatLongDate } from '@shared/utils';
 
   export let event: EventWithDetails;
   export let canEdit = false;
 
   const dispatch = createEventDispatcher();
-
-  const localeMap: Record<string, string> = { en: 'en-US', nl: 'nl-BE', fr: 'fr-BE' };
-
-  function formatDate(date: string): string {
-    return new Date(date).toLocaleDateString(localeMap[$locale] ?? 'en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  }
 
   function formatDateRange(startDate: string, endDate: string | null): string {
     const start = new Date(startDate);
@@ -30,10 +20,9 @@
     }
 
     const end = new Date(endDate);
-    const lang = localeMap[$locale] ?? 'en-US';
 
-    const startMonth = start.toLocaleDateString(lang, { month: 'short' });
-    const endMonth = end.toLocaleDateString(lang, { month: 'short' });
+    const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+    const endMonth = end.toLocaleDateString('en-US', { month: 'short' });
     const startDay = start.getDate();
     const endDay = end.getDate();
     const year = start.getFullYear();

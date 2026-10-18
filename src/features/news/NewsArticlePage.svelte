@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { NewsService } from '@core/services';
   import { navigate, routeParams } from '../../router';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage, formatLongDate } from '@shared/utils';
   import { LoadingSpinner, Alert, Button } from '@ui';
   import type { NewsArticle } from '@types';
 
@@ -23,15 +23,6 @@
     } finally {
       loading = false;
     }
-  }
-
-  function formatDate(d: string | null): string {
-    if (!d) return '';
-    return new Date(d).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
   }
 
   function renderContent(content: string): string {
@@ -78,7 +69,7 @@
 
       <header class="article-header">
         <div class="article-meta">
-          <span class="article-date">{formatDate(article.published_at)}</span>
+          <span class="article-date">{formatLongDate(article.published_at ?? '')}</span>
           <span class="article-author">{article.author}</span>
         </div>
         <h1 class="article-title">{article.title}</h1>

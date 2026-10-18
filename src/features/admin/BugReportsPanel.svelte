@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage, formatDateTime } from '@shared/utils';
   import { Button, Alert, LoadingSpinner, Badge } from '@ui';
   import { adminBugReportService } from '@features/bug-report/bug-report.service';
   import type { BugReport } from '@features/bug-report/bug-report.service';
@@ -47,16 +47,6 @@
     }
   }
 
-  function formatDate(d: string) {
-    return new Date(d).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
   onMount(load);
 </script>
 
@@ -85,7 +75,7 @@
               <Badge variant={STATUS_VARIANTS[report.status] ?? 'default'}>
                 {STATUS_LABELS[report.status] ?? report.status}
               </Badge>
-              <span class="report-date">{formatDate(report.created_at)}</span>
+              <span class="report-date">{formatDateTime(report.created_at)}</span>
               {#if report.reporter_email}
                 <span class="report-email">{report.reporter_email}</span>
               {:else}
