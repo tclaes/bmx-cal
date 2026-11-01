@@ -43,6 +43,7 @@ export const en: Translations = {
     privacy: 'Privacy Policy',
     terms: 'Terms',
     cookieSettings: 'Cookie settings',
+    adPreferences: 'Ad preferences',
     updateAvailable: 'Update available! Please reload.',
     latestVersion: 'You are on the latest version.',
     updateFailed: 'Failed to check for updates.',

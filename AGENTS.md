@@ -43,3 +43,7 @@ references `docs/file-import.md`
 ## Contribute
 
 references `docs/contribute.md`
+
+## Consent (ads & analytics)
+
+references `docs/consent.md`
