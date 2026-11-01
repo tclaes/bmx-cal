@@ -3,6 +3,7 @@
   import { APP_VERSION } from '@config/version';
   import { updateStore } from '@core/stores';
   import { t, interpolate } from '../i18n';
+  import { showAdPreferences } from './ad-consent';
 
   function openCookieSettings() {
     window.dispatchEvent(new Event('open-cookie-settings'));
@@ -44,6 +45,7 @@
     <button class="footer-link" on:click={() => navigate('/privacy-policy')}>{$t.footer.privacy}</button>
     <button class="footer-link" on:click={() => navigate('/terms')}>{$t.footer.terms}</button>
     <button class="footer-link" on:click={openCookieSettings}>{$t.footer.cookieSettings}</button>
+    <button class="footer-link" on:click={showAdPreferences}>{$t.footer.adPreferences}</button>
     <button
       class="footer-link footer-link--version"
       on:click={handleCheckForUpdates}

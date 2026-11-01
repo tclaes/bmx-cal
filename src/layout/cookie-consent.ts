@@ -1,16 +1,23 @@
+/**
+ * First-party consent for analytics (Google Analytics).
+ *
+ * Advertising consent is NOT handled here: AdSense requires a Google-certified
+ * CMP (IAB TCF v2.2) for users in the EEA/UK/CH. That is Google's own
+ * "Privacy & messaging" GDPR message, bridged in `ad-consent.ts`.
+ */
 export type ConsentStatus = 'granted' | 'denied';
 
 export interface ConsentState {
   analytics: ConsentStatus;
-  ads: ConsentStatus;
   decidedAt: string | null;
 }
+
+type GtagWindow = { gtag?: (...args: unknown[]) => void; dataLayer?: unknown[] };
 
 const STORAGE_KEY = 'bmx-cookie-consent';
 
 const defaultState: ConsentState = {
   analytics: 'denied',
-  ads: 'denied',
   decidedAt: null,
 };
 
@@ -22,7 +29,6 @@ export function loadConsent(): ConsentState {
     const parsed = JSON.parse(raw) as Partial<ConsentState>;
     return {
       analytics: parsed.analytics === 'granted' ? 'granted' : 'denied',
-      ads: parsed.ads === 'granted' ? 'granted' : 'denied',
       decidedAt: parsed.decidedAt ?? null,
     };
   } catch {
@@ -39,29 +45,26 @@ export function hasDecided(state: ConsentState): boolean {
   return state.decidedAt !== null;
 }
 
-/**
- * Push a Google Consent Mode v2 update via gtag().
- * Called on load (default denied) and after the user chooses.
- */
-export function applyConsentToGoogle(state: ConsentState): void {
+/** Push a Google Consent Mode v2 update, creating the gtag shim if needed. */
+export function updateGoogleConsent(signals: Record<string, ConsentStatus>): void {
   if (typeof window === 'undefined') return;
-  const w = window as unknown as { gtag?: (...args: unknown[]) => void; dataLayer?: unknown[] };
+  const w = window as unknown as GtagWindow;
   if (!w.gtag) {
     w.dataLayer = w.dataLayer || [];
+    // gtag must push the `arguments` object, not an array
     w.gtag = function () { w.dataLayer!.push(arguments); };
   }
-  w.gtag('consent', 'update', {
-    analytics_storage: state.analytics,
-    ad_storage: state.ads,
-    ad_user_data: state.ads,
-    ad_personalization: state.ads,
-  });
+  w.gtag('consent', 'update', signals);
 }
 
-function setConsent(analytics: ConsentStatus, ads: ConsentStatus): ConsentState {
+/** Apply the analytics choice to Google Consent Mode v2. */
+export function applyConsentToGoogle(state: ConsentState): void {
+  updateGoogleConsent({ analytics_storage: state.analytics });
+}
+
+function setConsent(analytics: ConsentStatus): ConsentState {
   const state: ConsentState = {
     analytics,
-    ads,
     decidedAt: new Date().toISOString(),
   };
   saveConsent(state);
@@ -70,9 +73,9 @@ function setConsent(analytics: ConsentStatus, ads: ConsentStatus): ConsentState 
 }
 
 export function acceptAll(): ConsentState {
-  return setConsent('granted', 'granted');
+  return setConsent('granted');
 }
 
 export function rejectAll(): ConsentState {
-  return setConsent('denied', 'denied');
+  return setConsent('denied');
 }

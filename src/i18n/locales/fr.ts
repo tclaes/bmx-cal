@@ -43,6 +43,7 @@ export const fr: Translations = {
     privacy: 'Politique de confidentialité',
     terms: 'Conditions',
     cookieSettings: 'Paramètres des cookies',
+    adPreferences: 'Préférences publicitaires',
     updateAvailable: 'Mise à jour disponible ! Veuillez recharger.',
     latestVersion: 'Vous utilisez la dernière version.',
     updateFailed: 'Échec de la vérification des mises à jour.',
