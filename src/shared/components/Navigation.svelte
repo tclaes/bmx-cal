@@ -5,6 +5,7 @@
   import { currentRoute, navigate } from '../../router';
   import { locale, t } from '../../i18n';
   import type { Locale } from '../../i18n';
+  import Logo from './Logo.svelte';
 
   let menuOpen = false;
 
@@ -40,7 +41,7 @@
 <nav class="navigation" aria-label="Main navigation">
   <div class="nav-container">
     <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label={$t.nav.home}>
-      <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
+      <Logo size={48} />
     </a>
 
     <ul class="nav-links" role="list">
@@ -220,12 +221,6 @@
 
   .nav-brand {
     padding: var(--spacing-sm) 0 var(--spacing-sm);
-  }
-
-  .nav-brand img {
-    height: 5rem;
-    width: auto;
-    display: block;
   }
 
   .nav-links {

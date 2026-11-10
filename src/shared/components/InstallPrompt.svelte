@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { installPromptStore } from '@shared/stores';
   import Button from './Button.svelte';
+  import Logo from './Logo.svelte';
   import { t } from '../../i18n';
 
   let showPrompt = false;
@@ -77,7 +78,7 @@
 
       <div class="prompt-content">
         <div class="app-icon">
-          <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
+          <Logo wordmark={false} size={80} />
         </div>
 
         <h3 id="install-title">{$t.pwa.installTitle}</h3>
@@ -180,11 +181,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  .app-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
 
   h3 {
     font-size: var(--font-size-xl);

@@ -8,8 +8,8 @@
 - [x] 2.3 Check stylelint passes
 
 ## 3. Logo and icons
-- [ ] 3.1 Add `Logo` component (B1, with wordmark variant)
-- [ ] 3.2 Update favicon, PWA icons and `theme-color`
+- [x] 3.1 Add `Logo` component (B1, with wordmark variant)
+- [x] 3.2 Update favicon, PWA icons and `theme-color`
 
 ## 4. Components
 - [ ] 4.1 Restyle `Button`, `Badge`, `Navigation` on tokens
