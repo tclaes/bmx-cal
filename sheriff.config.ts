@@ -42,7 +42,8 @@ export const sheriffConfig = {
     root: ['stores', 'shared', 'layout'],
     about: featureDeps,
     calendar: featureDeps,
-    admin: [...featureDeps, 'bug-report'],
+    // The admin dashboard embeds team-manager's TeamMemberManager.
+    admin: [...featureDeps, 'bug-report', 'team-manager'],
     auth: featureDeps,
     'bug-report': [...featureDeps],
     guide: featureDeps,
@@ -50,10 +51,9 @@ export const sheriffConfig = {
     'my-events': featureDeps,
     news: featureDeps,
     profile: [...featureDeps, 'config'],
-    // Known cross-feature dependency: reuses admin's TeamMemberManager and DocumentUpload.
-    // Move those to src/shared to remove it.
-    'team-manager': [...featureDeps, 'admin'],
-    shared: ['shared', 'ui', 'stores', 'services', 'types', 'i18n', 'config'],
+    'team-manager': featureDeps,
+    // shared/DocumentUpload and its parsers talk to supabase.
+    shared: ['shared', 'ui', 'stores', 'services', 'data', 'types', 'i18n', 'config'],
     layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
     ui: ['types', 'shared'],
     services: ['data', 'types'],
