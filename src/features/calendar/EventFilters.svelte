@@ -1,6 +1,6 @@
 <script lang="ts">
   import { filtersStore, eventsStore } from '@core/stores';
-  import { getRaceTypeKey, getRaceTypeCode } from '@shared/utils';
+  import { TypeChip } from '@ui';
   import { t } from '../../i18n';
 
   let expanded = false;
@@ -13,10 +13,6 @@
     ($filtersStore.endDate ? 1 : 0) +
     ($filtersStore.searchQuery ? 1 : 0) +
     ($filtersStore.showPastEvents ? 1 : 0);
-
-  function chipLabel(name: string): string {
-    return getRaceTypeKey(name) === 'unknown' ? name : getRaceTypeCode(name);
-  }
 
   function setDates(start: string, end: string) {
     filtersStore.setDateRange(start || null, end || null);
@@ -51,25 +47,17 @@
     <div class="group" role="group" aria-labelledby="filter-type">
       <span class="group-label" id="filter-type">{$t.filters.typeFilter}</span>
       <div class="chips">
-        <button
-          type="button"
-          class="chip chip-all"
-          class:on={selected.length === 0}
-          aria-pressed={selected.length === 0}
+        <TypeChip
+          label={$t.filters.allChip}
+          state={selected.length === 0 ? 'on' : 'off'}
           on:click={() => filtersStore.setEventTypes([])}
-        >{$t.filters.allChip}</button>
+        />
         {#each eventTypes as type (type.id)}
-          {@const key = getRaceTypeKey(type.name)}
-          <button
-            type="button"
-            class="chip"
-            class:on={selected.includes(type.id)}
-            aria-pressed={selected.includes(type.id)}
-            title={type.name}
+          <TypeChip
+            type={type.name}
+            state={selected.includes(type.id) ? 'on' : 'off'}
             on:click={() => filtersStore.toggleEventType(type.id)}
-          >
-            <span class="dot dot-{key}" aria-hidden="true"></span>{chipLabel(type.name)}
-          </button>
+          />
         {/each}
       </div>
     </div>
@@ -163,48 +151,6 @@
   .field:focus-visible { outline: 2px solid var(--color-primary-hover); outline-offset: 1px; }
 
   .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    min-block-size: var(--touch-target-min);
-    padding-inline: var(--spacing-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-md);
-    background-color: transparent;
-    color: var(--color-text-primary);
-    font-family: var(--font-family-heading);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-
-  .chip.on {
-    border-color: var(--color-primary);
-    background-color: var(--color-primary-light);
-  }
-
-  .chip-all.on {
-    background-color: var(--color-primary);
-    color: var(--color-text-on-accent);
-  }
-
-  .dot {
-    inline-size: 12px;
-    block-size: 12px;
-    border-radius: var(--border-radius-full);
-    background-color: var(--race-unknown-ring);
-  }
-
-  .dot-cv { background-color: var(--race-cv-ring); }
-  .dot-tc { background-color: var(--race-tc-ring); }
-  .dot-cw { background-color: var(--race-cw-ring); }
-  .dot-3nc { background-color: var(--race-3nc-ring); }
-  .dot-ec { background-color: var(--race-ec-ring); }
-  .dot-wc { background-color: var(--race-wc-ring); }
 
   .dates { flex-direction: row; gap: var(--spacing-sm); }
   .date { display: flex; flex-direction: column; gap: var(--spacing-xs); flex: 1; min-inline-size: 0; }

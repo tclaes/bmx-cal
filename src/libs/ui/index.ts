@@ -13,3 +13,4 @@ export { default as Logo } from './Logo.svelte';
 export { default as TypeLabel } from './TypeLabel.svelte';
 export { default as StartLight } from './StartLight.svelte';
 export { default as RaceRow } from './RaceRow.svelte';
+export { default as TypeChip } from './TypeChip.svelte';

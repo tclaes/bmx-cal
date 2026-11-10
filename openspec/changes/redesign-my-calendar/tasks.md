@@ -2,12 +2,12 @@
 
 ## 1. Preparation
 
-- [ ] 1.1 Create branch `feat/redesign-my-calendar` from `feat/redesign-calendar-screens` and confirm `npm test`, `npm run build`, `npm run sheriff` are green before starting
+- [x] 1.1 Create branch `feat/redesign-my-calendar` from `feat/redesign-calendar-screens` and confirm `npm test`, `npm run build`, `npm run sheriff` are green before starting
 
 ## 2. Shared type chip
 
-- [ ] 2.1 Add `src/libs/ui/TypeChip.svelte` (dot or label, code, optional count, states: off / on / partial) and export it from `@ui`; unit test renders each state and `aria-pressed` values
-- [ ] 2.2 Use `TypeChip` in `EventFilters.svelte`; existing calendar tests still pass
+- [x] 2.1 Add `src/libs/ui/TypeChip.svelte` (dot or label, code, optional count, states: off / on / partial) and export it from `@ui`; unit test renders each state and `aria-pressed` values
+- [x] 2.2 Use `TypeChip` in `EventFilters.svelte`; existing calendar tests still pass
 
 ## 3. Signed-in page
 
