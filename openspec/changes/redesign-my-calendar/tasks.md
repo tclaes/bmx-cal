@@ -18,9 +18,9 @@
 
 ## 4. Signed-out demo
 
-- [ ] 4.1 Rebuild the preview list with the `RaceRow` anatomy (date column, `TypeLabel`, title, meta) from the existing sample data
-- [ ] 4.2 Move the CTA card and buttons to tokens (`--hero-bg`, `--color-accent`, `--color-text-on-accent`); remove the gradient; test button contrast classes and 44px targets
-- [ ] 4.3 Component test: preview renders type labels and both actions
+- [x] 4.1 Rebuild the preview list with the `RaceRow` anatomy (date column, `TypeLabel`, title, meta) from the existing sample data
+- [x] 4.2 Move the CTA card and buttons to tokens (`--hero-bg`, `--color-accent`, `--color-text-on-accent`); remove the gradient; test button contrast classes and 44px targets
+- [x] 4.3 Component test: preview renders type labels and both actions
 
 ## 5. Saved calendars and modal
 
