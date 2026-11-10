@@ -39,7 +39,7 @@ export const sheriffConfig = {
   },
   depRules: {
     // src/main.ts is the app entry: it wires up the update check and stores.
-    root: ['stores', 'shared'],
+    root: ['stores', 'shared', 'layout'],
     about: featureDeps,
     calendar: featureDeps,
     admin: [...featureDeps, 'bug-report'],
@@ -50,7 +50,9 @@ export const sheriffConfig = {
     'my-events': featureDeps,
     news: featureDeps,
     profile: [...featureDeps, 'config'],
-    'team-manager': featureDeps,
+    // Known cross-feature dependency: reuses admin's TeamMemberManager and DocumentUpload.
+    // Move those to src/shared to remove it.
+    'team-manager': [...featureDeps, 'admin'],
     shared: ['shared', 'ui', 'stores', 'services', 'types', 'i18n', 'config'],
     layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
     ui: ['types', 'shared'],
