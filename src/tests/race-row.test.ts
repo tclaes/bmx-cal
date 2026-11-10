@@ -81,3 +81,22 @@ describe('RaceRow save and livestream slots', () => {
     expect(screen.queryByRole('link', { name: 'Livestream' })).not.toBeInTheDocument();
   });
 });
+
+describe('RaceRow deadline and type placement', () => {
+  it('shows the deadline next to an open registration instead of the status label', () => {
+    render(RaceRow, { props: { ...base, status: { state: 'open', label: 'Inschrijving open' }, deadlineLabel: 'Deadline 12 mrt' } });
+    expect(screen.getByText('Deadline 12 mrt')).toBeInTheDocument();
+    expect(screen.queryByText('Inschrijving open')).not.toBeInTheDocument();
+  });
+
+  it('keeps the status label when registration is closed', () => {
+    render(RaceRow, { props: { ...base, status: { state: 'closed', label: 'Gesloten' }, deadlineLabel: 'Deadline 12 mrt' } });
+    expect(screen.getByText('Gesloten')).toBeInTheDocument();
+    expect(screen.queryByText('Deadline 12 mrt')).not.toBeInTheDocument();
+  });
+
+  it('renders one type label per row', () => {
+    const { container } = render(RaceRow, { props: { ...base, status: null } });
+    expect(container.querySelectorAll('.type-label')).toHaveLength(1);
+  });
+});

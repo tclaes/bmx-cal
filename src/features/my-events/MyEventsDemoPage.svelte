@@ -252,6 +252,7 @@
     background-color: var(--hero-bg);
     background-image: var(--hero-stripe);
     border-color: var(--color-border);
+    align-self: start;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);

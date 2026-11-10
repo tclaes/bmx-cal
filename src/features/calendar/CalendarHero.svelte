@@ -95,6 +95,7 @@
 <style>
   .hero {
     position: relative;
+    container-type: inline-size;
     overflow: hidden;
     padding: var(--spacing-lg);
     border-radius: var(--hero-radius);
@@ -274,9 +275,17 @@
   @media (min-width: 768px) {
     .hero { padding: var(--spacing-xl); }
     .light-text { display: inline; }
+  }
+
+  /* Date next to the title only when the hero itself is wide enough (it sits beside
+     the filter sidebar from 1024px, so the viewport width says little). */
+  @container (min-width: 700px) {
     .main { flex-direction: row; align-items: flex-end; gap: var(--spacing-xl); }
     .day { font-size: 128px; }
     .title { font-size: 48px; }
+  }
+
+  @container (min-width: 480px) {
     .register, .opens { flex: 0 0 auto; padding-inline: var(--spacing-xl); }
     .save { margin-inline-start: 0; }
   }

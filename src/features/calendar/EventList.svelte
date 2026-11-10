@@ -98,6 +98,7 @@
             registrationUrl={event.registration_url}
             registerLabel={$t.calendar.registerAction}
             opensLabel={view.opensLabel}
+            deadlineLabel={view.deadlineLabel}
             saved={$selectedEventIds.has(event.id)}
             saveLabel={$selectedEventIds.has(event.id) ? $t.calendar.saved : $t.calendar.save}
             livestreamUrl={view.ongoing ? event.livestream_url : null}

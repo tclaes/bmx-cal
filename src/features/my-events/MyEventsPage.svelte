@@ -281,6 +281,7 @@
           registrationUrl={event.registration_url}
           registerLabel={$t.calendar.registerAction}
           opensLabel={view.opensLabel}
+          deadlineLabel={view.deadlineLabel}
           saved={selected}
           saveLabel={selected ? $t.calendar.saved : $t.calendar.save}
           on:click={(e) => openDetail(e, view.href)}

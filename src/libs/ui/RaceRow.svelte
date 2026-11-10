@@ -21,6 +21,8 @@
   export let registerLabel = '';
   /** Shown instead of the button while registration is not open yet. */
   export let opensLabel = '';
+  /** Shown next to the light while registration is open, e.g. "Deadline 12 mrt". */
+  export let deadlineLabel = '';
   /** Save (star) control; hidden when saveLabel is empty. Emits `save` on click. */
   export let saved = false;
   export let saveLabel = '';
@@ -33,11 +35,12 @@
 </script>
 
 <article class="race-row race-{key}" class:has-save={!!saveLabel}>
+  <div class="inner">
   <div class="when">
     {#if day}<span class="day">{day}</span>{/if}
     {#if month}<span class="month">{month}</span>{/if}
-    <TypeLabel {type} />
   </div>
+  <span class="type"><TypeLabel {type} /></span>
 
   <div class="rail" aria-hidden="true"><span class="dot"></span></div>
 
@@ -63,10 +66,12 @@
     {/if}
 
     {#if status}
-      <div class="status">
+      <div class="status" class:alone={!canRegister} class:soon={status.state === 'soon'}>
         <StartLight state={status.state} label={status.label} />
         {#if status.state === 'soon' && opensLabel}
           <span class="opens">{opensLabel}</span>
+        {:else if canRegister && deadlineLabel}
+          <span class="deadline">{deadlineLabel}</span>
         {:else}
           <span class="status-label">{status.label}</span>
         {/if}
@@ -84,15 +89,50 @@
       </div>
     {/if}
   </div>
+  </div>
 </article>
 
 <style>
   .race-row {
     position: relative;
+    container-type: inline-size;
+    padding-block: var(--spacing-md);
+  }
+
+  .inner {
     display: grid;
     grid-template-columns: 3.5rem 1.25rem minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     column-gap: var(--spacing-md);
-    padding-block: var(--spacing-md);
+  }
+
+  .when {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .type {
+    grid-column: 1;
+    grid-row: 2;
+    display: inline-flex;
+    justify-self: center;
+    align-self: start;
+    margin-block-start: var(--spacing-xs);
+  }
+
+  .rail {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+
+  .content {
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+
+  .deadline {
+    color: var(--color-primary-hover);
+    font-weight: var(--font-weight-medium);
   }
 
   .when {
@@ -272,5 +312,121 @@
   .livestream:hover {
     border-color: var(--color-primary);
     color: var(--color-primary-hover);
+  }
+
+  /* Wide rows (desktop list, tablet full width): everything on one line, as in the
+     desktop design. Driven by the row's own width, so narrow cards keep the stacked layout. */
+  @container (min-width: 760px) {
+    .inner {
+      /* Fixed type and action columns keep the labels aligned across rows */
+      grid-template-columns: 3.5rem 1.25rem minmax(10rem, 1fr) auto 3.5rem 12rem;
+      grid-template-rows: auto auto;
+      column-gap: var(--spacing-md);
+      align-items: center;
+      min-block-size: 4.5rem;
+    }
+
+    .has-save .inner {
+      grid-template-columns: 3.5rem 1.25rem minmax(10rem, 1fr) auto 3.5rem 12rem var(--touch-target-min);
+    }
+
+    .inner::after {
+      content: '';
+      grid-column: 3 / -1;
+      grid-row: 2;
+      align-self: end;
+      block-size: 1px;
+      background-color: var(--color-border-light);
+      transform: translateY(var(--spacing-md));
+      pointer-events: none;
+    }
+
+    .content {
+      display: contents;
+    }
+
+    .when {
+      grid-row: 1 / 3;
+      align-self: center;
+    }
+
+    .rail {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      align-self: stretch;
+      align-items: center;
+    }
+
+    .dot {
+      margin-block-start: 0;
+    }
+
+    .title {
+      grid-column: 3;
+      grid-row: 1;
+      align-self: end;
+    }
+
+    .has-save .title {
+      padding-inline-end: 0;
+    }
+
+    .meta {
+      grid-column: 3;
+      grid-row: 2;
+      align-self: start;
+      margin-block-start: 0;
+    }
+
+    .status {
+      grid-column: 4;
+      grid-row: 1 / 3;
+      justify-self: end;
+      margin-block-start: 0;
+      white-space: nowrap;
+    }
+
+    .type {
+      grid-column: 5;
+      grid-row: 1 / 3;
+      justify-self: center;
+      align-self: center;
+      margin-block-start: 0;
+    }
+
+    /* Next to a register button the deadline text is enough, as in the design */
+    .status:not(.alone) :global(.start-light) {
+      display: none;
+    }
+
+    .status.alone {
+      grid-column: 6;
+    }
+
+    .status.alone.soon {
+      min-block-size: var(--touch-target-min);
+      padding-inline: var(--spacing-md);
+      border: 1px dashed var(--color-border);
+      border-radius: var(--border-radius-md);
+    }
+
+    .action {
+      grid-column: 6;
+      grid-row: 1 / 3;
+      justify-self: end;
+      margin-block-start: 0;
+    }
+
+    .register,
+    .livestream {
+      padding-inline: var(--spacing-lg);
+    }
+
+    .save {
+      position: relative;
+      inset: auto;
+      grid-column: 7;
+      grid-row: 1 / 3;
+    }
   }
 </style>

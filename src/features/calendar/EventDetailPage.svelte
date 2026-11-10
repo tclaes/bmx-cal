@@ -102,10 +102,15 @@
     </div>
   {:else}
     <article class="card">
-      <header class="head">
-        {#if event.event_type}<TypeLabel type={event.event_type.name} />{/if}
-        {#if view.ongoing}<span class="ongoing">{$t.calendar.ongoing}</span>{/if}
-      </header>
+      {#if event.event_type || view.ongoing}
+        <header class="head">
+          {#if event.event_type}
+            <TypeLabel type={event.event_type.name} />
+            <span class="type-name">{event.event_type.name}</span>
+          {/if}
+          {#if view.ongoing}<span class="ongoing">{$t.calendar.ongoing}</span>{/if}
+        </header>
+      {/if}
 
       <h1 class="title">{event.title}</h1>
 
@@ -197,6 +202,7 @@
   }
 
   .head { display: flex; align-items: center; gap: var(--spacing-sm); }
+  .type-name { color: var(--color-text-secondary); }
 
   .ongoing {
     padding: 2px var(--spacing-sm);
@@ -276,4 +282,10 @@
 
   .secondary[aria-pressed='true'] { color: var(--color-accent); border-color: var(--color-accent); }
   .secondary:hover { border-color: var(--color-primary); }
+
+  @media (min-width: 768px) {
+    .card, .not-found { padding: var(--spacing-xl); }
+    .register { align-self: flex-start; padding-inline: var(--spacing-xl); }
+    .title, .not-found h1 { font-size: 48px; }
+  }
 </style>

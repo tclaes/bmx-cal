@@ -21,7 +21,7 @@
   }
 
   function handleResize() {
-    if (window.innerWidth >= 768 && menuOpen) closeMenu();
+    if (window.innerWidth >= 1024 && menuOpen) closeMenu();
   }
 
   function handleOutsideClick(e: MouseEvent) {
@@ -248,6 +248,7 @@
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     letter-spacing: 0.02em;
+    white-space: nowrap;
     color: var(--color-text-secondary);
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
@@ -427,7 +428,7 @@
     margin-top: var(--spacing-sm);
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 1023px) {
     .nav-container {
       align-items: center;
     }
@@ -441,7 +442,7 @@
     }
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 1024px) {
     .mobile-menu {
       display: none !important;
     }
