@@ -64,7 +64,11 @@
 
   /* Next race hero */
   --hero-bg: var(--color-bg-secondary);
-  --hero-stripe: repeating-linear-gradient(115deg, transparent 0 56px, rgb(255 255 255 / 4%) 56px 112px);
+  /* Diagonal stripes on the right-hand side only: a solid layer with a slanted edge
+     covers the stripes on the left. */
+  --hero-stripe:
+    linear-gradient(110deg, var(--hero-bg) 0 64%, transparent 64%),
+    repeating-linear-gradient(110deg, rgb(255 255 255 / 4%) 0 30px, transparent 30px 60px);
   --hero-radius: 24px;
 
   /* Unknown race type fallback */
