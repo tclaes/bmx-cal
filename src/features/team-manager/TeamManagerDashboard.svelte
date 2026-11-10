@@ -7,7 +7,7 @@
   import DocumentUpload from '../admin/DocumentUpload.svelte';
   import { EventsService, TeamService } from '@core/services';
   import type { TeamMemberWithEmail } from '@core/services';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { getInitialTeamExpandedState, formatDate, toUserMessage } from '@shared/utils';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 

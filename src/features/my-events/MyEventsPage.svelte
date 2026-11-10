@@ -11,7 +11,7 @@
   import SaveCalendarModal from './SaveCalendarModal.svelte';
   import SavedCalendarsList from './SavedCalendarsList.svelte';
   import type { EventWithDetails, EventType } from '../../types';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { t, interpolate } from '../../i18n';
   import { formatDate } from '@shared/utils';
 

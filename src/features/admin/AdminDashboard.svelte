@@ -4,7 +4,7 @@
   import { Card, Button, LoadingSpinner, Alert } from '@ui';
   import { authStore } from '@core/stores';
   import { EventsService } from '@core/services';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
   import type { EventWithType, Team } from '@types';
   import DocumentUpload from './DocumentUpload.svelte';

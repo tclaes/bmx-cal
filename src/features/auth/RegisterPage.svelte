@@ -3,7 +3,7 @@
   import { toUserMessage } from '@shared/utils/error-message';
   import { AuthService } from '@core/services';
   import { authStore } from '@core/stores';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { navigate } from '../../router';
   import { t } from '../../i18n';
 

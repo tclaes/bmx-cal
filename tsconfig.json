@@ -40,6 +40,9 @@
       "@data/*": [
         "src/data/*"
       ],
+      "@data": [
+        "src/data"
+      ],
       "@types/*": [
         "src/types/*"
       ],
