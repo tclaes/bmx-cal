@@ -1,5 +1,5 @@
 import type { EventWithDetails } from '@types';
-import type { RegistrationState } from '@shared/utils';
+import type { RegistrationState } from './registration-state';
 
 export type { RegistrationState };
 

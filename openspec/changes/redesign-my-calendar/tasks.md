@@ -11,10 +11,10 @@
 
 ## 3. Signed-in page
 
-- [ ] 3.1 Replace the type buttons with `TypeChip`s (count, fully / partly selected, `aria-pressed="mixed"`); test select-all, partial and deselect-all
-- [ ] 3.2 Replace the row buttons with `RaceRow`s: star toggles selection, title opens `/events/:id`; test that the star changes the selection and does not navigate
-- [ ] 3.3 Restyle header, counter, actions, notification block and error state on tokens; remove every `white` and `color-mix(... white)`; `grep -nE "#[0-9a-fA-F]{3,8}|white" src/features/my-events` has no hits
-- [ ] 3.4 Stop reading `event_type.color_code` on the page; test that a type with a stored colour renders its token label (EC is blue) and an unknown type renders the neutral label
+- [x] 3.1 Replace the type buttons with `TypeChip`s (count, fully / partly selected, `aria-pressed="mixed"`); test select-all, partial and deselect-all
+- [x] 3.2 Replace the row buttons with `RaceRow`s: star toggles selection, title opens `/events/:id`; test that the star changes the selection and does not navigate
+- [x] 3.3 Restyle header, counter, actions, notification block and error state on tokens; remove every `white` and `color-mix(... white)`; `grep -nE "#[0-9a-fA-F]{3,8}|white" src/features/my-events` has no hits
+- [x] 3.4 Stop reading `event_type.color_code` on the page; test that a type with a stored colour renders its token label (EC is blue) and an unknown type renders the neutral label
 
 ## 4. Signed-out demo
 

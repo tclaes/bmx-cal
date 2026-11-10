@@ -3,7 +3,7 @@
   import { TypeLabel, StartLight } from '@ui';
   import type { EventWithDetails } from '@types';
   import { t } from '../../i18n';
-  import { getRaceView } from './race-view';
+  import { getRaceView } from '@shared/utils';
 
   export let event: EventWithDetails;
   export let saved = false;

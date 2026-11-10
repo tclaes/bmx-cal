@@ -8,7 +8,7 @@
   import { navigate } from '../../router';
   import CalendarHero from './CalendarHero.svelte';
   import { calendarSplit } from './visible-events';
-  import { getRaceView } from './race-view';
+  import { getRaceView } from '@shared/utils';
 
   $: ({ hero, rest } = $calendarSplit);
   $: total = rest.length;

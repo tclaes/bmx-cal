@@ -8,7 +8,7 @@
   import { routeParams, navigate } from '../../router';
   import { t } from '../../i18n';
   import EventEditor from './EventEditor.svelte';
-  import { getRaceView } from './race-view';
+  import { getRaceView } from '@shared/utils';
 
   let event: EventWithDetails | null = null;
   let loading = true;

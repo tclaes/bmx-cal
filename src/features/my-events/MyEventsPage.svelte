@@ -2,8 +2,10 @@
   import { onMount } from 'svelte';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
   import { EventsService } from '@core/services';
-  import { generateICalContent, downloadICalFile } from '@shared/utils';
+  import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
   import Button from '@ui/Button.svelte';
+  import { RaceRow, TypeChip } from '@ui';
+  import { navigate } from '../../router';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
   import { authStore } from '@core/stores';
 
@@ -13,7 +15,6 @@
   import type { EventWithDetails, EventType } from '../../types';
   import { supabase } from '@data';
   import { t, interpolate } from '../../i18n';
-  import { formatDate } from '@shared/utils';
 
   let events: EventWithDetails[] = [];
   let loading = true;
@@ -79,6 +80,12 @@
       loading = false;
     }
   });
+
+  function openDetail(e: MouseEvent, href: string) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    navigate(href);
+  }
 
   async function handleToggle(eventId: string) {
     try {
@@ -241,77 +248,44 @@
     </div>
   {:else}
     {#if eventTypes.length > 0}
-      <div class="type-selector">
+      <div class="type-selector" role="group" aria-label={$t.myEvents.selectByType}>
         <span class="type-selector-label">{$t.myEvents.selectByType}</span>
         <div class="type-buttons">
           {#each eventTypes as { type, ids } (type.id)}
             {@const fully = isTypeFullySelected(ids, $selectedEventIds)}
             {@const partial = isTypePartiallySelected(ids, $selectedEventIds)}
-            <button
-              class="type-btn"
-              class:fully-selected={fully}
-              class:partially-selected={partial}
-              style="--type-color: {type.color_code}"
+            <TypeChip
+              type={type.name}
+              count={ids.length}
+              state={fully ? 'on' : partial ? 'partial' : 'off'}
+              title="{fully ? $t.myEvents.deselectAll : $t.myEvents.selectAll} {type.name} ({ids.length})"
               on:click={() => handleTypeToggle(ids)}
-              title="{fully ? $t.myEvents.deselectAll : $t.myEvents.selectAll} all {type.name} {$t.myEvents.events} ({ids.length})"
-            >
-              <span class="type-dot"></span>
-              <span class="type-name">{type.name}</span>
-              <span class="type-count">{ids.length}</span>
-              {#if fully}
-                <svg class="type-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              {:else if partial}
-                <svg class="type-check" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M2 6H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              {/if}
-            </button>
+            />
           {/each}
         </div>
       </div>
     {/if}
 
-    <div class="events-list">
+    <div class="timeline">
       {#each sortedEvents as event (event.id)}
-        <button
-          class="event-item"
-          class:selected={$selectedEventIds.has(event.id)}
-          aria-pressed={$selectedEventIds.has(event.id)}
-          on:click={() => handleToggle(event.id)}
-        >
-          <div class="checkbox">
-            {#if $selectedEventIds.has(event.id)}
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <rect width="20" height="20" rx="4" fill="currentColor"/>
-                <path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            {:else}
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <rect width="20" height="20" rx="4" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            {/if}
-          </div>
-
-          {#if event.event_type}
-            <span
-              class="type-indicator"
-              style="background: {event.event_type.color_code}"
-              title={event.event_type.name}
-            ></span>
-          {/if}
-
-          <div class="event-info">
-            <span class="event-name">{event.title}</span>
-            <div class="event-meta">
-              <span class="event-date">{formatDate(event.date)}</span>
-              {#if event.location_details?.city}
-                <span class="event-city">{event.location_details.city}</span>
-              {/if}
-            </div>
-          </div>
-        </button>
+        {@const view = getRaceView(event, $t)}
+        {@const selected = $selectedEventIds.has(event.id)}
+        <RaceRow
+          title={event.title}
+          href={view.href}
+          day={view.day}
+          month={view.month}
+          meta={view.meta}
+          type={event.event_type?.name}
+          status={view.status}
+          registrationUrl={event.registration_url}
+          registerLabel={$t.calendar.registerAction}
+          opensLabel={view.opensLabel}
+          saved={selected}
+          saveLabel={selected ? $t.calendar.saved : $t.calendar.save}
+          on:click={(e) => openDetail(e, view.href)}
+          on:save={() => handleToggle(event.id)}
+        />
       {/each}
     </div>
   {/if}
@@ -341,6 +315,7 @@
   }
 
   h1 {
+    font-family: var(--font-family-heading);
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
     margin: 0 0 var(--spacing-sm) 0;
@@ -409,173 +384,9 @@
     flex-wrap: wrap;
   }
 
-  .type-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-sm-plus);
-    padding: 0.6rem 0.9rem;
-    min-height: 44px;
-    border: 1px solid var(--color-border);
-    border-radius: 22px;
-    background: var(--color-bg-primary);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
-    transition: all var(--transition-fast);
-    line-height: 1;
-  }
-
-  .type-btn:hover {
-    border-color: var(--type-color);
-    color: var(--color-text-primary);
-    background: var(--color-bg-secondary);
-  }
-
-  .type-btn.fully-selected {
-    border-color: var(--type-color);
-    background: color-mix(in srgb, var(--type-color) 85%, white);
-    color: white;
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-sm);
-    padding: 0.65rem 1rem;
-  }
-
-  .type-btn.partially-selected {
-    border-color: var(--type-color);
-    background: color-mix(in srgb, var(--type-color) 6%, white);
-    color: var(--color-text-primary);
-  }
-
-  .type-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--type-color);
-    flex-shrink: 0;
-  }
-
-  .type-name {
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .type-count {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    background: var(--color-bg-secondary);
-    border-radius: 10px;
-    padding: 0 0.3rem;
-    line-height: 1.4;
-  }
-
-  .type-btn.fully-selected .type-count {
-    color: white;
-    background: rgba(255, 255, 255, 0.25);
-  }
-
-  .type-check {
-    color: var(--type-color);
-    flex-shrink: 0;
-  }
-
-  .type-btn.fully-selected .type-check {
-    color: white;
-  }
-
-  .events-list {
+  .timeline {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxs);
-  }
-
-  .event-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm-plus);
-    padding: 0.5rem 0.75rem;
-    background: var(--color-bg-primary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    text-align: left;
-    width: 100%;
-  }
-
-  .event-item:hover {
-    border-color: var(--color-primary);
-    background: var(--color-bg-secondary);
-  }
-
-  .event-item.selected {
-    border-color: var(--color-primary);
-    background: var(--color-primary-light);
-  }
-
-  .checkbox {
-    flex-shrink: 0;
-    color: var(--color-border);
-    transition: color var(--transition-base);
-  }
-
-  .event-item:hover .checkbox {
-    color: var(--color-primary);
-  }
-
-  .event-item.selected .checkbox {
-    color: var(--color-primary);
-  }
-
-  .type-indicator {
-    width: 3px;
-    height: 24px;
-    border-radius: var(--spacing-xxs);
-    flex-shrink: 0;
-  }
-
-  .event-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .event-name {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .event-meta {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
-  }
-
-  .event-date {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    white-space: nowrap;
-  }
-
-  .event-city {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    white-space: nowrap;
-  }
-
-  .event-city::before {
-    content: '•';
-    margin-right: var(--spacing-sm);
-    color: var(--color-border);
   }
 
   .notif-section {

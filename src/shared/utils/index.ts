@@ -6,3 +6,7 @@ export { formatDate, formatDateTime, formatLongDate, formatDayNumber, formatMont
 export { checkForUpdate, storeCurrentVersion, manualUpdateCheck, type VersionInfo } from './version-checker';
 export { getRaceTypeKey, getRaceTypeCode, type RaceTypeKey } from './race-type';
 export type { RegistrationState } from './registration-state';
+export { getRegistrationStatus, getFridayBefore } from './registration-status';
+export type { RegistrationStatus } from './registration-status';
+export { getRaceView, formatLocation, isOngoing } from './race-view';
+export type { RaceView } from './race-view';

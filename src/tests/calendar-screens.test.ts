@@ -3,11 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import type { EventWithDetails } from '@types';
 
+const loaded = vi.hoisted(() => ({ events: [] as any[] }));
+
 vi.mock('@core/services', async (orig) => {
   const actual = await orig<typeof import('@core/services')>();
   return {
     ...actual,
-    EventsService: { getAllEvents: vi.fn(async () => []), getEventTypes: vi.fn(async () => []), getLocations: vi.fn(async () => []) },
+    EventsService: { getAllEvents: vi.fn(async () => loaded.events), getEventTypes: vi.fn(async () => []), getLocations: vi.fn(async () => []) },
   };
 });
 
@@ -85,7 +87,7 @@ describe('EventFilters', () => {
 describe('EventList', () => {
   it('shows the hero once and the rest in the list with a count', async () => {
     eventsStore.setLoading(false);
-    eventsStore.setEvents([base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' }), base('3', { date: '2099-05-02' })]);
+    loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' }), base('3', { date: '2099-05-02' })];
     render(EventList);
     expect(await screen.findByText('Daarna')).toBeInTheDocument();
     expect(screen.getByText('2 wedstrijden')).toBeInTheDocument();
@@ -94,8 +96,7 @@ describe('EventList', () => {
   });
 
   it('shows the empty state with a reset action', async () => {
-    eventsStore.setLoading(false);
-    eventsStore.setEvents([]);
+    loaded.events = [];
     render(EventList);
     expect(await screen.findByText('Geen evenementen gevonden')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filters resetten' })).toBeInTheDocument();

@@ -7,8 +7,8 @@ import {
   formatMonthLong,
   formatWeekday,
   formatDayMonth,
-} from '@shared/utils';
-import type { RegistrationState } from '@shared/utils';
+} from './date-format';
+import type { RegistrationState } from './registration-state';
 import { getRegistrationStatus } from './registration-status';
 
 const LABEL_KEYS = {
