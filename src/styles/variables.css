@@ -64,6 +64,7 @@
 
   /* Next race hero */
   --hero-bg: var(--color-bg-secondary);
+
   /* Diagonal stripes on the right-hand side only: a solid layer with a slanted edge
      covers the stripes on the left. */
   --hero-stripe:
