@@ -1,8 +1,8 @@
 <script lang="ts">
   import TypeLabel from './TypeLabel.svelte';
   import StartLight from './StartLight.svelte';
-  import { getRaceTypeKey } from '@shared/utils/race-type';
-  import type { RegistrationState } from '@shared/utils/registration-state';
+  import { getRaceTypeKey } from '@shared/utils';
+  import type { RegistrationState } from '@shared/utils';
 
   export let title: string;
   /** Detail target: the title is the only anchor, its ::after covers the whole row. */

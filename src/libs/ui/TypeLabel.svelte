@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getRaceTypeKey, getRaceTypeCode } from '@shared/utils/race-type';
+  import { getRaceTypeKey, getRaceTypeCode } from '@shared/utils';
 
   /** Event type name ("European Cup") or code ("EC"). */
   export let type: string | null | undefined = '';

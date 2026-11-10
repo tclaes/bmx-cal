@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { RegistrationState } from '@shared/utils/registration-state';
+  import type { RegistrationState } from '@shared/utils';
 
   /** Derived from getRegistrationStatus(); this component never computes dates. */
   export let state: RegistrationState;

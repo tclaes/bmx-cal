@@ -19,6 +19,6 @@
 - [x] 4.5 Unit tests for 4.2 to 4.4
 
 ## 5. Verification
-- [ ] 5.1 `npm run test`, `check`, `build` green; sheriff boundaries respected
+- [x] 5.1 `npm run test`, `check`, `build` green; sheriff boundaries respected
 - [x] 5.2 Check contrast (AA) and 44px targets
 - [ ] 5.3 Review on a deploy preview on a real phone

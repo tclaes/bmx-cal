@@ -4,3 +4,5 @@ export { canEditEvent, getInitialTeamExpandedState } from './permissions';
 export { toUserMessage } from './error-message';
 export { formatDate, formatDateTime, formatLongDate } from './date-format';
 export { checkForUpdate, storeCurrentVersion, manualUpdateCheck, type VersionInfo } from './version-checker';
+export { getRaceTypeKey, getRaceTypeCode, type RaceTypeKey } from './race-type';
+export type { RegistrationState } from './registration-state';
