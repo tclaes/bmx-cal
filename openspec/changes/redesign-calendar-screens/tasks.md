@@ -27,12 +27,12 @@
 - [x] 4.8 Component tests for hero, list, filters and navigation
 
 ## 5. Event detail page
-- [ ] 5.1 Add the `/events/:id` route (prefix, like `/news/:slug`)
-- [ ] 5.2 Build the page: info, map link, description, registration block, livestream while ongoing, document title
-- [ ] 5.3 Load from `eventsStore` with fallback to `EventsService.getEventById`; not-found state with link back
-- [ ] 5.4 Edit action via the existing `EventEditor` for permitted users only
-- [ ] 5.5 Link hero title and rows to the page; keep list filters when going back
-- [ ] 5.6 Tests for the route, loading fallback, not-found and edit visibility
+- [x] 5.1 Add the `/events/:id` route (prefix, like `/news/:slug`)
+- [x] 5.2 Build the page: info, map link, description, registration block, livestream while ongoing, document title
+- [x] 5.3 Load from `eventsStore` with fallback to `EventsService.getEventById`; not-found state with link back
+- [x] 5.4 Edit action via the existing `EventEditor` for permitted users only
+- [x] 5.5 Link hero title and rows to the page; keep list filters when going back
+- [x] 5.6 Tests for the route, loading fallback, not-found and edit visibility
 
 ## 6. Verification
 - [ ] 6.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch

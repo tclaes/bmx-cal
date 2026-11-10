@@ -65,7 +65,7 @@
 
     <ul class="nav-links" role="list">
       <li>
-        <a class="nav-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
+        <a class="nav-link" class:active={route === '/' || route.startsWith('/events/')} href="/" on:click={(e) => handleNav(e, '/')}>
           {$t.nav.events}
         </a>
       </li>
@@ -144,7 +144,7 @@
   {#if menuOpen}
     <ul class="mobile-menu" id="mobile-menu" role="list">
       <li>
-        <a class="mobile-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
+        <a class="mobile-link" class:active={route === '/' || route.startsWith('/events/')} href="/" on:click={(e) => handleNav(e, '/')}>
           {$t.nav.events}
         </a>
       </li>
