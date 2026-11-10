@@ -235,8 +235,10 @@
   .nav-link {
     display: block;
     padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-base);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
+    letter-spacing: 0.02em;
     color: var(--color-text-secondary);
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
@@ -256,12 +258,12 @@
 
   .nav-link--signin:hover {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
   }
 
   .nav-link--signout:hover {
-    color: var(--color-error, #dc2626);
-    background-color: var(--color-error-bg, #fef2f2);
+    color: var(--color-danger);
+    background-color: var(--color-danger-light);
   }
 
   .locale-switcher {
@@ -304,8 +306,8 @@
     flex-direction: column;
     justify-content: center;
     gap: var(--spacing-xs);
-    width: 36px;
-    height: 36px;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
     padding: var(--spacing-sm);
     cursor: pointer;
     border-radius: var(--border-radius-md);
@@ -381,12 +383,12 @@
 
   .mobile-link--signin:hover {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
   }
 
   .mobile-link--signout:hover {
-    color: var(--color-error, #dc2626);
-    background-color: var(--color-error-bg, #fef2f2);
+    color: var(--color-danger);
+    background-color: var(--color-danger-light);
   }
 
   .mobile-locale-switcher {

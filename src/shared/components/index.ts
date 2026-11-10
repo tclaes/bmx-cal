@@ -14,3 +14,6 @@ export { default as CheckboxItem } from './CheckboxItem.svelte';
 export { default as AdBanner } from './AdBanner.svelte';
 export { default as AccountCTA } from './AccountCTA.svelte';
 export { default as Logo } from './Logo.svelte';
+export { default as TypeLabel } from './TypeLabel.svelte';
+export { default as StartLight } from './StartLight.svelte';
+export { default as RaceRow } from './RaceRow.svelte';

@@ -53,6 +53,7 @@ describe('getRegistrationStatus', () => {
     expect(result).not.toBeNull();
     expect(result!.label).toBe('Registration Closed');
     expect(result!.color).toBe('#6b7280');
+    expect(result!.state).toBe('closed');
   });
 
   it('returns Registration Closed when status is closed and deadline not passed', () => {
@@ -76,6 +77,7 @@ describe('getRegistrationStatus', () => {
     });
     expect(result!.label).toBe('Registration Opens Soon');
     expect(result!.color).toBe('#b45309');
+    expect(result!.state).toBe('soon');
   });
 
   it('returns Registration Open when registration_opens is today or in the past', () => {
@@ -99,6 +101,7 @@ describe('getRegistrationStatus', () => {
     });
     expect(result!.label).toBe('Registration Open');
     expect(result!.color).toBe('#047857');
+    expect(result!.state).toBe('open');
   });
 
   it('returns Registration Opens Soon when status is upcoming', () => {

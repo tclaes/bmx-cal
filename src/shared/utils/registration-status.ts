@@ -1,8 +1,11 @@
 import type { EventWithDetails } from '@types';
 
+export type RegistrationState = 'open' | 'soon' | 'closed' | 'register';
+
 export interface RegistrationStatus {
   label: string;
   color: string;
+  state: RegistrationState;
 }
 
 export function getFridayBefore(dateStr: string): Date {
@@ -30,7 +33,7 @@ export function getRegistrationStatus(event: Pick<EventWithDetails, 'registratio
     const deadline = new Date(event.registration_deadline);
     deadline.setHours(0, 0, 0, 0);
     if (deadline < today) {
-      return { label: 'Registration Closed', color: '#6b7280' };
+      return { label: 'Registration Closed', color: '#6b7280', state: 'closed' };
     }
   }
 
@@ -38,21 +41,21 @@ export function getRegistrationStatus(event: Pick<EventWithDetails, 'registratio
     const opens = new Date(event.registration_opens);
     opens.setHours(0, 0, 0, 0);
     if (opens > today) {
-      return { label: 'Registration Opens Soon', color: '#b45309' };
+      return { label: 'Registration Opens Soon', color: '#b45309', state: 'soon' };
     }
     if (event.registration_status === 'closed') {
-      return { label: 'Registration Closed', color: '#6b7280' };
+      return { label: 'Registration Closed', color: '#6b7280', state: 'closed' };
     }
-    return { label: 'Registration Open', color: '#047857' };
+    return { label: 'Registration Open', color: '#047857', state: 'open' };
   }
 
   if (event.registration_status === 'closed') {
-    return { label: 'Registration Closed', color: '#6b7280' };
+    return { label: 'Registration Closed', color: '#6b7280', state: 'closed' };
   } else if (event.registration_status === 'upcoming') {
-    return { label: 'Registration Opens Soon', color: '#b45309' };
+    return { label: 'Registration Opens Soon', color: '#b45309', state: 'soon' };
   } else if (event.registration_status === 'open') {
-    return { label: 'Registration Open', color: '#047857' };
+    return { label: 'Registration Open', color: '#047857', state: 'open' };
   }
 
-  return { label: 'Register Now', color: '#1d4ed8' };
+  return { label: 'Register Now', color: '#1d4ed8', state: 'register' };
 }

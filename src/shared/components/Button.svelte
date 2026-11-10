@@ -22,7 +22,10 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    font-weight: var(--font-weight-medium);
+    min-block-size: var(--touch-target-min);
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.04em;
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
     cursor: pointer;
@@ -50,26 +53,26 @@
   }
 
   .button-primary {
-    background-color: var(--color-primary);
-    color: white;
+    background-color: var(--color-accent);
+    color: var(--color-text-on-accent);
   }
 
   .button-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
+    background-color: var(--color-accent-hover);
   }
 
   .button-secondary {
-    background-color: var(--color-secondary);
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--color-text-on-accent);
   }
 
   .button-secondary:hover:not(:disabled) {
-    background-color: var(--color-secondary-hover);
+    background-color: var(--color-primary-hover);
   }
 
   .button-danger {
     background-color: var(--color-danger);
-    color: white;
+    color: var(--color-text-on-accent);
   }
 
   .button-danger:hover:not(:disabled) {

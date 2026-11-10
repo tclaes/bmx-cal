@@ -12,11 +12,11 @@
 - [x] 3.2 Update favicon, PWA icons and `theme-color`
 
 ## 4. Components
-- [ ] 4.1 Restyle `Button`, `Badge`, `Navigation` on tokens
-- [ ] 4.2 Add `TypeLabel` with unknown-type fallback
-- [ ] 4.3 Add `StartLight` driven by `registration-status.ts`
-- [ ] 4.4 Add `RaceRow` (stretched link, separate registration action)
-- [ ] 4.5 Unit tests for 4.2 to 4.4
+- [x] 4.1 Restyle `Button`, `Badge`, `Navigation` on tokens
+- [x] 4.2 Add `TypeLabel` with unknown-type fallback
+- [x] 4.3 Add `StartLight` driven by `registration-status.ts`
+- [x] 4.4 Add `RaceRow` (stretched link, separate registration action)
+- [x] 4.5 Unit tests for 4.2 to 4.4
 
 ## 5. Verification
 - [ ] 5.1 `npm run test`, `check`, `build` green; sheriff boundaries respected
