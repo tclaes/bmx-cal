@@ -1,292 +1,235 @@
 <script lang="ts">
-  import { Input, Dropdown, CheckboxItem } from '@ui';
-  import { filtersStore } from '@core/stores';
-  import { eventsStore } from '@core/stores';
-  import type { EventType } from '@types';
+  import { filtersStore, eventsStore } from '@core/stores';
+  import { getRaceTypeKey, getRaceTypeCode } from '@shared/utils';
   import { t } from '../../i18n';
 
-  let eventTypes: EventType[] = [];
-  let selectedTypes: string[] = [];
-  let startDate = '';
-  let endDate = '';
-  let searchQuery = '';
-  let dropdownOpen = false;
-  let filtersExpanded = false;
+  let expanded = false;
 
   $: eventTypes = $eventsStore.eventTypes;
-  $: selectedTypes = $filtersStore.selectedEventTypes;
-  $: showPastEvents = $filtersStore.showPastEvents;
-  $: searchQuery = $filtersStore.searchQuery;
+  $: selected = $filtersStore.selectedEventTypes;
+  $: activeCount =
+    selected.length +
+    ($filtersStore.startDate ? 1 : 0) +
+    ($filtersStore.endDate ? 1 : 0) +
+    ($filtersStore.searchQuery ? 1 : 0) +
+    ($filtersStore.showPastEvents ? 1 : 0);
 
-  function handleTypeToggle(typeId: string) {
-    filtersStore.toggleEventType(typeId);
+  function chipLabel(name: string): string {
+    return getRaceTypeKey(name) === 'unknown' ? name : getRaceTypeCode(name);
   }
 
-  function handleStartDateChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    startDate = target.value;
-    filtersStore.setDateRange(startDate || null, endDate || null);
-  }
-
-  function handleEndDateChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    endDate = target.value;
-    filtersStore.setDateRange(startDate || null, endDate || null);
-  }
-
-  function handleSearchChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    searchQuery = target.value;
-    filtersStore.setSearchQuery(searchQuery);
-  }
-
-  function resetFilters() {
-    selectedTypes = [];
-    startDate = '';
-    endDate = '';
-    searchQuery = '';
-    filtersStore.reset();
-  }
-
-  function toggleDropdown() {
-    dropdownOpen = !dropdownOpen;
+  function setDates(start: string, end: string) {
+    filtersStore.setDateRange(start || null, end || null);
   }
 </script>
 
-<div class="filters-wrapper">
+<section class="filters-wrapper" aria-label={$t.filters.title}>
   <button
-    class="filters-toggle"
+    class="toggle"
     type="button"
-    on:click={() => (filtersExpanded = !filtersExpanded)}
-    aria-expanded={filtersExpanded}
+    aria-expanded={expanded}
+    aria-controls="calendar-filters"
+    on:click={() => (expanded = !expanded)}
   >
-    <span>{$t.filters.title}</span>
-    {#if selectedTypes.length > 0 || startDate || endDate || searchQuery || $filtersStore.showPastEvents}
-      <span class="filter-badge">{selectedTypes.length + (startDate ? 1 : 0) + (endDate ? 1 : 0) + (searchQuery ? 1 : 0) + ($filtersStore.showPastEvents ? 1 : 0)}</span>
-    {/if}
-    <span class="toggle-chevron" class:rotated={filtersExpanded}>▼</span>
+    <span>{expanded ? $t.filters.hideFilters : $t.filters.showFilters}</span>
+    {#if activeCount > 0}<span class="badge">{activeCount}</span>{/if}
   </button>
 
-<div class="filters" class:collapsed={!filtersExpanded}>
-  <Input
-    type="text"
-    id="search-filter"
-    label={$t.filters.searchLocation}
-    placeholder={$t.filters.searchPlaceholder}
-    value={searchQuery}
-    on:input={handleSearchChange}
-  />
-
-  <Dropdown
-    id="event-type-dropdown"
-    label={$t.filters.eventTypes}
-    placeholder={$t.filters.allTypes}
-    selectedCount={selectedTypes.length}
-    open={dropdownOpen}
-    on:toggle={toggleDropdown}
-  >
-    {#each eventTypes as eventType}
-      <CheckboxItem
-        label={eventType.name}
-        value={eventType.id}
-        checked={selectedTypes.includes(eventType.id)}
-        on:change={(e) => handleTypeToggle(e.detail)}
+  <div id="calendar-filters" class="filters" class:collapsed={!expanded}>
+    <div class="group">
+      <label class="group-label" for="filter-search">{$t.filters.search}</label>
+      <input
+        id="filter-search"
+        class="field"
+        type="search"
+        placeholder={$t.filters.searchPlaceholder}
+        value={$filtersStore.searchQuery}
+        on:input={(e) => filtersStore.setSearchQuery(e.currentTarget.value)}
       />
-    {/each}
-  </Dropdown>
+    </div>
 
-  <Input
-    type="date"
-    id="start-date-filter"
-    label={$t.filters.startDate}
-    bind:value={startDate}
-    on:change={handleStartDateChange}
-  />
+    <div class="group" role="group" aria-labelledby="filter-type">
+      <span class="group-label" id="filter-type">{$t.filters.typeFilter}</span>
+      <div class="chips">
+        <button
+          type="button"
+          class="chip chip-all"
+          class:on={selected.length === 0}
+          aria-pressed={selected.length === 0}
+          on:click={() => filtersStore.setEventTypes([])}
+        >{$t.filters.allChip}</button>
+        {#each eventTypes as type (type.id)}
+          {@const key = getRaceTypeKey(type.name)}
+          <button
+            type="button"
+            class="chip"
+            class:on={selected.includes(type.id)}
+            aria-pressed={selected.includes(type.id)}
+            title={type.name}
+            on:click={() => filtersStore.toggleEventType(type.id)}
+          >
+            <span class="dot dot-{key}" aria-hidden="true"></span>{chipLabel(type.name)}
+          </button>
+        {/each}
+      </div>
+    </div>
 
-  <Input
-    type="date"
-    id="end-date-filter"
-    label={$t.filters.endDate}
-    bind:value={endDate}
-    on:change={handleEndDateChange}
-  />
+    <div class="group dates">
+      <label class="date">
+        <span class="group-label">{$t.filters.startDate}</span>
+        <input class="field" type="date" value={$filtersStore.startDate ?? ''} on:change={(e) => setDates(e.currentTarget.value, $filtersStore.endDate ?? '')} />
+      </label>
+      <label class="date">
+        <span class="group-label">{$t.filters.endDate}</span>
+        <input class="field" type="date" value={$filtersStore.endDate ?? ''} on:change={(e) => setDates($filtersStore.startDate ?? '', e.currentTarget.value)} />
+      </label>
+    </div>
 
-  <div class="past-events-toggle">
-    <label class="toggle-label" for="show-past-events-btn">{$t.filters.showPastEvents}</label>
-    <button
-      id="show-past-events-btn"
-      class="toggle-btn"
-      class:active={showPastEvents}
-      on:click={() => filtersStore.toggleShowPastEvents()}
-      type="button"
-      aria-pressed={showPastEvents}
-      aria-label={$t.filters.showPastEvents}
-    >
-      <span class="toggle-track">
-        <span class="toggle-thumb" />
-      </span>
-    </button>
+    <label class="check">
+      <input type="checkbox" checked={$filtersStore.showPastEvents} on:change={() => filtersStore.toggleShowPastEvents()} />
+      <span>{$t.filters.showPastEvents}</span>
+    </label>
+
+    {#if activeCount > 0}
+      <button type="button" class="reset" on:click={() => filtersStore.reset()}>{$t.filters.resetFilters}</button>
+    {/if}
   </div>
-
-  <button class="reset-button" on:click={resetFilters}>{$t.filters.resetFilters}</button>
-</div>
-</div>
+</section>
 
 <style>
   .filters-wrapper {
-    position: relative;
-  }
-
-  .filters-toggle {
-    display: none;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
-    background-color: var(--color-bg-secondary);
+    padding: var(--spacing-md);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    gap: var(--spacing-sm);
+    background-color: var(--color-bg-tertiary);
   }
 
-  .filters-toggle:hover {
-    border-color: var(--color-primary);
-  }
-
-  .filter-badge {
-    display: inline-flex;
+  .toggle {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    color: white;
+    justify-content: space-between;
+    inline-size: 100%;
+    min-block-size: var(--touch-target-min);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+
+  .badge {
+    min-inline-size: 24px;
+    padding-inline: var(--spacing-xs);
+    border-radius: var(--border-radius-full);
     background-color: var(--color-primary);
-    border-radius: 10px;
-    margin-left: auto;
-  }
-
-  .toggle-chevron {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-  }
-
-  .toggle-chevron.rotated {
-    transform: rotate(180deg);
+    color: var(--color-text-on-accent);
+    font-size: var(--font-size-sm);
+    text-align: center;
   }
 
   .filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
-    background-color: var(--color-bg-secondary);
-    border-radius: var(--border-radius-lg);
-  }
-
-  .past-events-toggle {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-md);
+    margin-block-start: var(--spacing-md);
   }
 
-  .toggle-label {
+  .filters.collapsed { display: none; }
+
+  .group { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+
+  .group-label {
+    font-family: var(--font-family-heading);
     font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
   }
 
-  .toggle-btn {
-    min-width: 44px;
-    min-height: 44px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    padding-block: var(--spacing-sm-plus);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
-
-  .toggle-track {
-    position: relative;
-    width: 44px;
-    height: 24px;
-    background-color: var(--color-border);
-    border-radius: 12px;
-    transition: background-color 0.2s;
-    display: block;
-  }
-
-  .toggle-btn.active .toggle-track {
-    background-color: var(--color-primary);
-  }
-
-  .toggle-thumb {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.2s;
-    display: block;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-
-  .toggle-btn.active .toggle-thumb {
-    transform: translateX(20px);
-  }
-
-  .reset-button {
-    align-self: end;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
-    background-color: transparent;
+  .field {
+    inline-size: 100%;
+    min-block-size: var(--touch-target-min);
+    padding-inline: var(--spacing-md);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
-    transition: all var(--transition-base);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font: inherit;
+  }
+
+  .field:focus-visible { outline: 2px solid var(--color-primary-hover); outline-offset: 1px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-block-size: var(--touch-target-min);
+    padding-inline: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    background-color: transparent;
+    color: var(--color-text-primary);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     cursor: pointer;
   }
 
-  .reset-button:hover {
-    background-color: var(--color-bg-primary);
+  .chip.on {
     border-color: var(--color-primary);
-    color: var(--color-primary);
+    background-color: var(--color-primary-light);
   }
 
-  @media (max-width: 768px) {
-    .filters-toggle {
-      display: flex;
-    }
+  .chip-all.on {
+    background-color: var(--color-primary);
+    color: var(--color-text-on-accent);
+  }
 
-    .filters {
-      grid-template-columns: 1fr;
-      margin-top: var(--spacing-sm);
-      overflow: hidden;
-      max-height: 1000px;
-      transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
-      opacity: 1;
-    }
+  .dot {
+    inline-size: 12px;
+    block-size: 12px;
+    border-radius: var(--border-radius-full);
+    background-color: var(--race-unknown-ring);
+  }
 
-    .filters.collapsed {
-      max-height: 0;
-      opacity: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      pointer-events: none;
-    }
+  .dot-cv { background-color: var(--race-cv-ring); }
+  .dot-tc { background-color: var(--race-tc-ring); }
+  .dot-cw { background-color: var(--race-cw-ring); }
+  .dot-3nc { background-color: var(--race-3nc-ring); }
+  .dot-ec { background-color: var(--race-ec-ring); }
+  .dot-wc { background-color: var(--race-wc-ring); }
+
+  .dates { flex-direction: row; gap: var(--spacing-sm); }
+  .date { display: flex; flex-direction: column; gap: var(--spacing-xs); flex: 1; min-inline-size: 0; }
+
+  .check {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    min-block-size: var(--touch-target-min);
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+
+  .check input { inline-size: 22px; block-size: 22px; accent-color: var(--color-primary); }
+
+  .reset {
+    min-block-size: var(--touch-target-min);
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+    cursor: pointer;
+    text-align: start;
+  }
+
+  @media (min-width: 1024px) {
+    .toggle { display: none; }
+    .filters, .filters.collapsed { display: flex; margin-block-start: 0; }
   }
 </style>

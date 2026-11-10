@@ -17,14 +17,14 @@
 - [x] 3.3 Unit tests for the new `RaceRow` slots, including that the star does not trigger the row link
 
 ## 4. Calendar screen
-- [ ] 4.1 Build the next race hero (date, title, location, `TypeLabel`, `StartLight`, INSCHRIJVEN, star, deadline)
-- [ ] 4.2 Rebuild `EventList` as the timeline of `RaceRow`s with heading and count; remove `EventCard`
-- [ ] 4.3 Rebuild `EventFilters` as search + type chips (neutral chip for unknown types) + past-events toggle + date range + reset; collapsible on mobile
-- [ ] 4.4 Desktop layout: sticky filter sidebar with export and account call-to-action; mobile layout per design
-- [ ] 4.5 Restyle `AccountCTA`, empty, loading and error states on tokens
-- [ ] 4.6 Wire the star to `toggleEventSelection`
-- [ ] 4.7 Restyle `Navigation` to design B (underlined active link, segmented locale switcher, outlined sign-in)
-- [ ] 4.8 Component tests for hero, list, filters and navigation
+- [x] 4.1 Build the next race hero (date, title, location, `TypeLabel`, `StartLight`, INSCHRIJVEN, star, deadline)
+- [x] 4.2 Rebuild `EventList` as the timeline of `RaceRow`s with heading and count; remove `EventCard`
+- [x] 4.3 Rebuild `EventFilters` as search + type chips (neutral chip for unknown types) + past-events toggle + date range + reset; collapsible on mobile
+- [x] 4.4 Desktop layout: sticky filter sidebar with export and account call-to-action; mobile layout per design
+- [x] 4.5 Restyle `AccountCTA`, empty, loading and error states on tokens
+- [x] 4.6 Wire the star to `toggleEventSelection`
+- [x] 4.7 Restyle `Navigation` to design B (underlined active link, segmented locale switcher, outlined sign-in)
+- [x] 4.8 Component tests for hero, list, filters and navigation
 
 ## 5. Event detail page
 - [ ] 5.1 Add the `/events/:id` route (prefix, like `/news/:slug`)

@@ -254,20 +254,30 @@
     text-decoration: none;
   }
 
-  .nav-link:hover,
+  .nav-link {
+    text-transform: uppercase;
+    border-radius: 0;
+    border-block-end: 3px solid transparent;
+  }
+
+  .nav-link:hover {
+    color: var(--color-text-primary);
+  }
+
   .nav-link.active {
-    color: var(--color-primary);
-    background-color: var(--color-primary-light);
+    color: var(--color-text-primary);
+    border-block-end-color: var(--color-accent);
   }
 
   .nav-link--signin {
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius-md);
   }
 
   .nav-link--signin:hover {
-    background-color: var(--color-primary);
-    color: var(--color-text-on-accent);
+    border-color: var(--color-primary);
+    color: var(--color-primary-hover);
   }
 
   .nav-link--signout:hover {
@@ -280,9 +290,13 @@
     align-items: center;
     gap: 2px;
     padding-block-end: var(--spacing-sm);
-    border-inline-start: 1px solid var(--color-border);
-    padding-inline-start: var(--spacing-md);
     margin-inline-start: var(--spacing-xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    gap: 0;
+    padding: 0;
+    margin-block-end: var(--spacing-sm);
   }
 
   .locale-btn {
@@ -291,7 +305,7 @@
     letter-spacing: 0.04em;
     color: var(--color-text-muted);
     padding: var(--spacing-xxs) var(--spacing-xs);
-    border-radius: var(--border-radius-sm);
+    border-radius: 0;
     cursor: pointer;
     transition: all var(--transition-base);
     line-height: 1;
@@ -309,8 +323,8 @@
   }
 
   .locale-btn.active {
-    color: var(--color-primary);
-    background-color: var(--color-primary-light);
+    color: var(--color-text-on-accent);
+    background-color: var(--color-primary);
     font-weight: var(--font-weight-bold);
   }
 
