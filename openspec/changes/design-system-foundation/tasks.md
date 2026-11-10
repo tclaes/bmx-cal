@@ -1,11 +1,11 @@
 ## 1. Preparation
 - [x] 1.1 Export design B boards (mobile, desktop, logo B1, type colours) to `design/` in this change
-- [ ] 1.2 Confirm hosting/preview setup (deploy preview per PR)
+- [x] 1.2 Preview setup: manual preview via bolt.new (import branch, set VITE_SUPABASE_* env vars)
 
 ## 2. Tokens
-- [ ] 2.1 Replace values in `src/styles/variables.css` with palette and type scale
-- [ ] 2.2 Add race type tokens (CV, TC, CW, 3NC, EC, WC)
-- [ ] 2.3 Check stylelint passes
+- [x] 2.1 Replace values in `src/styles/variables.css` with palette and type scale
+- [x] 2.2 Add race type tokens (CV, TC, CW, 3NC, EC, WC)
+- [x] 2.3 Check stylelint passes
 
 ## 3. Logo and icons
 - [ ] 3.1 Add `Logo` component (B1, with wordmark variant)
