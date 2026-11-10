@@ -422,5 +422,9 @@
     .preview-grid {
       grid-template-columns: 1fr;
     }
+
+    .preview-card {
+      padding: var(--spacing-md);
+    }
   }
 </style>

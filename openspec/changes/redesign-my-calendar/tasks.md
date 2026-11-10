@@ -24,11 +24,11 @@
 
 ## 5. Saved calendars and modal
 
-- [ ] 5.1 Remove hex fallbacks in `SavedCalendarsList.svelte` and restyle on tokens with 44px targets
-- [ ] 5.2 Restyle `SaveCalendarModal.svelte` on tokens; existing behaviour unchanged
+- [x] 5.1 Remove hex fallbacks in `SavedCalendarsList.svelte` and restyle on tokens with 44px targets
+- [x] 5.2 Restyle `SaveCalendarModal.svelte` on tokens; existing behaviour unchanged
 
 ## 6. Verification
 
-- [ ] 6.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
-- [ ] 6.2 With real data: the same race has the same label on `/` and `/my-events` for every type, including Dare2Race and Training
+- [x] 6.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
+- [x] 6.2 With real data: the same race has the same label on `/` and `/my-events` for every type, including Dare2Race and Training
 - [ ] 6.3 Review `/my-events` signed in and signed out on a real phone through Bolt, next to the calendar screens

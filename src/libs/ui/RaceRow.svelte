@@ -181,10 +181,11 @@
   .title {
     margin: 0;
     font-family: var(--font-family-heading);
-    font-size: var(--font-size-2xl);
+    font-size: clamp(var(--font-size-xl), 5.5vw, var(--font-size-2xl));
     font-weight: var(--font-weight-bold);
     line-height: var(--line-height-tight);
     overflow-wrap: break-word;
+    hyphens: auto;
   }
 
   .row-link {
