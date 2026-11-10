@@ -1,9 +1,9 @@
 # Tasks
 
 ## 1. Preparation
-- [ ] 1.1 Merge the latest `feat/design-system-foundation` and confirm the CI gate (`npm test`, `npm run build`, `npm run sheriff`) is green before starting
-- [ ] 1.2 Create branch `feat/redesign-calendar-screens` from it; reference images are already in `design/`
-- [ ] 1.3 Add the i18n keys (nl, fr, en) for hero label, "Daarna", race count, save/saved, type chips, not-found and empty state
+- [x] 1.1 Merge the latest `feat/design-system-foundation` and confirm the CI gate (`npm test`, `npm run build`, `npm run sheriff`) is green before starting
+- [x] 1.2 Create branch `feat/redesign-calendar-screens` from it; reference images are already in `design/`
+- [x] 1.3 Add the i18n keys (nl, fr, en) for hero label, "Daarna", race count, save/saved, type chips, not-found and empty state
 
 ## 2. Filtering logic
 - [ ] 2.1 Extract the filtering from `EventList.svelte` into a util + derived `visibleEvents` next to `event-search.ts`

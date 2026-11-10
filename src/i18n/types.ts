@@ -57,6 +57,25 @@ export interface Translations {
     viewOnMaps: string;
     filterByType: string;
     editEvent: string;
+    heroLabel: string;
+    thenHeading: string;
+    raceCount: string;
+    raceCountOne: string;
+    save: string;
+    saved: string;
+    registerAction: string;
+    livestream: string;
+    notFoundTitle: string;
+    notFoundDescription: string;
+    backToCalendar: string;
+    registrationOpensOn: string;
+    deadlineShort: string;
+    dateLabel: string;
+    timeLabel: string;
+    locationLabel: string;
+    openDetails: string;
+    registrationHeading: string;
+    ongoing: string;
   };
   filters: {
     title: string;
@@ -69,6 +88,12 @@ export interface Translations {
     showPastEvents: string;
     resetFilters: string;
     toggleMenu: string;
+    typeFilter: string;
+    allChip: string;
+    showFilters: string;
+    hideFilters: string;
+    search: string;
+    otherType: string;
   };
   registration: {
     open: string;
