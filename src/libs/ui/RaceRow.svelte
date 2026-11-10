@@ -3,6 +3,9 @@
   import StartLight from './StartLight.svelte';
   import { getRaceTypeKey } from '@shared/utils';
   import type { RegistrationState } from '@shared/utils';
+  import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher<{ save: void }>();
 
   export let title: string;
   /** Detail target: the title is the only anchor, its ::after covers the whole row. */
@@ -18,12 +21,18 @@
   export let registerLabel = '';
   /** Shown instead of the button while registration is not open yet. */
   export let opensLabel = '';
+  /** Save (star) control; hidden when saveLabel is empty. Emits `save` on click. */
+  export let saved = false;
+  export let saveLabel = '';
+  /** Livestream link, shown when both url and label are set. */
+  export let livestreamUrl: string | null | undefined = null;
+  export let livestreamLabel = '';
 
   $: key = getRaceTypeKey(type);
   $: canRegister = !!registrationUrl && !!status && (status.state === 'open' || status.state === 'register');
 </script>
 
-<article class="race-row race-{key}">
+<article class="race-row race-{key}" class:has-save={!!saveLabel}>
   <div class="when">
     {#if day}<span class="day">{day}</span>{/if}
     {#if month}<span class="month">{month}</span>{/if}
@@ -36,6 +45,21 @@
     <h3 class="title"><a class="row-link" {href} on:click>{title}</a></h3>
     {#if meta}
       <p class="meta">{meta}</p>
+    {/if}
+
+    {#if saveLabel}
+      <button
+        type="button"
+        class="save"
+        class:saved
+        aria-pressed={saved}
+        aria-label={saveLabel}
+        on:click={() => dispatch('save')}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+          <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" />
+        </svg>
+      </button>
     {/if}
 
     {#if status}
@@ -52,6 +76,12 @@
           <a class="register" href={registrationUrl} target="_blank" rel="noopener noreferrer">{registerLabel}</a>
         </div>
       {/if}
+    {/if}
+
+    {#if livestreamUrl && livestreamLabel}
+      <div class="action">
+        <a class="livestream" href={livestreamUrl} target="_blank" rel="noopener noreferrer">{livestreamLabel}</a>
+      </div>
     {/if}
   </div>
 </article>
@@ -121,8 +151,32 @@
   .race-wc .dot { border-color: var(--race-wc-ring); }
 
   .content {
+    position: relative;
     min-inline-size: 0;
   }
+
+  .has-save .title {
+    padding-inline-end: var(--touch-target-min);
+  }
+
+  /* Above the stretched link so it never opens the detail page */
+  .save {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: calc((var(--touch-target-min) - 1.5em) / -2);
+    inset-inline-end: calc(var(--spacing-sm) * -1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--touch-target-min);
+    min-block-size: var(--touch-target-min);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: var(--border-radius-md);
+  }
+
+  .save:hover { color: var(--color-accent); }
+  .save.saved { color: var(--color-accent); }
 
   .title {
     margin: 0;
@@ -199,5 +253,23 @@
 
   .register:hover {
     background-color: var(--color-accent-hover);
+  }
+
+  .livestream {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--touch-target-min);
+    padding-inline: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: none;
+  }
+
+  .livestream:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary-hover);
   }
 </style>

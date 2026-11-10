@@ -54,3 +54,30 @@ describe('RaceRow', () => {
     expect(c2.querySelector('.race-unknown')).toBeInTheDocument();
   });
 });
+
+describe('RaceRow save and livestream slots', () => {
+  it('shows a pressed star button outside the row link and emits save', async () => {
+    const { fireEvent } = await import('@testing-library/svelte');
+    const { component } = render(RaceRow, { props: { ...base, status: null, saveLabel: 'Bewaren', saved: true } });
+    let saves = 0;
+    component.$on('save', () => saves++);
+    const star = screen.getByRole('button', { name: 'Bewaren' });
+    expect(star).toHaveAttribute('aria-pressed', 'true');
+    expect(star.closest('.row-link')).toBeNull();
+    await fireEvent.click(star);
+    expect(saves).toBe(1);
+  });
+
+  it('hides the star without a label', () => {
+    render(RaceRow, { props: { ...base, status: null } });
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('shows a livestream link only with url and label', () => {
+    const { unmount } = render(RaceRow, { props: { ...base, status: null, livestreamUrl: 'https://live.example', livestreamLabel: 'Livestream' } });
+    expect(screen.getByRole('link', { name: 'Livestream' })).toHaveAttribute('href', 'https://live.example');
+    unmount();
+    render(RaceRow, { props: { ...base, status: null, livestreamUrl: 'https://live.example' } });
+    expect(screen.queryByRole('link', { name: 'Livestream' })).not.toBeInTheDocument();
+  });
+});

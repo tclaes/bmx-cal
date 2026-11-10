@@ -12,9 +12,9 @@
 - [x] 2.4 Unit tests for filtering, hero selection and export input
 
 ## 3. Shared UI additions
-- [ ] 3.1 Extend `RaceRow` with a save (star) slot and a livestream link; keep it presentational
-- [ ] 3.2 Add any missing tokens to `variables.css` (e.g. hero stripe overlay) instead of hardcoded values
-- [ ] 3.3 Unit tests for the new `RaceRow` slots, including that the star does not trigger the row link
+- [x] 3.1 Extend `RaceRow` with a save (star) slot and a livestream link; keep it presentational
+- [x] 3.2 Add any missing tokens to `variables.css` (e.g. hero stripe overlay) instead of hardcoded values
+- [x] 3.3 Unit tests for the new `RaceRow` slots, including that the star does not trigger the row link
 
 ## 4. Calendar screen
 - [ ] 4.1 Build the next race hero (date, title, location, `TypeLabel`, `StartLight`, INSCHRIJVEN, star, deadline)
