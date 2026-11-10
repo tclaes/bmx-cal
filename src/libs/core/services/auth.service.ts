@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 import type { AdminUser, Team } from '@types';
 
 async function fetchUserTeams(userId: string): Promise<{ allTeams: Team[]; managedTeams: Team[] }> {

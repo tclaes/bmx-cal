@@ -8,7 +8,7 @@ vi.mock('@config/version', () => ({
   RELEASE_NOTES: 'Test release notes',
 }));
 
-vi.mock('@data/supabase', () => ({
+vi.mock('@data', () => ({
   supabase: {
     auth: {
       getUser: vi.fn().mockResolvedValue({ data: { user: null } }),

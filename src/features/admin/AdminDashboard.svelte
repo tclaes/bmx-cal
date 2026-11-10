@@ -4,12 +4,12 @@
   import { Card, Button, LoadingSpinner, Alert } from '@ui';
   import { authStore } from '@core/stores';
   import { EventsService } from '@core/services';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
   import type { EventWithType, Team } from '@types';
-  import DocumentUpload from './DocumentUpload.svelte';
+  import { DocumentUpload } from '@shared';
   import BugReportsPanel from './BugReportsPanel.svelte';
-  import TeamMemberManager from './TeamMemberManager.svelte';
+  import TeamMemberManager from '@features/team-manager/TeamMemberManager.svelte';
 
   let events: EventWithType[] = [];
   let loading = false;

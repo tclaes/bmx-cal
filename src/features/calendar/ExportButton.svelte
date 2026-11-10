@@ -1,6 +1,6 @@
 <script lang="ts">
   import { eventsStore } from '@core/stores';
-  import { filtersStore } from '@core/stores/filters.store';
+  import { filtersStore } from '@core/stores';
   import { generateICalContent, downloadICalFile } from '@shared/utils';
   import Button from '@ui/Button.svelte';
   import type { EventWithDetails } from '@types';

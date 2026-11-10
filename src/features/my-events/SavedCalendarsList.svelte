@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { CalendarService } from '@core/services/calendar.service';
-  import type { SavedCalendar } from '@core/services/calendar.service';
+  import { CalendarService } from '@core/services';
+  import type { SavedCalendar } from '@core/services';
   import Button from '@ui/Button.svelte';
   import { formatDate } from '@shared/utils';
 

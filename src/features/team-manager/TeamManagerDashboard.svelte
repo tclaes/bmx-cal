@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Card, Button, Input, Select, Alert, LoadingSpinner } from '@ui';
-  import { LocationPicker } from '@shared';
+  import { LocationPicker, DocumentUpload } from '@shared';
   import { authStore } from '@core/stores';
-  import TeamMemberManager from '../admin/TeamMemberManager.svelte';
-  import DocumentUpload from '../admin/DocumentUpload.svelte';
+  import TeamMemberManager from './TeamMemberManager.svelte';
   import { EventsService, TeamService } from '@core/services';
   import type { TeamMemberWithEmail } from '@core/services';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { getInitialTeamExpandedState, formatDate, toUserMessage } from '@shared/utils';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 

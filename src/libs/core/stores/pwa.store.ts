@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { checkForUpdate, storeCurrentVersion, manualUpdateCheck, type VersionInfo } from '@shared/utils/version-checker';
+import { checkForUpdate, storeCurrentVersion, manualUpdateCheck, type VersionInfo } from '@shared/utils';
 
 function createUpdateStore() {
   const { subscribe, set, update } = writable({

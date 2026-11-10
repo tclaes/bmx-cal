@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { updateStore } from '@core/stores/pwa.store';
+  import { updateStore } from '@core/stores';
   import { t } from '../i18n';
 
   async function reload() {
