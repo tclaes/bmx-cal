@@ -7,9 +7,10 @@
 </script>
 
 <span class="start-light start-light-{state}" role="img" aria-label={label || undefined} aria-hidden={label ? undefined : 'true'}>
-  <span class="lamp"></span>
-  <span class="lamp"></span>
-  <span class="lamp"></span>
+  <span class="lamp lamp-red"></span>
+  <span class="lamp lamp-amber"></span>
+  <span class="lamp lamp-amber"></span>
+  <span class="lamp lamp-green"></span>
 </span>
 
 <style>
@@ -23,22 +24,25 @@
   }
 
   .lamp {
-    width: 10px;
-    height: 10px;
+    inline-size: 10px;
+    block-size: 10px;
     border-radius: var(--border-radius-full);
     background-color: var(--color-border);
   }
 
-  /* open / register: all lamps green */
-  .start-light-open .lamp,
-  .start-light-register .lamp {
+  /* open / register: green lamp lit */
+  .start-light-open .lamp-green,
+  .start-light-register .lamp-green {
     background-color: var(--color-start-green);
   }
 
-  /* opens soon: first lamps orange, still waiting */
-  .start-light-soon .lamp:nth-child(-n + 2) {
+  /* opens soon: amber lamps lit */
+  .start-light-soon .lamp-amber {
     background-color: var(--color-accent);
   }
 
-  /* closed: all lamps off (default) */
+  /* closed: red lamp lit */
+  .start-light-closed .lamp-red {
+    background-color: var(--color-danger);
+  }
 </style>

@@ -20,5 +20,5 @@
 
 ## 5. Verification
 - [ ] 5.1 `npm run test`, `check`, `build` green; sheriff boundaries respected
-- [ ] 5.2 Check contrast (AA) and 44px targets
+- [x] 5.2 Check contrast (AA) and 44px targets
 - [ ] 5.3 Review on a deploy preview on a real phone

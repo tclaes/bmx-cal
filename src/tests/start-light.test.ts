@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/svelte';
 import StartLight from '../shared/components/StartLight.svelte';
 
 describe('StartLight', () => {
-  it.each(['open', 'soon', 'closed', 'register'] as const)('renders the %s state with three lamps', (state) => {
+  it.each(['open', 'soon', 'closed', 'register'] as const)('renders the %s state with four lamps', (state) => {
     const { container } = render(StartLight, { props: { state } });
     expect(container.querySelector(`.start-light-${state}`)).toBeInTheDocument();
-    expect(container.querySelectorAll('.lamp')).toHaveLength(3);
+    expect(container.querySelectorAll('.lamp')).toHaveLength(4);
   });
 
   it('exposes the label to assistive tech when given', () => {

@@ -5,8 +5,9 @@ import RaceRow from '../shared/components/RaceRow.svelte';
 const base = {
   title: 'UEC BMX European Cup Round 1',
   href: '/events/1',
-  dateLabel: 'Vr 13 mrt',
-  location: 'Zolder',
+  day: '13',
+  month: 'mrt',
+  meta: 'Vrijdag · Zolder',
   type: 'European Cup',
   registrationUrl: 'https://example.com/register',
   registerLabel: 'Inschrijven',
@@ -28,7 +29,7 @@ describe('RaceRow', () => {
     expect(register).toHaveAttribute('target', '_blank');
     expect(register).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(register.closest('.action')).not.toBeNull();
-    expect(register.closest('.main')).toBeNull();
+    expect(register.closest('.row-link')).toBeNull();
   });
 
   it('shows the opening time and no button before registration opens', () => {

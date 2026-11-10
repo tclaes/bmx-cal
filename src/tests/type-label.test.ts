@@ -5,13 +5,13 @@ import TypeLabel from '../shared/components/TypeLabel.svelte';
 describe('TypeLabel', () => {
   it('uses the token set of a known type', () => {
     render(TypeLabel, { props: { type: 'European Cup' } });
-    const label = screen.getByText('EC');
+    const label = screen.getByText('EC').closest('.type-label');
     expect(label).toHaveClass('type-ec');
   });
 
   it('falls back to a neutral style for an unknown type', () => {
     render(TypeLabel, { props: { type: 'Dare2Race' } });
-    const label = screen.getByText('DAR');
+    const label = screen.getByText('DAR').closest('.type-label');
     expect(label).toHaveClass('type-unknown');
   });
 

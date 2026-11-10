@@ -43,7 +43,7 @@
   --race-cv-ring: #ffe922;
   --race-tc-bg: #def;
   --race-tc-fg: #111;
-  --race-tc-stripe: linear-gradient(#111 0 33%, #ffe922 33% 66%, #e11d2a 66%);
+  --race-tc-stripe: linear-gradient(to right, #111 0 33%, #ffe922 33% 66%, #e11d2a 66%);
   --race-tc-ring: #def;
   --race-cw-bg: #c81e2b;
   --race-cw-fg: #fff;
@@ -59,7 +59,7 @@
   --race-ec-ring: #6c8ff0;
   --race-wc-bg: #fff;
   --race-wc-fg: #111;
-  --race-wc-stripe: linear-gradient(#e11d2a, #ff7a2b, #ffe922, #35d07f, #2aa5e0, #8a4fd8);
+  --race-wc-stripe: linear-gradient(to right, #e11d2a, #ff7a2b, #ffe922, #35d07f, #2aa5e0, #8a4fd8);
   --race-wc-ring: #2aa5e0;
 
   /* Unknown race type fallback */

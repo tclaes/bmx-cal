@@ -286,7 +286,11 @@
     cursor: pointer;
     transition: all var(--transition-base);
     line-height: 1;
-    min-width: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--touch-target-min);
+    min-block-size: var(--touch-target-min);
     text-align: center;
   }
 
