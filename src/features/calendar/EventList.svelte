@@ -80,7 +80,7 @@
 
     {#if rest.length > 0}
       <div class="list-head">
-        <h2 class="list-title">{$t.calendar.thenHeading}</h2>
+        <h2 class="list-title">{hero ? $t.calendar.thenHeading : ''}</h2>
         <span class="count">{countLabel}</span>
       </div>
 

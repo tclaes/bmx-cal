@@ -35,8 +35,8 @@
 - [x] 5.6 Tests for the route, loading fallback, not-found and edit visibility
 
 ## 6. Verification
-- [ ] 6.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
-- [ ] 6.2 Contrast (AA) and 44px targets on the new screens (row link, star and registration button separately)
-- [ ] 6.3 Test with real data: long titles, missing location, unknown types, registration closed/open/soon
+- [x] 6.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
+- [x] 6.2 Contrast (AA) and 44px targets on the new screens (row link, star and registration button separately)
+- [x] 6.3 Test with real data: long titles, missing location, unknown types, registration closed/open/soon
 - [ ] 6.4 Review mobile and desktop in Bolt on a real phone against the reference images
-- [ ] 6.5 Remove unused files (`EventCard.svelte`, old dropdown usage) and update `ARCHITECTURE.md` if it names them
+- [x] 6.5 Remove unused files (`EventCard.svelte`, old dropdown usage) and update `ARCHITECTURE.md` if it names them
