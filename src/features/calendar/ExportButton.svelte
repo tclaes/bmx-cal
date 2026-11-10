@@ -1,45 +1,18 @@
 <script lang="ts">
-  import { eventsStore } from '@core/stores';
-  import { filtersStore } from '@core/stores';
   import { generateICalContent, downloadICalFile } from '@shared/utils';
   import Button from '@ui/Button.svelte';
-  import type { EventWithDetails } from '@types';
-
-  $: filteredEvents = getFilteredEvents($eventsStore.events, $filtersStore);
-
-  function getFilteredEvents(events: EventWithDetails[], filters: any): EventWithDetails[] {
-    return events.filter(event => {
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const matchesSearch =
-          event.title.toLowerCase().includes(searchLower) ||
-          event.description?.toLowerCase().includes(searchLower) ||
-          event.location?.toLowerCase().includes(searchLower);
-        if (!matchesSearch) return false;
-      }
-
-      if (filters.eventType && event.event_type_id !== filters.eventType) {
-        return false;
-      }
-
-      if (filters.status && event.status !== filters.status) {
-        return false;
-      }
-
-      return true;
-    });
-  }
+  import { visibleEvents } from './visible-events';
+  import { t } from '../../i18n';
 
   function handleExportClick() {
-    const content = generateICalContent(filteredEvents);
+    const content = generateICalContent($visibleEvents);
     downloadICalFile(content, 'bmx-events.ics');
   }
 </script>
 
 <Button variant="secondary" on:click={handleExportClick}>
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
     <path d="M14 10v2.667A1.333 1.333 0 0112.667 14H3.333A1.333 1.333 0 012 12.667V10M11.333 5.333L8 2m0 0L4.667 5.333M8 2v8"/>
   </svg>
-  Export Calendar
+  {$t.calendar.exportCalendar}
 </Button>
-

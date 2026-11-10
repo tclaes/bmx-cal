@@ -6,10 +6,10 @@
 - [x] 1.3 Add the i18n keys (nl, fr, en) for hero label, "Daarna", race count, save/saved, type chips, not-found and empty state
 
 ## 2. Filtering logic
-- [ ] 2.1 Extract the filtering from `EventList.svelte` into a util + derived `visibleEvents` next to `event-search.ts`
-- [ ] 2.2 Pin hero/list semantics: hero is the next upcoming race, with past events on the past races follow the upcoming ones
-- [ ] 2.3 Make `ExportButton` use `visibleEvents` (fixes the export ignoring filters)
-- [ ] 2.4 Unit tests for filtering, hero selection and export input
+- [x] 2.1 Extract the filtering from `EventList.svelte` into a util + derived `visibleEvents` next to `event-search.ts`
+- [x] 2.2 Pin hero/list semantics: hero is the next upcoming race, with past events on the past races follow the upcoming ones
+- [x] 2.3 Make `ExportButton` use `visibleEvents` (fixes the export ignoring filters)
+- [x] 2.4 Unit tests for filtering, hero selection and export input
 
 ## 3. Shared UI additions
 - [ ] 3.1 Extend `RaceRow` with a save (star) slot and a livestream link; keep it presentational

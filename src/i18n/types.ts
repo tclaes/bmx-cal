@@ -74,6 +74,7 @@ export interface Translations {
     timeLabel: string;
     locationLabel: string;
     openDetails: string;
+    exportCalendar: string;
     registrationHeading: string;
     ongoing: string;
   };

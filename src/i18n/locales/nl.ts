@@ -76,6 +76,7 @@ export const nl: Translations = {
     timeLabel: 'Uur',
     locationLabel: 'Locatie',
     openDetails: 'Details van {name} openen',
+    exportCalendar: 'Kalender exporteren',
     registrationHeading: 'Inschrijving',
     ongoing: 'Bezig',
   },

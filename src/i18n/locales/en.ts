@@ -76,6 +76,7 @@ export const en: Translations = {
     timeLabel: 'Time',
     locationLabel: 'Location',
     openDetails: 'Open details for {name}',
+    exportCalendar: 'Export calendar',
     registrationHeading: 'Registration',
     ongoing: 'Ongoing',
   },

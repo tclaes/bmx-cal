@@ -76,6 +76,7 @@ export const fr: Translations = {
     timeLabel: 'Heure',
     locationLabel: 'Lieu',
     openDetails: 'Ouvrir les détails de {name}',
+    exportCalendar: 'Exporter le calendrier',
     registrationHeading: 'Inscription',
     ongoing: 'En cours',
   },
