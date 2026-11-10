@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@ui';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { navigate } from '../../router';
   import { supabase } from '@data';
   import { t, interpolate } from '../../i18n';

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { authStore, selectedEventIds } from '@core/stores';
   import { AuthService } from '@core/services';
-  import { selectionService } from '@core/services/selection.service';
+  import { selectionService } from '@core/services';
   import { currentRoute, navigate } from '../router';
   import { locale, t } from '../i18n';
   import type { Locale } from '../i18n';

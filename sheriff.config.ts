@@ -2,18 +2,27 @@ import { noDependencies } from '@softarc/sheriff-core';
 
 const tag = (name: string) => [name];
 
+const featureDeps = ['ui', 'shared', 'services', 'stores', 'data', 'types', 'i18n', 'router'];
+
 export const sheriffConfig = {
   entryFile: 'src/main.ts',
   // Modules are only the folders below. Deep imports inside the project are allowed,
   // so folders with their own index.ts are no separate (untagged) modules.
   enableBarrelLess: true,
   autoTagging: false,
+  // Sheriff cannot resolve .svelte files, so these imports are skipped here.
+  // eslint.config.js adds restrictions for deep .svelte imports instead.
+  ignoreFileExtensions: (defaults: string[]) => [...defaults, 'svelte'],
   modules: {
+    'src/features/about': tag('about'),
     'src/features/calendar': tag('calendar'),
     'src/features/admin': tag('admin'),
     'src/features/auth': tag('auth'),
     'src/features/bug-report': tag('bug-report'),
+    'src/features/guide': tag('guide'),
+    'src/features/legal': tag('legal'),
     'src/features/my-events': tag('my-events'),
+    'src/features/news': tag('news'),
     'src/features/profile': tag('profile'),
     'src/features/team-manager': tag('team-manager'),
     'src/libs/ui': tag('ui'),
@@ -31,14 +40,18 @@ export const sheriffConfig = {
   depRules: {
     // src/main.ts is the app entry: it wires up the update check and stores.
     root: ['stores', 'shared'],
-    calendar: ['ui', 'shared', 'services', 'stores', 'data', 'types'],
-    admin: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'bug-report'],
-    auth: ['ui', 'shared', 'services', 'stores', 'data', 'types'],
-    'bug-report': ['ui', 'stores', 'data', 'types'],
-    'my-events': ['ui', 'shared', 'services', 'stores', 'types'],
-    profile: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'config'],
-    'team-manager': ['ui', 'shared', 'services', 'stores', 'data', 'types'],
-    shared: ['ui', 'stores', 'services', 'types', 'i18n', 'config'],
+    about: featureDeps,
+    calendar: featureDeps,
+    admin: [...featureDeps, 'bug-report'],
+    auth: featureDeps,
+    'bug-report': [...featureDeps],
+    guide: featureDeps,
+    legal: featureDeps,
+    'my-events': featureDeps,
+    news: featureDeps,
+    profile: [...featureDeps, 'config'],
+    'team-manager': featureDeps,
+    shared: ['shared', 'ui', 'stores', 'services', 'types', 'i18n', 'config'],
     layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
     ui: ['types', 'shared'],
     services: ['data', 'types'],
@@ -46,7 +59,8 @@ export const sheriffConfig = {
     data: ['types'],
     types: noDependencies,
     config: noDependencies,
-    router: ['shared'],
+    // The router lazy-loads the feature pages.
+    router: ['shared', 'i18n', 'stores', 'about', 'admin', 'auth', 'bug-report', 'calendar', 'guide', 'legal', 'my-events', 'news', 'profile', 'team-manager'],
     i18n: noDependencies,
   },
 };

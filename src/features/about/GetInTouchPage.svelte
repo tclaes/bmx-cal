@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from '../../router';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { t, interpolate } from '../../i18n';
 
   let name = '';

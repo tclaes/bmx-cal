@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
   import { LoadingSpinner, Alert } from '@ui';
   import { eventsStore, filtersStore, authStore } from '@core/stores';
   import { EventsService } from '@core/services';
-  import { canEditEvent } from '@shared/utils/permissions';
+  import { canEditEvent } from '@shared/utils';
   import { searchEvents } from './event-search';
   import type { EventWithDetails, Event } from '@types';
   import { t } from '../../i18n';
