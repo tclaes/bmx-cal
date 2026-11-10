@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import TypeLabel from '../shared/components/TypeLabel.svelte';
+import TypeLabel from '@ui/TypeLabel.svelte';
 
 describe('TypeLabel', () => {
   it('uses the token set of a known type', () => {

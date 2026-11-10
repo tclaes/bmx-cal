@@ -1,13 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getRegistrationStatus, getFridayBefore } from '@shared/utils/registration-status';
+import { getRegistrationStatus, getFridayBefore } from '../features/calendar/registration-status';
 
 const FUTURE_EVENT_DATE = '2099-06-15';
 const PAST_DEADLINE = '2020-01-01';
 
+function toLocalDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const date = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${date}`;
+}
+
 function makeFutureDeadline(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
-  return d.toISOString().split('T')[0];
+  return toLocalDateStr(d);
 }
 
 function makeEventBeforeFriday(): string {
@@ -15,7 +22,7 @@ function makeEventBeforeFriday(): string {
   friday.setDate(friday.getDate() + 14);
   const sunday = new Date(friday);
   sunday.setDate(friday.getDate() + 2);
-  return sunday.toISOString().split('T')[0];
+  return toLocalDateStr(sunday);
 }
 
 describe('getRegistrationStatus', () => {
@@ -156,18 +163,18 @@ describe('getFridayBefore', () => {
   it('returns the Friday before a Sunday event', () => {
     const friday = getFridayBefore('2026-04-12');
     expect(friday.getDay()).toBe(5);
-    expect(friday.toISOString().split('T')[0]).toBe('2026-04-10');
+    expect(toLocalDateStr(friday)).toBe('2026-04-10');
   });
 
   it('returns the Friday before a Saturday event', () => {
     const friday = getFridayBefore('2026-04-11');
     expect(friday.getDay()).toBe(5);
-    expect(friday.toISOString().split('T')[0]).toBe('2026-04-10');
+    expect(toLocalDateStr(friday)).toBe('2026-04-10');
   });
 
   it('returns same day when event is on a Friday', () => {
     const friday = getFridayBefore('2026-04-10');
     expect(friday.getDay()).toBe(5);
-    expect(friday.toISOString().split('T')[0]).toBe('2026-04-10');
+    expect(toLocalDateStr(friday)).toBe('2026-04-10');
   });
 });

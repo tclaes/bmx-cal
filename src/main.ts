@@ -1,6 +1,6 @@
 import './app.css'
 import App from './App.svelte'
-import { updateStore } from '@shared/stores/pwa.store';
+import { updateStore } from '@core/stores/pwa.store';
 import { checkForUpdate, storeCurrentVersion } from '@shared/utils/version-checker';
 
 const app = new App({
@@ -20,9 +20,12 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
         navigator.serviceWorker.addEventListener('message', event => {
+          if (event.source !== navigator.serviceWorker.controller) return;
           if (event.data?.type === 'SW_UPDATED') {
             const updatedVersionInfo = checkForUpdate();
-            updateStore.setAvailable(true, updatedVersionInfo.forceUpdate);
+            if (updatedVersionInfo.hasUpdate) {
+              updateStore.setAvailable(true, updatedVersionInfo.forceUpdate);
+            }
           }
         });
 

@@ -1,11 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import Modal from '../../shared/components/Modal.svelte';
-  import Button from '../../shared/components/Button.svelte';
-  import Input from '../../shared/components/Input.svelte';
-  import Alert from '../../shared/components/Alert.svelte';
-  import { CalendarService } from '../../shared/services/calendar.service';
-  import type { SavedCalendar } from '../../shared/services/calendar.service';
+  import Modal from '@ui/Modal.svelte';
+  import Button from '@ui/Button.svelte';
+  import Input from '@ui/Input.svelte';
+  import Alert from '@ui/Alert.svelte';
+  import { CalendarService } from '@core/services/calendar.service';
+  import type { SavedCalendar } from '@core/services/calendar.service';
+  import { formatLongDate } from '@shared/utils';
 
   export let open = false;
   export let selectedEventIds: string[] = [];
@@ -73,7 +74,7 @@
       <div class="meta">
         <span class="meta-label">Saved on</span>
         <span class="meta-value">
-          {new Date().toLocaleDateString('nl-BE', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {formatLongDate(new Date().toISOString())}
         </span>
       </div>
 

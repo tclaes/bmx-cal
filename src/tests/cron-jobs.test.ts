@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { supabase } from '../data/supabase';
 
-describe('Cron Jobs Configuration', () => {
+const isMock = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('mock-supabase-project');
+
+describe.runIf(!isMock)('Cron Jobs Configuration', () => {
   let isConnected = false;
 
   beforeAll(async () => {

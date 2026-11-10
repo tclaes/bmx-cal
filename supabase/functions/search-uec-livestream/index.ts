@@ -46,10 +46,38 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Only the scheduled cron run (service-role bearer) or a platform admin may
+    // trigger this; it spends third-party API quota and writes with the service role.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // The scheduled cron run authenticates with a shared token from
+    // cron_auth_tokens (survives service-role key rotations).
+    const { data: tokenRow } = await supabase
+      .from("cron_auth_tokens")
+      .select("token")
+      .eq("name", "search-uec-livestream")
+      .maybeSingle();
+    const cronToken = tokenRow?.token ?? "";
+
+    if (bearer !== serviceRoleKey && !(cronToken.length > 0 && bearer === cronToken)) {
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData } = await userClient.auth.getUser();
+      if (userData?.user?.app_metadata?.role !== "admin") {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const testEventId: string | undefined = body.event_id;

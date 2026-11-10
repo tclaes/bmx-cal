@@ -1,20 +1,45 @@
-import { noDependencies, sameTag, tag } from '@softarc/sheriff-core';
+import { noDependencies } from '@softarc/sheriff-core';
+
+const tag = (name: string) => [name];
 
 export const sheriffConfig = {
   tagging: {
     'src/features/calendar': tag('calendar'),
     'src/features/admin': tag('admin'),
-    'src/shared/components': tag('components'),
-    'src/shared/services': tag('services'),
+    'src/features/auth': tag('auth'),
+    'src/features/bug-report': tag('bug-report'),
+    'src/features/my-events': tag('my-events'),
+    'src/features/profile': tag('profile'),
+    'src/features/team-manager': tag('team-manager'),
+    'src/libs/ui': tag('ui'),
+    'src/libs/core/services': tag('services'),
+    'src/libs/core/stores': tag('stores'),
+    'src/shared': tag('shared'),
+    'src/layout': tag('layout'),
     'src/data': tag('data'),
     'src/types': tag('types'),
+    'src/config': tag('config'),
+    'src/router': tag('router'),
+    'src/i18n': tag('i18n'),
   },
   depRules: {
-    calendar: ['components', 'services', 'data', 'types'],
-    admin: ['components', 'services', 'data', 'types'],
-    components: ['types'],
+    root: noDependencies,
+    calendar: ['ui', 'shared', 'services', 'stores', 'data', 'types'],
+    admin: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'bug-report'],
+    auth: ['ui', 'shared', 'services', 'stores', 'data', 'types'],
+    'bug-report': ['ui', 'stores', 'data', 'types'],
+    'my-events': ['ui', 'shared', 'services', 'stores', 'types'],
+    profile: ['ui', 'shared', 'services', 'stores', 'data', 'types', 'config'],
+    'team-manager': ['ui', 'shared', 'services', 'stores', 'data', 'types'],
+    shared: ['ui', 'stores', 'services', 'types', 'i18n'],
+    layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
+    ui: ['types', 'shared'],
     services: ['data', 'types'],
+    stores: ['services', 'shared', 'types'],
     data: ['types'],
     types: noDependencies,
+    config: noDependencies,
+    router: ['shared'],
+    i18n: noDependencies,
   },
 };

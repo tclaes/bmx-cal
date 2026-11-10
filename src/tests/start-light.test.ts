@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import StartLight from '../shared/components/StartLight.svelte';
+import StartLight from '@ui/StartLight.svelte';
 
 describe('StartLight', () => {
   it.each(['open', 'soon', 'closed', 'register'] as const)('renders the %s state with four lamps', (state) => {

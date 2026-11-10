@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { eventsStore } from '@shared/stores';
-  import { filtersStore } from '@shared/stores/filters.store';
+  import { eventsStore } from '@core/stores';
+  import { filtersStore } from '@core/stores/filters.store';
   import { generateICalContent, downloadICalFile } from '@shared/utils';
-  import Button from '@shared/components/Button.svelte';
+  import Button from '@ui/Button.svelte';
   import type { EventWithDetails } from '@types';
 
   $: filteredEvents = getFilteredEvents($eventsStore.events, $filtersStore);
@@ -36,7 +36,7 @@
   }
 </script>
 
-<Button variant="outline" on:click={handleExportClick}>
+<Button variant="secondary" on:click={handleExportClick}>
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
     <path d="M14 10v2.667A1.333 1.333 0 0112.667 14H3.333A1.333 1.333 0 012 12.667V10M11.333 5.333L8 2m0 0L4.667 5.333M8 2v8"/>
   </svg>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import Dropdown from '@shared/components/Dropdown.svelte';
+import Dropdown from '@ui/Dropdown.svelte';
 
 describe('Dropdown Component', () => {
   it('renders with label and placeholder', () => {

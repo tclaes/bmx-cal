@@ -73,6 +73,7 @@ export interface TeamManager {
   team_id: string;
   created_at: string;
   team?: Team;
+  user_email?: string;
 }
 
 export interface TeamMember {
@@ -94,21 +95,21 @@ export interface AdminUser {
 
 export interface CreateEventInput {
   title: string;
-  description?: string;
+  description?: string | null;
   date: string;
-  end_date?: string;
-  start_time?: string;
-  end_time?: string;
+  end_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
   location: string;
-  location_id?: string;
-  event_type_id?: string;
-  related_event_type_id?: string;
-  team_id?: string;
+  location_id?: string | null;
+  event_type_id?: string | null;
+  related_event_type_id?: string | null;
+  team_id?: string | null;
   status?: 'upcoming' | 'completed' | 'cancelled';
-  registration_url?: string;
-  registration_opens?: string;
-  registration_deadline?: string;
-  registration_status?: string;
+  registration_url?: string | null;
+  registration_opens?: string | null;
+  registration_deadline?: string | null;
+  registration_status?: string | null;
 }
 
 export interface UpdateEventInput extends Partial<CreateEventInput> {
@@ -119,14 +120,40 @@ export interface ParsedEvent {
   title: string;
   description?: string;
   date: string;
+  end_date?: string;
   start_time?: string;
   end_time?: string;
   location?: string;
+  location_id?: string;
   event_type?: string;
+  event_type_id?: string;
 }
 
 export interface ImportResult {
   success: boolean;
   imported: number;
   errors: Array<{ row: number; error: string }>;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string;
+  author: string;
+  published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PushSubscription {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+  updated_at: string;
 }

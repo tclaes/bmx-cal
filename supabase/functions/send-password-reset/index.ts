@@ -7,6 +7,48 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+// Password reset links may only ever point at an origin we control. The request
+// body and the Origin header are attacker-controlled, so they are never trusted.
+const DEFAULT_SITE_URL = "https://bmxkalender.be";
+
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const recentResets = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (recentResets.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (hits.length >= RATE_LIMIT_MAX) {
+    recentResets.set(ip, hits);
+    return true;
+  }
+  hits.push(now);
+  recentResets.set(ip, hits);
+  if (recentResets.size > 5000) recentResets.clear();
+  return false;
+}
+
+function resolveSiteOrigin(): string {
+  const configured = Deno.env.get("SITE_URL")?.trim();
+  if (!configured) return DEFAULT_SITE_URL;
+  try {
+    const url = new URL(configured);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return DEFAULT_SITE_URL;
+    return url.origin;
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -24,7 +66,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { email, appUrl } = await req.json();
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("cf-connecting-ip") ||
+      "unknown";
+
+    if (isRateLimited(clientIp)) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { email } = await req.json();
 
     if (!email?.trim()) {
       return new Response(
@@ -54,20 +108,23 @@ Deno.serve(async (req: Request) => {
     }
 
     const tokenHash = linkData.properties?.hashed_token;
-    const origin = appUrl || req.headers.get("origin") || supabaseUrl;
+    const origin = resolveSiteOrigin();
 
     if (!tokenHash) {
       throw new Error("Failed to generate reset token");
     }
 
-    const resetUrl = `${origin}/reset-password?token_hash=${tokenHash}&type=recovery`;
+    const resetUrl = `${origin}/reset-password?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`;
+
+    // HTML-escape the URL for safe inclusion in the email template
+    const escapedResetUrl = escapeHtml(resetUrl);
 
     const htmlBody = `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #1a1a1a;">Reset your password</h2>
         <p style="color: #555;">You requested a password reset for your BMX Calendar account.</p>
         <p style="color: #555;">Click the button below to set a new password. This link is valid for 1 hour.</p>
-        <a href="${resetUrl}" style="display:inline-block;margin:24px 0;padding:12px 28px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">
+        <a href="${escapedResetUrl}" style="display:inline-block;margin:24px 0;padding:12px 28px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">
           Reset password
         </a>
         <p style="color:#999;font-size:0.85rem;">If you didn't request this, you can safely ignore this email.</p>
@@ -102,7 +159,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     console.error("Unexpected error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal server error", detail: String(err) }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

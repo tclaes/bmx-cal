@@ -8,6 +8,13 @@ import {
   isVersionOutdated,
 } from '@shared/utils/version-checker';
 
+vi.mock('@config/version', () => ({
+  APP_VERSION: '0.0.2',
+  MIN_VERSION: '0.0.1',
+  FORCE_UPDATE: true,
+  RELEASE_NOTES: 'Test release notes',
+}));
+
 describe('version-checker', () => {
   beforeEach(() => {
     localStorage.clear();

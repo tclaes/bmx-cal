@@ -2,15 +2,15 @@
   import EventFilters from './EventFilters.svelte';
   import EventList from './EventList.svelte';
   import ExportButton from './ExportButton.svelte';
-  import AccountCTA from '@shared/components/AccountCTA.svelte';
-  import { authStore } from '@shared/stores';
+  import AccountCTA from './AccountCTA.svelte';
+  import { authStore } from '@core/stores';
   import { t } from '../../i18n';
 
   $: isAuthenticated = $authStore.user !== null;
 </script>
 
 <div class="calendar-view">
-  <div class="calendar-layout">
+  <div class="calendar-layout" class:no-sidebar={isAuthenticated}>
     <div class="calendar-main">
       <div class="calendar-header">
         <div class="header-content">
@@ -50,6 +50,10 @@
     grid-template-columns: 1fr 300px;
     gap: var(--spacing-xl);
     align-items: start;
+  }
+
+  .calendar-layout.no-sidebar {
+    grid-template-columns: 1fr;
   }
 
   .calendar-main {
@@ -93,13 +97,13 @@
   }
 
   @media (max-width: 1024px) {
-    .calendar-layout {
+    .calendar-layout:not(.no-sidebar) {
       grid-template-columns: 1fr 260px;
     }
   }
 
   @media (max-width: 768px) {
-    .calendar-layout {
+    .calendar-layout:not(.no-sidebar) {
       grid-template-columns: 1fr;
     }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { groupEventsByYear, getDefaultOpenYears } from '../shared/utils/event-grouping';
+import { groupEventsByYear, getDefaultOpenYears } from '../features/admin/event-grouping';
 import type { EventWithType } from '../types';
 
 function makeEvent(id: string, date: string): EventWithType {

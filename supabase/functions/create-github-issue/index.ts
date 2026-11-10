@@ -71,7 +71,7 @@ Deno.serve(async (req: Request) => {
       payload.reporter_email ? `**Reported by:** ${payload.reporter_email}` : `**Reported by:** Anonymous`,
       `**Report ID:** \`${payload.id}\``,
       `**Submitted at:** ${new Date(payload.created_at).toUTCString()}`,
-      payload.screenshot_url
+      payload.screenshot_url && isValidUrl(payload.screenshot_url)
         ? `\n**Screenshot:**\n![Screenshot](${payload.screenshot_url})`
         : "",
     ]
@@ -121,3 +121,12 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
+
+function isValidUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}

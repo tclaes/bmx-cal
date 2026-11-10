@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import type { Event, EventType, Location } from '@types';
-  import { Modal, Button, Input, Select, LocationPicker } from '@shared/components';
-  import { EventsService } from '@shared/services';
+  import { Modal, Button, Input, Select } from '@ui';
+  import { LocationPicker } from '@shared';
+  import { EventsService } from '@core/services';
 
   export let event: Event | null = null;
   export let eventTypes: EventType[] = [];
@@ -237,7 +238,7 @@
 
 <style>
   .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-md);
   }
 
   .form-group--cols {
@@ -258,7 +259,7 @@
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm, 4px);
+    border-radius: var(--border-radius-sm);
     font-family: inherit;
     font-size: var(--font-size-sm);
     resize: vertical;
@@ -273,20 +274,20 @@
   }
 
   .error-message {
-    padding: 0.75rem;
-    background-color: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
-    color: #dc2626;
+    padding: var(--spacing-sm-plus);
+    background-color: var(--color-danger-light);
+    border: 1px solid var(--color-danger-hover);
+    border-radius: var(--border-radius-sm);
+    color: var(--color-danger-hover);
     font-size: var(--font-size-sm);
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-md);
   }
 
   .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
+    gap: var(--spacing-sm-plus);
+    margin-top: var(--spacing-lg);
   }
 
   @media (max-width: 480px) {

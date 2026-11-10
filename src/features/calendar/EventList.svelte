@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { toUserMessage } from '@shared/utils/error-message';
   import EventCard from './EventCard.svelte';
   import EventEditor from './EventEditor.svelte';
-  import { LoadingSpinner, Alert } from '@shared/components';
-  import { eventsStore, filtersStore, authStore } from '@shared/stores';
-  import { EventsService } from '@shared/services';
+  import { LoadingSpinner, Alert } from '@ui';
+  import { eventsStore, filtersStore, authStore } from '@core/stores';
+  import { EventsService } from '@core/services';
   import { canEditEvent } from '@shared/utils/permissions';
-  import { searchEvents } from '@shared/utils/event-search';
+  import { searchEvents } from './event-search';
   import type { EventWithDetails, Event } from '@types';
   import { t } from '../../i18n';
 
@@ -30,7 +31,7 @@
 
     if (filters.selectedEventTypes.length > 0) {
       result = result.filter(event =>
-        filters.selectedEventTypes.includes(event.event_type_id)
+        event.event_type_id !== null && filters.selectedEventTypes.includes(event.event_type_id)
       );
     }
 
@@ -66,7 +67,7 @@
           eventsStore.setEventTypes(eventTypes);
           eventsStore.setLocations(locations);
         } catch (error) {
-          eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
+          eventsStore.setError(toUserMessage(error, 'Failed to reload events'));
         } finally {
           eventsStore.setLoading(false);
         }
@@ -76,10 +77,8 @@
   }
 
   function handleEdit(event: CustomEvent<EventWithDetails>) {
-    console.log('Edit event received:', event.detail);
     editingEvent = event.detail;
     showEditor = true;
-    console.log('Editor opened:', { editingEvent, showEditor });
   }
 
   async function handleSaved() {
@@ -88,7 +87,7 @@
       const events = await EventsService.getAllEvents();
       eventsStore.setEvents(events);
     } catch (error) {
-      eventsStore.setError(error instanceof Error ? error.message : 'Failed to reload events');
+      eventsStore.setError(toUserMessage(error, 'Failed to reload events'));
     } finally {
       eventsStore.setLoading(false);
     }
@@ -111,7 +110,7 @@
       eventsStore.setEventTypes(eventTypes);
       eventsStore.setLocations(locations);
     } catch (error) {
-      eventsStore.setError(error instanceof Error ? error.message : 'Failed to load events');
+      eventsStore.setError(toUserMessage(error, 'Failed to load events'));
     } finally {
       eventsStore.setLoading(false);
     }

@@ -1,6 +1,28 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import App from '../App.svelte';
+vi.mock('@config/version', () => ({
+  APP_VERSION: '0.0.2',
+  MIN_VERSION: '0.0.1',
+  FORCE_UPDATE: true,
+  RELEASE_NOTES: 'Test release notes',
+}));
+
+vi.mock('@data/supabase', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+      onAuthStateChange: vi.fn().mockReturnValue({
+        data: { subscription: { unsubscribe: () => {} } },
+      }),
+    },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    }),
+  },
+}));
 
 describe('Footer version check', () => {
   beforeEach(() => {

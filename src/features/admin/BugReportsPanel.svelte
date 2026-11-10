@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Button, Alert, LoadingSpinner, Badge } from '@shared/components';
+  import { toUserMessage, formatDateTime } from '@shared/utils';
+  import { Button, Alert, LoadingSpinner, Badge } from '@ui';
   import { adminBugReportService } from '@features/bug-report/bug-report.service';
   import type { BugReport } from '@features/bug-report/bug-report.service';
 
@@ -28,7 +29,7 @@
       const fetched = await adminBugReportService.getAllReports();
       reports = await adminBugReportService.syncGithubStatuses(fetched);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load bug reports';
+      error = toUserMessage(err, 'Failed to load bug reports');
     } finally {
       loading = false;
     }
@@ -40,20 +41,10 @@
       await adminBugReportService.updateStatus(report.id, status, report);
       reports = reports.map(r => r.id === report.id ? { ...r, status } : r);
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to update status';
+      error = toUserMessage(err, 'Failed to update status');
     } finally {
       updatingId = null;
     }
-  }
-
-  function formatDate(d: string) {
-    return new Date(d).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   }
 
   onMount(load);
@@ -84,7 +75,7 @@
               <Badge variant={STATUS_VARIANTS[report.status] ?? 'default'}>
                 {STATUS_LABELS[report.status] ?? report.status}
               </Badge>
-              <span class="report-date">{formatDate(report.created_at)}</span>
+              <span class="report-date">{formatDateTime(report.created_at)}</span>
               {#if report.reporter_email}
                 <span class="report-email">{report.reporter_email}</span>
               {:else}

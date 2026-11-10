@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import RaceRow from '../shared/components/RaceRow.svelte';
+import RaceRow from '@ui/RaceRow.svelte';
 
 const base = {
   title: 'UEC BMX European Cup Round 1',

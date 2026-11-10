@@ -27,6 +27,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Same admin gate as create-github-issue / reopen-github-issue: the anon key
+    // satisfies verify_jwt, so the caller has to be identified here.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const { createClient } = await import("npm:@supabase/supabase-js@2");
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData } = await supabaseClient.auth.getUser();
+    if (userData?.user?.app_metadata?.role !== "admin") {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { urls }: { urls: string[] } = await req.json();
 
     if (!Array.isArray(urls) || urls.length === 0) {
@@ -74,7 +91,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -80,7 +80,7 @@ export function generateICalContent(events: EventWithDetails[]): string {
       `SUMMARY:${summary}`,
       description ? `DESCRIPTION:${description}` : '',
       locationStr ? `LOCATION:${escapeICalText(locationStr)}` : '',
-      `STATUS:CONFIRMED`,
+      'STATUS:CONFIRMED',
       'END:VEVENT'
     );
   }

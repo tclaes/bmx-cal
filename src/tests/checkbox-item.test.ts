@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import CheckboxItem from '@shared/components/CheckboxItem.svelte';
+import CheckboxItem from '@ui/CheckboxItem.svelte';
 
 describe('CheckboxItem Component', () => {
   it('renders with label', () => {

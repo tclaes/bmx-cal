@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { trackPageView, trackEvent } from '@shared/utils/analytics';
 
 describe('analytics', () => {
-  let gtagSpy: ReturnType<typeof vi.fn>;
+  let gtagSpy: (...args: unknown[]) => void;
 
   beforeEach(() => {
-    gtagSpy = vi.fn();
+    gtagSpy = vi.fn() as unknown as (...args: unknown[]) => void;
     window.gtag = gtagSpy;
     window.dataLayer = [];
   });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import Logo from '../shared/components/Logo.svelte';
+import Logo from '@ui/Logo.svelte';
 
 describe('Logo', () => {
   it('shows the wordmark by default and hides the decorative mark from assistive tech', () => {
