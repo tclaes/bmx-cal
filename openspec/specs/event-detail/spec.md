@@ -1,7 +1,7 @@
 # event-detail Specification
 
 ## Purpose
-TBD - created by archiving change redesign-calendar-screens. Update Purpose after archive.
+The single race page at /events/:id: all details of one race, its registration state and actions, and the rules for opening it from the calendar.
 
 ## Requirements
 

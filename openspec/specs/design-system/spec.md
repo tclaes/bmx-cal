@@ -1,7 +1,7 @@
 # design-system Specification
 
 ## Purpose
-TBD - created by archiving change design-system-foundation. Update Purpose after archive.
+The Startlicht design foundation: colour, type and spacing tokens, race type labels, the registration start-light, the race row and the shared UI components every screen is built from.
 
 ## Requirements
 

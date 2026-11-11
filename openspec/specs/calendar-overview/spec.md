@@ -1,7 +1,7 @@
 # calendar-overview Specification
 
 ## Purpose
-TBD - created by archiving change redesign-calendar-screens. Update Purpose after archive.
+The public calendar page: the next race hero, the race timeline, filters by search, type and date, export, the account call-to-action and its responsive layouts.
 
 ## Requirements
 
