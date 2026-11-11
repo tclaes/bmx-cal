@@ -111,6 +111,9 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-md);
+    min-block-size: var(--touch-target-min);
+    /* Narrow hero: the save star sits in the top-right corner, keep the light clear of it */
+    padding-inline-end: calc(var(--touch-target-min) + var(--spacing-sm));
   }
 
   .label {
@@ -254,9 +257,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: calc(var(--touch-target-min) + 8px);
-    min-block-size: calc(var(--touch-target-min) + 8px);
-    margin-inline-start: auto;
+    /* Narrow hero: top-right corner of the card */
+    position: absolute;
+    inset-block-start: var(--spacing-lg);
+    inset-inline-end: var(--spacing-lg);
+    min-inline-size: var(--touch-target-min);
+    min-block-size: var(--touch-target-min);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
     color: var(--color-text-primary);
@@ -287,6 +293,14 @@
 
   @container (min-width: 480px) {
     .register, .opens { flex: 0 0 auto; padding-inline: var(--spacing-xl); }
-    .save { margin-inline-start: 0; }
+
+    /* Wide hero: the star sits next to the register button as in the desktop design */
+    .top { padding-inline-end: 0; }
+
+    .save {
+      position: static;
+      min-inline-size: calc(var(--touch-target-min) + 8px);
+      min-block-size: calc(var(--touch-target-min) + 8px);
+    }
   }
 </style>
