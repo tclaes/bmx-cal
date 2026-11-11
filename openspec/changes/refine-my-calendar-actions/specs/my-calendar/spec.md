@@ -2,16 +2,23 @@
 
 ## ADDED Requirements
 
+### Requirement: Selection list
+Every visitor on the personal calendar route SHALL see all upcoming races as rows with date, type label, title and location, each with a save control that adds or removes the race from their selection. A signed-out visitor's selection SHALL be kept on their device and a signed-in user's SHALL be synced to their account.
+
+#### Scenario: Signed-out visitor selects
+- **WHEN** a signed-out visitor taps the save control on a row
+- **THEN** the race is selected on this device and the selected count increases
+
+#### Scenario: Selection from the calendar
+- **WHEN** a signed-out visitor saved races on the public calendar and opens the personal calendar route
+- **THEN** those races are shown as selected
+
 ### Requirement: Selection bar and actions
-When at least one race is selected, the signed-in personal calendar SHALL show one selection bar with the number of selected races and a control to clear the selection, followed by the export and save actions. The two actions SHALL have the same height and width, export SHALL be the only accent-filled control, and the actions SHALL stack at full width on narrow screens and sit side by side on wide screens. The save action SHALL be shown to signed-in users only.
+When at least one race is selected, the page SHALL show one selection bar with the number of selected races and a control to clear the selection, followed by the actions. For signed-in users the actions SHALL be an accent export action and an outlined save action of equal height and width, stacked at full width on narrow screens and side by side on wide screens. The save action SHALL NOT be shown to signed-out visitors.
 
-#### Scenario: Selection exists
-- **WHEN** 23 races are selected
-- **THEN** the bar shows "23 selected" with a clear control, and below or beside it an accent export action and an outlined save action of equal size
-
-#### Scenario: Signed-out visitor
-- **WHEN** a signed-out visitor has selected races
-- **THEN** the bar shows the count and clear control and only the export action, at full width on narrow screens
+#### Scenario: Signed-in with a selection
+- **WHEN** a signed-in user has 23 races selected
+- **THEN** the bar shows "23 selected" with a clear control and an accent export action and an outlined save action of equal size
 
 #### Scenario: Nothing selected
 - **WHEN** no race is selected
@@ -20,6 +27,17 @@ When at least one race is selected, the signed-in personal calendar SHALL show o
 #### Scenario: Touch targets
 - **WHEN** the bar is shown
 - **THEN** every control in it has a touch target of at least 44px
+
+### Requirement: Account required to export and save
+A signed-out visitor SHALL NOT be able to export the selection or save a calendar. In place of those actions the page SHALL show an accent action that leads to creating an account and a link to sign in.
+
+#### Scenario: Signed-out with a selection
+- **WHEN** a signed-out visitor has races selected
+- **THEN** the bar shows the count and the clear control, and a "create an account to export" action and a sign-in link instead of export and save
+
+#### Scenario: Create an account
+- **WHEN** the visitor taps the create-account action
+- **THEN** the registration page opens
 
 ### Requirement: Clear selection with undo
 Clearing the selection SHALL remove all selected races at once without a confirmation dialog and SHALL show a message with the number of cleared races and an undo action for 6 seconds. Undo SHALL restore exactly the cleared selection.
@@ -32,13 +50,27 @@ Clearing the selection SHALL remove all selected races at once without a confirm
 - **WHEN** 6 seconds pass without undo
 - **THEN** the message disappears and the selection stays empty
 
-### Requirement: Notification settings behind a feature flag
-The deadline notification settings on the personal calendar SHALL only be available when the notifications feature flag is on. The flag SHALL be off unless explicitly enabled by configuration. While it is off, the settings block SHALL NOT be shown and no push subscription calls SHALL be made from the page.
+### Requirement: Notification settings behind a flag
+The deadline notification settings SHALL only be shown to signed-in users while the `notifications` feature flag is on. While it is off, the settings block SHALL NOT be shown and no push subscription calls SHALL be made from the page.
 
 #### Scenario: Flag off
-- **WHEN** the notifications flag is not enabled
-- **THEN** the signed-in personal calendar shows no notification block and makes no push subscription check
+- **WHEN** the notifications flag is off
+- **THEN** the page shows no notification block and makes no push subscription check
 
 #### Scenario: Flag on
-- **WHEN** the notifications flag is enabled by configuration
+- **WHEN** the flag is on and a signed-in user opens the page
 - **THEN** the notification block is shown and behaves as before
+
+#### Scenario: Signed out with flag on
+- **WHEN** the flag is on and the visitor is signed out
+- **THEN** no notification block is shown
+
+## REMOVED Requirements
+
+### Requirement: Signed-in selection list
+**Reason**: Replaced by the visitor-wide "Selection list" requirement; signed-out visitors now use the same list.
+**Migration**: Use the "Selection list" requirement.
+
+### Requirement: Signed-out preview
+**Reason**: Signed-out visitors now see the real list and their own selection instead of a sample preview, and sign-up is offered through the account action.
+**Migration**: The demo page and its sample data are deleted; the route keeps its title and description.

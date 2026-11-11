@@ -2,26 +2,27 @@
 
 ## Why
 
-The action block at the top of the signed-in personal calendar has uneven spacing (a full-width counter above buttons of different widths that wrap unpredictably), "Clear all" looks like an ordinary action next to "Save", and two buttons compete for attention. The notification block below it does not work at the moment, so it must not be visible until its own spec exists.
+The action block at the top of the personal calendar has uneven spacing (a full-width counter above buttons of different widths that wrap unpredictably), "Clear all" looks like an ordinary action next to "Save", and two buttons compete for attention. Signed-out visitors never see the real list or their own selection on `/my-events`, only a demo page, although they can already select races on the calendar. The notification block does not work at the moment and must be switchable by an admin until its own spec exists.
 
 ## What Changes
 
-- **Selection bar:** the count ("23 selected") with a star and a quiet "Clear selection" text button on the same bar; clearing the selection belongs to the count, not to the actions.
-- **Two actions of equal size below:** "Export (.ics)" as the single accent button, "Save calendar" outlined (signed-in only). Stacked full width on mobile, side by side on the right of the bar on desktop. Signed-out visitors see only the export button.
-- **Clear with undo:** clearing shows a toast "23 events cleared" with "Undo" for 6 seconds instead of a confirmation dialog.
-- **Notifications behind a feature flag:** a new `src/config/features.ts` exposes `notifications`, read from `VITE_FEATURE_NOTIFICATIONS` and off by default. When off, the block and its push handlers are not rendered or run. Translations and the edge function stay for the separate notifications spec.
-- Out of scope: the notification feature itself, a sticky mobile action bar, a database-backed flag.
+- **Selection bar:** count with a star and a quiet "Clear selection" text button on one bar; two actions of equal size below (accent "Export (.ics)", outlined "Save calendar"), stacked on mobile and side by side on desktop.
+- **Clear with undo:** a toast "23 events cleared" with "Undo" for 6 seconds instead of a confirmation dialog.
+- **`/my-events` opens for signed-out visitors:** they see the real list and their local selection with the selection bar (count and clear). Export and save are not available to them: an accent "Create an account to export" action (and a sign-in link) takes their place.
+- **BREAKING (UI): the signed-out demo page is removed** (`MyEventsDemoPage`, its sample data and the `myEventsDemo` texts). Its sign-up message moves into the account action. The route keeps its title and description.
+- **Feature flags in the database, editable by admins:** a `feature_flags` table (public read, admin write), a `FeatureFlagService` and store that fail closed, and a "Feature flags" section on the admin dashboard with a toggle per flag. First flag: `notifications`, off by default. While off, the notification block is not shown and no push calls are made from the page.
+- Out of scope: the notification feature itself (its own spec), a sticky mobile action bar, per-user or percentage rollouts.
 
 ## Capabilities
 
 ### New Capabilities
-None.
+- `feature-flags`: named on/off switches stored in the database, readable by everyone, changeable by admins, off when missing or unreadable.
 
 ### Modified Capabilities
-- `my-calendar`: adds requirements for the selection bar and actions, clearing with undo, and the feature-flagged notification settings.
+- `my-calendar`: selection bar and actions, clear with undo, open to signed-out visitors with export and save requiring an account, notification block behind the `notifications` flag; the signed-out preview requirement is removed.
 
 ## Impact
 
-- `src/features/my-events/MyEventsPage.svelte`, new `src/config/features.ts`, `src/i18n/locales/{nl,fr,en}.ts` and `types.ts` (new labels), `.env.example` / `docs/env.md` (flag documented).
-- Tests for the bar, undo and the flag; existing `my-events-page` tests must keep passing.
-- No database, API or edge function changes. Must pass the CI gate (tests, build, `npm run sheriff`); `config` may not depend on other modules (already enforced in `sheriff.config.ts`).
+- `src/features/my-events/*` (MyEventsPage; MyEventsDemoPage and `my-events-demo.test.ts` removed), `src/router/routes.ts` (no access rule, no fallback), `src/features/admin/AdminDashboard.svelte` (flags section), new `src/libs/core/services/feature-flag.service.ts` and `src/libs/core/stores/feature-flags.store.ts`, new migration `supabase/migrations/…_create_feature_flags.sql`, `docs/db.md`, `docs/features.md`, `src/i18n/locales/{nl,fr,en}.ts` and `types.ts`.
+- Database: one new table with RLS; applied through the Supabase MCP `apply_migration` tool as documented in `docs/db.md`.
+- Tests for the bar, undo, signed-out actions, the flag store (fail closed) and the admin toggle; `my-events-demo.test.ts` is deleted. Must pass the CI gate (tests, build, `npm run sheriff`).
