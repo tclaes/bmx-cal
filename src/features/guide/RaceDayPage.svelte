@@ -118,35 +118,35 @@
         <div class="timeline-item">
           <div class="timeline-number">1</div>
           <div class="timeline-content">
-            <h4>{$t.raceDay.timelineArriveHeading}</h4>
+            <h3>{$t.raceDay.timelineArriveHeading}</h3>
             <p>{$t.raceDay.timelineArriveDesc}</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-number">2</div>
           <div class="timeline-content">
-            <h4>{$t.raceDay.timelineSignInHeading}</h4>
+            <h3>{$t.raceDay.timelineSignInHeading}</h3>
             <p>{$t.raceDay.timelineSignInDesc}</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-number">3</div>
           <div class="timeline-content">
-            <h4>{$t.raceDay.timelinePracticeHeading}</h4>
+            <h3>{$t.raceDay.timelinePracticeHeading}</h3>
             <p>{$t.raceDay.timelinePracticeDesc}</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-number">4</div>
           <div class="timeline-content">
-            <h4>{$t.raceDay.timelineWarmupHeading}</h4>
+            <h3>{$t.raceDay.timelineWarmupHeading}</h3>
             <p>{$t.raceDay.timelineWarmupDesc}</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-number">5</div>
           <div class="timeline-content">
-            <h4>{$t.raceDay.timelineStagingHeading}</h4>
+            <h3>{$t.raceDay.timelineStagingHeading}</h3>
             <p>{$t.raceDay.timelineStagingDesc}</p>
           </div>
         </div>
@@ -159,15 +159,15 @@
 
       <div class="format-grid">
         <div class="format-card">
-          <h4>{$t.raceDay.motosHeading}</h4>
+          <h3>{$t.raceDay.motosHeading}</h3>
           <p>{$t.raceDay.motosDesc}</p>
         </div>
         <div class="format-card">
-          <h4>{$t.raceDay.semisHeading}</h4>
+          <h3>{$t.raceDay.semisHeading}</h3>
           <p>{$t.raceDay.semisDesc}</p>
         </div>
         <div class="format-card">
-          <h4>{$t.raceDay.finalsHeading}</h4>
+          <h3>{$t.raceDay.finalsHeading}</h3>
           <p>{$t.raceDay.finalsDesc}</p>
         </div>
       </div>
@@ -282,19 +282,19 @@
 
       <div class="weather-grid">
         <div class="weather-card">
-          <h4>{$t.raceDay.weatherRainHeading}</h4>
+          <h3>{$t.raceDay.weatherRainHeading}</h3>
           <p>{$t.raceDay.weatherRainDesc}</p>
         </div>
         <div class="weather-card">
-          <h4>{$t.raceDay.weatherColdHeading}</h4>
+          <h3>{$t.raceDay.weatherColdHeading}</h3>
           <p>{$t.raceDay.weatherColdDesc}</p>
         </div>
         <div class="weather-card">
-          <h4>{$t.raceDay.weatherHeatHeading}</h4>
+          <h3>{$t.raceDay.weatherHeatHeading}</h3>
           <p>{$t.raceDay.weatherHeatDesc}</p>
         </div>
         <div class="weather-card">
-          <h4>{$t.raceDay.weatherWindHeading}</h4>
+          <h3>{$t.raceDay.weatherWindHeading}</h3>
           <p>{$t.raceDay.weatherWindDesc}</p>
         </div>
       </div>
@@ -417,10 +417,14 @@
     line-height: var(--line-height-tight);
   }
 
-  section h4 {
+  /* Card headings (formerly h4, now h3 to keep the heading order) */
+  .timeline-content h3,
+  .format-card h3,
+  .weather-card h3 {
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
+    margin-block-start: 0;
     margin-block-end: var(--spacing-xs);
   }
 
@@ -491,7 +495,7 @@
     height: 36px;
     border-radius: var(--border-radius-full);
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-bold);
     flex-shrink: 0;
@@ -504,7 +508,7 @@
     flex: 1;
   }
 
-  .timeline-content h4 {
+  .timeline-content h3 {
     margin-block-end: var(--spacing-xs);
   }
 
@@ -528,7 +532,7 @@
     padding: var(--spacing-md);
   }
 
-  .format-card h4 {
+  .format-card h3 {
     color: var(--color-primary);
     margin-block-end: var(--spacing-xs);
   }
@@ -553,7 +557,7 @@
     padding: var(--spacing-md);
   }
 
-  .weather-card h4 {
+  .weather-card h3 {
     color: var(--color-text-primary);
     margin-block-end: var(--spacing-xs);
   }
@@ -583,7 +587,7 @@
   .btn-primary {
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--border-radius-md);
@@ -593,7 +597,7 @@
   }
 
   .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
   }
 
   .btn-secondary {

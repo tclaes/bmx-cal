@@ -21,9 +21,9 @@
       {/if}
     </aside>
 
-    <main class="calendar-main">
+    <div class="calendar-main">
       <EventList />
-    </main>
+    </div>
   </div>
 </div>
 

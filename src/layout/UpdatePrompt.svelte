@@ -74,13 +74,12 @@
   }
 
   .update-banner.force {
-    background-color: #fee;
-    border-color: #fcc;
+    border-color: var(--color-danger);
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
   }
 
   .update-banner.force .update-text {
-    color: #991b1b;
+    color: var(--color-text-primary);
     font-weight: var(--font-weight-medium);
   }
 
@@ -97,7 +96,7 @@
   .update-btn {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    color: white;
+    color: var(--color-text-on-accent);
     background-color: var(--color-primary);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-xs) var(--spacing-sm);

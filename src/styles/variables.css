@@ -33,7 +33,15 @@
   --color-danger: #f0555b;
   --color-danger-hover: #ff7378;
   --color-danger-light: rgb(240 85 91 / 16%);
+  --color-error: var(--color-danger);
   --color-border: #2c333d;
+  --color-border-hover: var(--color-primary);
+  --color-surface-secondary: var(--color-bg-secondary);
+  --color-surface-hover: #262d37;
+  --color-primary-dark: var(--color-primary-hover);
+  --color-primary-100: var(--color-primary-light);
+  --color-primary-200: rgb(28 154 214 / 32%);
+  --color-primary-700: var(--color-primary-hover);
   --color-border-light: #232932;
 
   /* Race types: label background / label text / stripe / dot ring */
@@ -108,6 +116,9 @@
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-full: 9999px;
+  --radius-sm: var(--border-radius-sm);
+  --radius-md: var(--border-radius-md);
+  --radius-lg: var(--border-radius-lg);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);

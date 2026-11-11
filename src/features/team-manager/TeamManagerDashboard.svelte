@@ -329,11 +329,6 @@
                   <span class="team-name">{team.name}</span>
                   <span class="event-count">{teamEvts.length} event{teamEvts.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div class="team-summary-action" on:click|stopPropagation role="none">
-                  <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
-                    + Add Event
-                  </Button>
-                </div>
               </summary>
 
               <div class="team-group-body">
@@ -441,6 +436,12 @@
                 </details>
               </div>
             </details>
+            <!-- Outside the summary: interactive elements must not be nested in it -->
+            <div class="team-summary-action">
+              <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
+                + Add Event
+              </Button>
+            </div>
           </div>
         {/each}
       {/if}
@@ -636,6 +637,7 @@
 
   /* Team group */
   .team-group {
+    position: relative;
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg, 12px);
@@ -659,7 +661,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md) var(--spacing-lg);
+    min-block-size: calc(var(--touch-target-min) + var(--spacing-md));
+    padding: var(--spacing-md) 10rem var(--spacing-md) var(--spacing-lg);
     cursor: pointer;
     transition: background 0.15s ease;
     user-select: none;
@@ -678,7 +681,9 @@
   }
 
   .team-summary-action {
-    flex-shrink: 0;
+    position: absolute;
+    inset-block-start: var(--spacing-sm);
+    inset-inline-end: var(--spacing-lg);
   }
 
   .team-chevron {
@@ -987,12 +992,17 @@
     }
 
     .team-summary {
-      flex-wrap: wrap;
-      gap: var(--spacing-sm);
+      padding-inline-end: var(--spacing-lg);
+      padding-block-end: calc(var(--touch-target-min) + var(--spacing-md) + var(--spacing-sm));
     }
 
     .team-summary-action {
-      width: 100%;
+      inset-block-start: calc(var(--spacing-md) + var(--touch-target-min));
+      inset-inline: var(--spacing-lg);
+    }
+
+    .team-summary-action :global(.button) {
+      inline-size: 100%;
     }
 
     .event-row {

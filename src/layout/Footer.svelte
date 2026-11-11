@@ -109,7 +109,7 @@
 
   .footer-link--kofi:hover {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
   }
 
   .footer-link--version {
