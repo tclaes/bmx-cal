@@ -5,6 +5,7 @@ import type { EventWithDetails } from '@types';
 
 const events = vi.hoisted(() => ({ list: [] as any[] }));
 const push = vi.hoisted(() => ({ isSupported: vi.fn(() => true), isSubscribed: vi.fn(async () => false) }));
+const nav = vi.hoisted(() => vi.fn());
 const flagsSvc = vi.hoisted(() => ({ getAll: vi.fn(async () => [] as any[]), setFlag: vi.fn() }));
 
 vi.mock('@core/services', async (orig) => {
@@ -15,6 +16,11 @@ vi.mock('@core/services', async (orig) => {
     PushService: push,
     FeatureFlagService: flagsSvc,
   };
+});
+
+vi.mock('../router', async (orig) => {
+  const actual = await orig<typeof import('../router')>();
+  return { ...actual, navigate: nav };
 });
 
 vi.mock('@core/stores', async (orig) => {
@@ -139,5 +145,82 @@ describe('MyEventsPage notifications flag', () => {
     render(MyEventsPage);
     await screen.findByText('Race 1');
     expect(screen.queryByText('Deadline meldingen')).not.toBeInTheDocument();
+  });
+});
+
+describe('MyEventsPage selection bar', () => {
+  const signIn = () => authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+
+  beforeEach(() => {
+    authStore.setUser(null);
+    selectedEventIds.set(new Set());
+  });
+
+  it('shows no bar and no actions when nothing is selected', async () => {
+    signIn();
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    expect(screen.queryByText('Selectie wissen')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Exporteren/ })).not.toBeInTheDocument();
+  });
+
+  it('signed in: count, clear, export and save', async () => {
+    signIn();
+    selectedEventIds.set(new Set(['1', '2']));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    expect(screen.getByText('2 geselecteerd')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Selectie wissen' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Exporteren/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Kalender opslaan' })).toBeInTheDocument();
+  });
+
+  it('signed out: count and clear, but no export or save; account action opens registration', async () => {
+    nav.mockClear();
+    selectedEventIds.set(new Set(['1']));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    expect(screen.getByText('1 geselecteerd')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Selectie wissen' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Exporteren/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Kalender opslaan' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Aanmelden' })).toHaveAttribute('href', '/login');
+    await fireEvent.click(screen.getByRole('button', { name: 'Maak een account om te exporteren' }));
+    expect(nav).toHaveBeenCalledWith('/register');
+  });
+});
+
+describe('MyEventsPage clear with undo', () => {
+  beforeEach(() => {
+    authStore.setUser(null);
+    selectedEventIds.set(new Set(['1', '2', '3']));
+  });
+
+  it('clears without a dialog and restores exactly the cleared selection on undo', async () => {
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+    expect(screen.getByRole('status')).toHaveTextContent('3 evenementen gewist');
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+    await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2', '3']));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('removes the message after 6 seconds and keeps the selection empty', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      render(MyEventsPage);
+      await screen.findByText('Race 1');
+      await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+      await waitFor(() => expect(screen.getByRole('status')).toBeInTheDocument());
+      vi.advanceTimersByTime(5900);
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      vi.advanceTimersByTime(200);
+      await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+      expect(get(selectedEventIds).size).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

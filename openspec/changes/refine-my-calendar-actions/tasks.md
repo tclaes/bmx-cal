@@ -17,12 +17,12 @@
 
 ## 4. Selection bar and actions
 
-- [ ] 4.1 Add i18n labels (nl, fr, en): "Clear selection", "{count} events cleared", "Undo", "Create an account to export", "Sign in", and a one-line reason; remove the `myEventsDemo` texts
-- [ ] 4.2 Rebuild the header block: selection bar (star, count, clear) and, for signed-in users, equal accent export and outlined save actions (stacked on mobile, in the bar from 768px); tests for none selected, signed in
-- [ ] 4.3 Signed-out visitors: remove `access` and `fallback` from the `/my-events` route; show the account action and sign-in link instead of export and save; test that export and save are not rendered and the account action opens `/register`
-- [ ] 4.4 Delete `MyEventsDemoPage.svelte` and `my-events-demo.test.ts`; fix remaining references (`grep -rn "MyEventsDemo\|myEventsDemo" src` is empty)
-- [ ] 4.5 Clear with 6 second undo toast restoring the exact previous selection; tests with fake timers for clear, undo and expiry
-- [ ] 4.6 Spacing on tokens, all controls at least 44px; `grep -nE "#[0-9a-fA-F]{3,8}|white" src/features/my-events` has no hits
+- [x] 4.1 Add i18n labels (nl, fr, en): "Clear selection", "{count} events cleared", "Undo", "Create an account to export", "Sign in", and a one-line reason; remove the `myEventsDemo` texts
+- [x] 4.2 Rebuild the header block: selection bar (star, count, clear) and, for signed-in users, equal accent export and outlined save actions (stacked on mobile, in the bar from 768px); tests for none selected, signed in
+- [x] 4.3 Signed-out visitors: remove `access` and `fallback` from the `/my-events` route; show the account action and sign-in link instead of export and save; test that export and save are not rendered and the account action opens `/register`
+- [x] 4.4 Delete `MyEventsDemoPage.svelte` and `my-events-demo.test.ts`; fix remaining references (`grep -rn "MyEventsDemo\|myEventsDemo" src` is empty)
+- [x] 4.5 Clear with 6 second undo toast restoring the exact previous selection; tests with fake timers for clear, undo and expiry
+- [x] 4.6 Spacing on tokens, all controls at least 44px; `grep -nE "#[0-9a-fA-F]{3,8}|white" src/features/my-events` has no hits
 
 ## 5. Verification
 
