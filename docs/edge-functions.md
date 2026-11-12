@@ -26,7 +26,7 @@ The scheduler authenticates with the service-role key or a per-function token st
 
 ### Smoke test
 
-`scripts/smoke-edge-functions.mjs` checks every function with requests that cannot cause side effects: CORS preflight, an unauthenticated call (expects 401) and, for the two public functions, an empty payload (expects 400). It sends no credentials and is safe to run against production:
+`scripts/smoke-edge-functions.mjs` checks every function with requests that cannot cause side effects: a browser-style CORS preflight (origin, `POST`, `Content-Type` and `Authorization` must be allowed), an unauthenticated call (expects 401) and, for `send-contact-email`, an empty payload (expects 400). `send-password-reset` is only probed with the preflight, because it rate-limits before validating and a POST would use up one of the caller's reset slots. Requests send no credentials and time out after 10 seconds, so the script is safe to run against production:
 
 ```bash
 node scripts/smoke-edge-functions.mjs https://<project-ref>.supabase.co/functions/v1
