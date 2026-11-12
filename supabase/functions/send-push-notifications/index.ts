@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, getBearerToken, isScheduledBearer, isAdmin } from "../_shared/auth.ts";
 
 interface PushSubscriptionRow {
   id: string;
@@ -28,9 +24,8 @@ interface UserEventSelectionRow {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -39,17 +34,11 @@ Deno.serve(async (req: Request) => {
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
 
     if (!supabaseUrl || !serviceRoleKey) {
-      return new Response(
-        JSON.stringify({ error: "Supabase not configured" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Supabase not configured" }, 503);
     }
 
     if (!vapidPrivateKey || !vapidPublicKey) {
-      return new Response(
-        JSON.stringify({ error: "VAPID keys not configured" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "VAPID keys not configured" }, 503);
     }
 
     const body = await req.json().catch(() => ({}));
@@ -57,8 +46,8 @@ Deno.serve(async (req: Request) => {
 
     const { createClient } = await import("npm:@supabase/supabase-js@2");
 
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    const authHeader = getAuthHeader(req);
+    const bearer = getBearerToken(req);
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
@@ -71,7 +60,7 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     const cronToken = tokenRow?.token ?? "";
 
-    const isScheduledRun = bearer.length > 0 && (bearer === serviceRoleKey || (cronToken.length > 0 && bearer === cronToken));
+    const isScheduledRun = isScheduledBearer(bearer, { serviceRoleKey, cronToken });
 
     let callerUserId: string | null = null;
     let callerIsAdmin = false;
@@ -85,21 +74,15 @@ Deno.serve(async (req: Request) => {
       const user = userData?.user ?? null;
 
       if (!user) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Unauthorized" }, 401);
       }
 
       callerUserId = user.id;
-      callerIsAdmin = user.app_metadata?.role === "admin";
+      callerIsAdmin = isAdmin(user);
 
       // Only the scheduler or an admin may broadcast to everyone.
       if (!isTest && !callerIsAdmin) {
-        return new Response(
-          JSON.stringify({ error: "Forbidden" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Forbidden" }, 403);
       }
     }
 
@@ -116,17 +99,11 @@ Deno.serve(async (req: Request) => {
 
     if (subError) {
       console.error("Error fetching subscriptions:", subError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch subscriptions" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Failed to fetch subscriptions" }, 500);
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      return new Response(
-        JSON.stringify({ success: true, sent: 0, message: "No subscriptions" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ success: true, sent: 0, message: "No subscriptions" });
     }
 
     const webPushKey = await import("npm:web-push@3.6.7");
@@ -167,15 +144,12 @@ Deno.serve(async (req: Request) => {
         }
       }
 
-      return new Response(
-        JSON.stringify({
+      return jsonResponse({
           success: true,
           sent: sentCount,
           failed: failedCount,
           test: true,
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        });
     }
 
     const daysBefore = body.daysBefore ?? [7, 1];
@@ -188,10 +162,7 @@ Deno.serve(async (req: Request) => {
 
     if (selectionsError) {
       console.error("Error fetching calendar selections:", selectionsError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch calendar selections" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Failed to fetch calendar selections" }, 500);
     }
 
     const userSelections = new Map<string, Set<string>>();
@@ -203,10 +174,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (selectedEventIds.size === 0) {
-      return new Response(
-        JSON.stringify({ success: true, sent: 0, message: "No calendar selections set" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ success: true, sent: 0, message: "No calendar selections set" });
     }
 
     const today = new Date();
@@ -233,19 +201,13 @@ Deno.serve(async (req: Request) => {
 
     if (eventsError) {
       console.error("Error fetching events:", eventsError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch events" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Failed to fetch events" }, 500);
     }
 
     const filteredEvents = (events as EventRow[]).filter(e => selectedEventIds.has(e.id));
 
     if (filteredEvents.length === 0) {
-      return new Response(
-        JSON.stringify({ success: true, sent: 0, message: "No events with approaching deadlines" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ success: true, sent: 0, message: "No events with approaching deadlines" });
     }
 
     for (const event of filteredEvents) {
@@ -282,21 +244,15 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         success: true,
         sent: sentCount,
         failed: failedCount,
         events: filteredEvents.length,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 });
 
