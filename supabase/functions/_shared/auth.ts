@@ -18,10 +18,13 @@ export function getAuthHeader(req: Request): string {
   return req.headers.get("Authorization") ?? "";
 }
 
-/** The token of a `Bearer <token>` header, or "" when absent or malformed. */
+/**
+ * The token of a `Bearer <token>` header, or "" when absent or malformed.
+ * The scheme is matched case-insensitively (RFC 9110); the token keeps its case.
+ */
 export function getBearerToken(req: Request): string {
-  const header = getAuthHeader(req);
-  return header.startsWith("Bearer ") ? header.slice(7).trim() : "";
+  const match = /^bearer\s+(.+)$/i.exec(getAuthHeader(req).trim());
+  return match ? match[1].trim() : "";
 }
 
 export function isAdmin(user: CallerUser | null | undefined): boolean {

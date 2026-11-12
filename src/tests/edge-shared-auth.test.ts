@@ -20,10 +20,19 @@ describe('edge shared auth', () => {
       expect(getBearerToken(req('Bearer  abc '))).toBe('abc');
     });
 
+    it('matches the scheme case-insensitively and keeps the token case', () => {
+      expect(getBearerToken(req('bearer Abc'))).toBe('Abc');
+      expect(getBearerToken(req('BEARER Abc'))).toBe('Abc');
+      expect(getBearerToken(req('BeArEr   Abc  '))).toBe('Abc');
+    });
+
     it('returns empty strings when absent or not a Bearer header', () => {
       expect(getAuthHeader(req())).toBe('');
       expect(getBearerToken(req())).toBe('');
       expect(getBearerToken(req('Basic abc'))).toBe('');
+      expect(getBearerToken(req('Bearer'))).toBe('');
+      expect(getBearerToken(req('Bearer '))).toBe('');
+      expect(getBearerToken(req('Bearerabc'))).toBe('');
     });
   });
 
@@ -62,6 +71,13 @@ describe('edge shared auth', () => {
     it('recognises the scheduler without looking up a user', async () => {
       const getUser = vi.fn();
       const caller = await identifyCaller(req('Bearer cron-token'), { ...secrets, getUser });
+      expect(caller).toEqual({ kind: 'scheduled' });
+      expect(getUser).not.toHaveBeenCalled();
+    });
+
+    it('recognises a scheduler token sent with a lowercase scheme', async () => {
+      const getUser = vi.fn();
+      const caller = await identifyCaller(req('bearer cron-token'), { ...secrets, getUser });
       expect(caller).toEqual({ kind: 'scheduled' });
       expect(getUser).not.toHaveBeenCalled();
     });
