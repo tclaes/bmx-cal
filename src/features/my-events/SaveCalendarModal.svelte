@@ -4,8 +4,8 @@
   import Button from '@ui/Button.svelte';
   import Input from '@ui/Input.svelte';
   import Alert from '@ui/Alert.svelte';
-  import { CalendarService } from '@core/services/calendar.service';
-  import type { SavedCalendar } from '@core/services/calendar.service';
+  import { CalendarService } from '@core/services';
+  import type { SavedCalendar } from '@core/services';
   import { formatLongDate } from '@shared/utils';
 
   export let open = false;

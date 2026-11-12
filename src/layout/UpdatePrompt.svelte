@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { updateStore } from '@core/stores/pwa.store';
+  import { updateStore } from '@core/stores';
   import { t } from '../i18n';
 
   async function reload() {
@@ -70,23 +70,29 @@
     box-shadow: var(--shadow-lg);
     padding: var(--spacing-sm) var(--spacing-md);
     white-space: nowrap;
-    animation: slideUp 0.2s ease;
+    animation: slide-up 0.2s ease;
   }
 
   .update-banner.force {
-    background-color: #fee;
-    border-color: #fcc;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    border-color: var(--color-danger);
+    box-shadow: 0 4px 12px rgb(220 38 38 / 20%);
   }
 
   .update-banner.force .update-text {
-    color: #991b1b;
+    color: var(--color-text-primary);
     font-weight: var(--font-weight-medium);
   }
 
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   }
 
   .update-text {
@@ -97,7 +103,7 @@
   .update-btn {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    color: white;
+    color: var(--color-text-on-accent);
     background-color: var(--color-primary);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-xs) var(--spacing-sm);
@@ -132,9 +138,16 @@
       white-space: normal;
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes slide-up {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   }
 </style>

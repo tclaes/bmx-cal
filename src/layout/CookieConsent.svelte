@@ -78,16 +78,23 @@
     inset-inline: 0;
     background-color: var(--color-bg-primary);
     border-block-start: 1px solid var(--color-border);
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 24px rgb(0 0 0 / 8%);
     padding-block: var(--spacing-md);
     padding-inline: var(--spacing-lg);
     z-index: 9999;
-    animation: slideUp 0.25s ease;
+    animation: slide-up 0.25s ease;
   }
 
-  @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .banner-inner {
@@ -138,7 +145,7 @@
 
   .btn--primary {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     border: 1px solid var(--color-primary);
   }
 

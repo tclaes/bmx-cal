@@ -13,8 +13,12 @@ describe('PWA Configuration', () => {
     expect(manifest.start_url).toBe('/');
     expect(manifest.scope).toBe('/');
     expect(manifest.display).toBe('standalone');
-    expect(manifest.icons).toHaveLength(1);
-    expect(manifest.icons[0].src).toBe('/bmx-calendar.png');
+    expect(manifest.icons.map((i: { src: string }) => i.src)).toEqual([
+      '/icon-192.png',
+      '/icon-512.png',
+      '/icon-maskable-512.png',
+    ]);
+    expect(manifest.icons.some((i: { purpose: string }) => i.purpose === 'maskable')).toBe(true);
   });
 
   it('should have relative paths in manifest', () => {
@@ -134,8 +138,8 @@ describe('Multi-domain Support', () => {
     const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
 
-    expect(manifest.theme_color).toBe('#2563eb');
-    expect(manifest.background_color).toBe('#ffffff');
+    expect(manifest.theme_color).toBe('#14171c');
+    expect(manifest.background_color).toBe('#14171c');
   });
 
   it('should not use prefer_related_applications by default', () => {

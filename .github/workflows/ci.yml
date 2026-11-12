@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [master]
   push:
-    branches: [master]
+    branches: [master, 'feat/**', 'fix/**']
+  workflow_dispatch:
 
 jobs:
   test:
@@ -18,10 +18,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
-        run: npm i
+        run: npm ci
+
+      - name: Type check
+        run: npm run check
+
+      - name: Lint styles
+        run: npm run stylelint
+
+      - name: Module boundaries
+        run: npm run sheriff
 
       - name: Run tests
         run: npm test

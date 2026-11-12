@@ -8,7 +8,7 @@ Live site: [bmxkalender.be](https://bmxkalender.be)
 
 ### Prerequisites
 
-- Node.js 22 or higher
+- Node.js 24 or higher
 
 ### Installation
 
