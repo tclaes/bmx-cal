@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { corsHeaders, handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -131,12 +127,8 @@ Return ONLY a valid JSON array of events. If no events found, return empty array
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     if (req.method !== "POST") {
@@ -152,7 +144,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const authHeader = req.headers.get("Authorization") ?? "";
+    const authHeader = getAuthHeader(req);
     const { createClient } = await import("npm:@supabase/supabase-js@2");
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -163,14 +155,10 @@ Deno.serve(async (req: Request) => {
     const user = userData?.user;
 
     if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
-    const role = user.app_metadata?.role;
-    if (role !== "admin") {
+    if (!isAdmin(user)) {
       const { data: teamManager } = await userClient
         .from("team_managers")
         .select("id")
@@ -178,10 +166,7 @@ Deno.serve(async (req: Request) => {
         .maybeSingle();
 
       if (!teamManager) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Unauthorized" }, 401);
       }
     }
 

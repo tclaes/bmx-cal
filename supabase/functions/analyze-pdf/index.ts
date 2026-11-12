@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { corsHeaders, handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -138,12 +134,8 @@ ${text}`;
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     if (req.method !== "POST") {
@@ -161,7 +153,7 @@ Deno.serve(async (req: Request) => {
 
     // The anon key satisfies verify_jwt, so the caller must be identified here:
     // this endpoint spends paid AI quota and is an admin-only import tool.
-    const authHeader = req.headers.get("Authorization") ?? "";
+    const authHeader = getAuthHeader(req);
     const { createClient } = await import("npm:@supabase/supabase-js@2");
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -169,11 +161,8 @@ Deno.serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
     const { data: userData } = await userClient.auth.getUser();
-    if (userData?.user?.app_metadata?.role !== "admin") {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!isAdmin(userData?.user)) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     const formData = await req.formData();
