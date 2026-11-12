@@ -9,3 +9,5 @@ All variables are stored in `.env` (gitignored). Required variables:
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only, never exposed to client) |
 | `YOUTUBE_API_KEY` | YouTube Data API key for UEC livestream search |
 | `VITE_GA_MEASUREMENT_ID` | Google Analytics measurement ID |
+
+For running the app against a local, seeded Supabase (generated `.env.e2e.local`), see `docs/test-env.md`.

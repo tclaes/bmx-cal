@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .bolt
+
+# Local test environment (generated)
+.env.e2e.local
+.test-env/
+e2e/.auth/
+playwright-report/
+test-results/
+supabase/.temp/

@@ -16,7 +16,7 @@
     placeholder,
     disabled,
     required,
-    readonly,
+    readonly: readonly || undefined,
     class: `input${error ? ' error' : ''}`,
     'aria-invalid': !!error || undefined,
     'aria-describedby': describedBy,
