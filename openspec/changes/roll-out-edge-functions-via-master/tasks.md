@@ -20,7 +20,7 @@
 
 ## 4. Stage C: deploy and verify, after each merge to master
 
-- [ ] 4.1 Tag the commit currently deployed for each group, deploy the public group one function at a time, run the smoke script against production after each; record results in the PR.
-- [ ] 4.2 Repeat for the user/admin group; verify the smoke script passes and the function logs show no new errors.
-- [ ] 4.3 Repeat for the scheduled group; verify the smoke script passes and check the logs after the next scheduled run (`sync-jstiming` Tuesday 06:00 UTC, `search-uec-livestream` daily 08:00 UTC, push at 17:00 UTC).
+- [x] 4.1 Tag the commit currently deployed for each group, deploy the public group one function at a time, run the smoke script against production after each; record results in the PR. (deployed 2026-11-12 from master 2cd811a: send-contact-email v17, send-password-reset v20; smoke 21/21 after each)
+- [x] 4.2 Repeat for the user/admin group; verify the smoke script passes and the function logs show no new errors. (deployed: delete-account v14, create-github-issue v16, reopen-github-issue v14, get-github-issue-statuses v14, analyze-image v12, analyze-pdf v44; smoke 21/21)
+- [ ] 4.3 Repeat for the scheduled group; verify the smoke script passes and check the logs after the next scheduled run (`sync-jstiming` Tuesday 06:00 UTC, `search-uec-livestream` daily 08:00 UTC, push at 17:00 UTC). (DEPLOYED, not yet closed: sync-jstiming v21, search-uec-livestream v16, send-push-notifications v18; smoke 21/21; still to check the logs after the next scheduled runs)
 - [ ] 4.4 Document the rollback steps and the smoke script in `docs/edge-functions.md`; verify a dry-run of the rollback redeploys a tagged version in the local stack.
