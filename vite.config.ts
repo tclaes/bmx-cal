@@ -6,6 +6,9 @@ import path from 'path'
 export default defineConfig({
   plugins: [svelte()],
   resolve: {
+    // Svelte resolves to its SSR build under vitest unless the browser condition is set;
+    // without it onMount never runs in component tests.
+    conditions: process.env.VITEST ? ['browser'] : [],
     alias: {
       '@features': path.resolve(__dirname, './src/features'),
       '@ui': path.resolve(__dirname, './src/libs/ui'),

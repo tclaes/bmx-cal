@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 
 const STORAGE_KEY = 'bmx_selected_events';
 

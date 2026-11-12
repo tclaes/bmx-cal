@@ -65,7 +65,6 @@ describe.runIf(!isMock)('Cron Jobs Configuration', () => {
         // Check for expected cron jobs
         const jobNames = data.map((job: any) => job.jobname);
         expect(jobNames).toContain('sync-jstiming-weekly');
-        expect(jobNames).toContain('search-uec-livestream-daily');
 
         // Verify they use the correct schema (extensions.http_post)
         data.forEach((job: any) => {

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { Card, Input, Button, Alert } from '@ui';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { navigate } from '../../router';
   import { t } from '../../i18n';
 

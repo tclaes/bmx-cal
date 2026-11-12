@@ -32,7 +32,7 @@ Object.defineProperty(globalThis, 'PushManager', {
   writable: true,
 });
 
-vi.mock('@data/supabase', () => ({
+vi.mock('@data', () => ({
   supabase: {
     from: vi.fn(() => ({
       insert: vi.fn(() => ({

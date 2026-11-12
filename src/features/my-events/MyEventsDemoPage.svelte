@@ -2,15 +2,41 @@
   import { onMount } from 'svelte';
   import { navigate } from '../../router';
   import { t, interpolate } from '../../i18n';
+  import { RaceRow } from '@ui';
+  import { formatDayNumber, formatMonthShort, formatWeekday } from '@shared/utils';
 
-  $: demoEvents = [
-    { date: 'Apr 12', title: $t.myEventsDemo.demoEvent1Title, location: $t.myEventsDemo.demoEvent1Location, type: $t.myEventsDemo.demoEvent1Type, selected: true },
-    { date: 'May 03', title: $t.myEventsDemo.demoEvent2Title, location: $t.myEventsDemo.demoEvent2Location, type: $t.myEventsDemo.demoEvent2Type, selected: true },
-    { date: 'May 17', title: $t.myEventsDemo.demoEvent3Title, location: $t.myEventsDemo.demoEvent3Location, type: $t.myEventsDemo.demoEvent3Type, selected: false },
-    { date: 'Jun 07', title: $t.myEventsDemo.demoEvent4Title, location: $t.myEventsDemo.demoEvent4Location, type: $t.myEventsDemo.demoEvent4Type, selected: true },
-    { date: 'Jun 21', title: $t.myEventsDemo.demoEvent5Title, location: $t.myEventsDemo.demoEvent5Location, type: $t.myEventsDemo.demoEvent5Type, selected: false },
-    { date: 'Jul 05', title: $t.myEventsDemo.demoEvent6Title, location: $t.myEventsDemo.demoEvent6Location, type: $t.myEventsDemo.demoEvent6Type, selected: true },
+  // Sample races only illustrate the page; the year is irrelevant. Type names are the
+  // database names so the labels match the real calendar.
+  const sample = [
+    { iso: '2099-04-12', n: 1, type: 'Belgian Cycling', selected: true },
+    { iso: '2099-05-03', n: 2, type: 'European Cup', selected: true },
+    { iso: '2099-05-17', n: 3, type: 'Cycling Vlaanderen', selected: false },
+    { iso: '2099-06-07', n: 4, type: 'Belgian Cycling', selected: true },
+    { iso: '2099-06-21', n: 5, type: 'World Cup', selected: false },
+    { iso: '2099-07-05', n: 6, type: 'Cycling Vlaanderen', selected: true },
   ];
+
+  let picked = new Set(sample.filter(e => e.selected).map(e => e.n));
+
+  function toggle(n: number) {
+    const next = new Set(picked);
+    next.has(n) ? next.delete(n) : next.add(n);
+    picked = next;
+  }
+
+  $: demoEvents = sample.map(e => {
+    const tr = $t.myEventsDemo as Record<string, string>;
+    const weekday = formatWeekday(e.iso);
+    return {
+      n: e.n,
+      type: e.type,
+      day: formatDayNumber(e.iso),
+      month: formatMonthShort(e.iso),
+      title: tr[`demoEvent${e.n}Title`],
+      meta: `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} · ${tr[`demoEvent${e.n}Location`]}`,
+      selected: picked.has(e.n),
+    };
+  });
 
   $: benefits = [
     $t.myEventsDemo.benefit1,
@@ -19,7 +45,7 @@
     $t.myEventsDemo.benefit4,
   ];
 
-  $: selectedCount = demoEvents.filter(e => e.selected).length;
+  $: selectedCount = picked.size;
 
   onMount(() => {
     document.title = $t.myEventsDemo.docTitle;
@@ -64,22 +90,22 @@
           <h2>{$t.myEventsDemo.selectYourEvents}</h2>
           <span class="counter">{interpolate($t.myEventsDemo.selectedCount, { count: selectedCount })}</span>
         </header>
-        <ul class="event-list">
-          {#each demoEvents as event}
-            <li class="event" class:event--selected={event.selected}>
-              <span class="check" aria-hidden="true">
-                {#if event.selected}
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 7 12 13 4" /></svg>
-                {/if}
-              </span>
-              <span class="event-date">{event.date}</span>
-              <span class="event-main">
-                <span class="event-title">{event.title}</span>
-                <span class="event-meta">{event.location} &middot; {event.type}</span>
-              </span>
-            </li>
+        <div class="timeline">
+          {#each demoEvents as event (event.n)}
+            <RaceRow
+              title={event.title}
+              href="/register"
+              day={event.day}
+              month={event.month}
+              meta={event.meta}
+              type={event.type}
+              saved={event.selected}
+              saveLabel={event.selected ? $t.calendar.saved : $t.calendar.save}
+              on:click={(e) => { e.preventDefault(); goRegister(); }}
+              on:save={() => toggle(event.n)}
+            />
           {/each}
-        </ul>
+        </div>
       </div>
 
       <div class="preview-card preview-card--cta">
@@ -145,7 +171,7 @@
     letter-spacing: 0.08em;
     color: var(--color-success);
     background-color: var(--color-success-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
   }
@@ -204,8 +230,15 @@
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 0.35; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1); }
+    0%, 100% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .preview-grid {
@@ -223,8 +256,10 @@
   }
 
   .preview-card--cta {
-    background: linear-gradient(145deg, #f0f7ff 0%, #e8f2ff 100%);
-    border-color: var(--color-primary-light);
+    background-color: var(--hero-bg);
+    background-image: var(--hero-stripe);
+    border-color: var(--color-border);
+    align-self: start;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
@@ -251,76 +286,14 @@
     font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
   }
 
-  .event-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .timeline {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .event {
-    display: grid;
-    grid-template-columns: 24px 60px 1fr;
-    gap: var(--spacing-sm);
-    align-items: center;
-    padding-block: var(--spacing-sm);
-    padding-inline: var(--spacing-sm);
-    border-radius: var(--border-radius-md);
-    border: 1px solid transparent;
-    transition: background-color var(--transition-fast), border-color var(--transition-fast);
-  }
-
-  .event--selected {
-    background-color: var(--color-primary-light);
-    border-color: var(--color-primary-light);
-  }
-
-  .check {
-    inline-size: 20px;
-    block-size: 20px;
-    border-radius: var(--border-radius-sm);
-    border: 2px solid var(--color-border);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-  }
-
-  .event--selected .check {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  .event-date {
-    font-family: var(--font-family-heading);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-  }
-
-  .event-main {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-inline-size: 0;
-  }
-
-  .event-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-  }
-
-  .event-meta {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-muted);
   }
 
   .steps {
@@ -349,7 +322,7 @@
     align-items: center;
     justify-content: center;
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     border-radius: 50%;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
@@ -383,6 +356,7 @@
   }
 
   .btn {
+    min-block-size: var(--touch-target-min);
     padding-block: var(--spacing-sm);
     padding-inline: var(--spacing-lg);
     border-radius: var(--border-radius-md);
@@ -397,14 +371,14 @@
   }
 
   .btn--primary {
-    background-color: var(--color-primary);
-    color: white;
-    border: 2px solid var(--color-primary);
+    background-color: var(--color-accent);
+    color: var(--color-text-on-accent);
+    border: 2px solid var(--color-accent);
   }
 
   .btn--primary:hover {
-    background-color: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
     transform: translateY(-1px);
   }
 
@@ -457,8 +431,8 @@
       grid-template-columns: 1fr;
     }
 
-    .event {
-      grid-template-columns: 20px 50px 1fr;
+    .preview-card {
+      padding: var(--spacing-md);
     }
   }
 </style>

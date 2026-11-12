@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
-import { selectionService } from '../services/selection.service';
-import { supabase } from '@data/supabase';
+import { selectionService } from '@core/services';
+import { supabase } from '@data';
 
 export const selectedEventIds = writable<Set<string>>(new Set());
 export const isLoadingSelections = writable<boolean>(false);

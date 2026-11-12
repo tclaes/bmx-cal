@@ -30,4 +30,6 @@ dist-ssr
 e2e/.auth/
 playwright-report/
 test-results/
+
+# Supabase CLI local state
 supabase/.temp/
