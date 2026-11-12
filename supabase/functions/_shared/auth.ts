@@ -4,7 +4,8 @@
 
 export interface CallerUser {
   id: string;
-  app_metadata?: { role?: string } | null;
+  // supabase-js types this as an open record; only `role` is read here.
+  app_metadata?: Record<string, unknown> | null;
 }
 
 export type Caller =
