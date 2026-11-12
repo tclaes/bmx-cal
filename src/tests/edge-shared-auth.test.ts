@@ -26,6 +26,19 @@ describe('edge shared auth', () => {
       expect(getBearerToken(req('BeArEr   Abc  '))).toBe('Abc');
     });
 
+    it('rejects malformed credentials instead of passing them on', () => {
+      expect(getBearerToken(req('Bearer abc def'))).toBe('');
+      expect(getBearerToken(req('Bearer abc,def'))).toBe('');
+      expect(getBearerToken(req('Bearer "abc"'))).toBe('');
+      expect(getBearerToken(req('Bearer\tabc'))).toBe('');
+    });
+
+    it('accepts JWT and UUID shaped tokens', () => {
+      expect(getBearerToken(req('Bearer eyJhbGciOi.eyJzdWIi_-x.sig-na_ture'))).toBe('eyJhbGciOi.eyJzdWIi_-x.sig-na_ture');
+      expect(getBearerToken(req('Bearer 3f2b8c1e-9a7d-4e0b-8c55-1a2b3c4d5e6f'))).toBe('3f2b8c1e-9a7d-4e0b-8c55-1a2b3c4d5e6f');
+      expect(getBearerToken(req('Bearer YWJj=='))).toBe('YWJj==');
+    });
+
     it('returns empty strings when absent or not a Bearer header', () => {
       expect(getAuthHeader(req())).toBe('');
       expect(getBearerToken(req())).toBe('');

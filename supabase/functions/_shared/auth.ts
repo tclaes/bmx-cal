@@ -20,11 +20,13 @@ export function getAuthHeader(req: Request): string {
 
 /**
  * The token of a `Bearer <token>` header, or "" when absent or malformed.
- * The scheme is matched case-insensitively (RFC 9110); the token keeps its case.
+ * The scheme is matched case-insensitively (RFC 9110) and followed by one or more spaces;
+ * the token must be a single token68 value (letters, digits and `-._~+/`, optional `=`
+ * padding), which covers JWTs and UUIDs. The token keeps its case.
  */
 export function getBearerToken(req: Request): string {
-  const match = /^bearer\s+(.+)$/i.exec(getAuthHeader(req).trim());
-  return match ? match[1].trim() : "";
+  const match = /^bearer +([A-Za-z0-9\-._~+/]+=*)$/i.exec(getAuthHeader(req).trim());
+  return match ? match[1] : "";
 }
 
 export function isAdmin(user: CallerUser | null | undefined): boolean {
