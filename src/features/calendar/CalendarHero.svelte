@@ -112,6 +112,7 @@
     justify-content: space-between;
     gap: var(--spacing-md);
     min-block-size: var(--touch-target-min);
+
     /* Narrow hero: the save star sits in the top-right corner, keep the light clear of it */
     padding-inline-end: calc(var(--touch-target-min) + var(--spacing-sm));
   }
@@ -257,6 +258,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     /* Narrow hero: top-right corner of the card */
     position: absolute;
     inset-block-start: var(--spacing-lg);
@@ -270,7 +272,10 @@
   }
 
   .save:hover,
-  .save.saved { color: var(--color-accent); border-color: var(--color-accent); }
+  .save.saved {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
 
   .deadline {
     margin: 0;
@@ -278,7 +283,7 @@
     color: var(--color-text-secondary);
   }
 
-  @media (min-width: 768px) {
+  @media (width >= 768px) {
     .hero { padding: var(--spacing-xl); }
     .light-text { display: inline; }
   }
@@ -286,13 +291,20 @@
   /* Date next to the title only when the hero itself is wide enough (it sits beside
      the filter sidebar from 1024px, so the viewport width says little). */
   @container (min-width: 700px) {
-    .main { flex-direction: row; align-items: flex-end; gap: var(--spacing-xl); }
+    .main {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: var(--spacing-xl);
+    }
     .day { font-size: 128px; }
     .title { font-size: 48px; }
   }
 
   @container (min-width: 480px) {
-    .register, .opens { flex: 0 0 auto; padding-inline: var(--spacing-xl); }
+    .register, .opens {
+      flex: 0 0 auto;
+      padding-inline: var(--spacing-xl);
+    }
 
     /* Wide hero: the star sits next to the register button as in the desktop design */
     .top { padding-inline-end: 0; }

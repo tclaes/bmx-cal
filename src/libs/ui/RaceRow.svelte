@@ -109,33 +109,6 @@
   .when {
     grid-column: 1;
     grid-row: 1;
-  }
-
-  .type {
-    grid-column: 1;
-    grid-row: 2;
-    display: inline-flex;
-    justify-self: center;
-    align-self: start;
-    margin-block-start: var(--spacing-xs);
-  }
-
-  .rail {
-    grid-column: 2;
-    grid-row: 1 / 3;
-  }
-
-  .content {
-    grid-column: 3;
-    grid-row: 1 / 3;
-  }
-
-  .deadline {
-    color: var(--color-primary-hover);
-    font-weight: var(--font-weight-medium);
-  }
-
-  .when {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -145,6 +118,34 @@
     font-weight: var(--font-weight-bold);
     text-transform: uppercase;
     line-height: 1;
+  }
+
+  .type {
+    grid-column: 1;
+    grid-row: 2;
+    display: inline-flex;
+    place-self: start center;
+    margin-block-start: var(--spacing-xs);
+  }
+
+  .rail {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .content {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    position: relative;
+    min-inline-size: 0;
+  }
+
+  .deadline {
+    color: var(--color-primary-hover);
+    font-weight: var(--font-weight-medium);
   }
 
   .day {
@@ -159,11 +160,6 @@
   }
 
   /* Timeline: a vertical line through the dots of consecutive rows */
-  .rail {
-    position: relative;
-    display: flex;
-    justify-content: center;
-  }
 
   .rail::before {
     content: '';
@@ -189,11 +185,6 @@
   .race-3nc .dot { border-color: var(--race-3nc-ring); }
   .race-ec .dot { border-color: var(--race-ec-ring); }
   .race-wc .dot { border-color: var(--race-wc-ring); }
-
-  .content {
-    position: relative;
-    min-inline-size: 0;
-  }
 
   .has-save .title {
     padding-inline-end: var(--touch-target-min);
@@ -389,8 +380,7 @@
     .type {
       grid-column: 5;
       grid-row: 1 / 3;
-      justify-self: center;
-      align-self: center;
+      place-self: center center;
       margin-block-start: 0;
     }
 

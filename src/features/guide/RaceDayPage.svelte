@@ -423,8 +423,7 @@
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
-    margin-block-start: 0;
-    margin-block-end: var(--spacing-xs);
+    margin-block: 0 var(--spacing-xs);
   }
 
   section p {

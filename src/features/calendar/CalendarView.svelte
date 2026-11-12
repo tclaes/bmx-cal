@@ -62,7 +62,7 @@
 
   .calendar-main { min-width: 0; }
 
-  @media (min-width: 1024px) {
+  @media (width >= 1024px) {
     .calendar-view { padding: var(--spacing-xl) var(--spacing-md); }
 
     .calendar-layout {
@@ -80,11 +80,14 @@
       top: calc(var(--spacing-xl) * 2 + 24px);
     }
 
-    .calendar-main { grid-column: 1; grid-row: 1; }
+    .calendar-main {
+      grid-column: 1;
+      grid-row: 1;
+    }
     .export { display: block; }
   }
 
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     .calendar-sidebar :global(.account-cta) { display: none; }
   }
 </style>

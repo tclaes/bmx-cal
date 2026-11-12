@@ -70,12 +70,12 @@
     box-shadow: var(--shadow-lg);
     padding: var(--spacing-sm) var(--spacing-md);
     white-space: nowrap;
-    animation: slideUp 0.2s ease;
+    animation: slide-up 0.2s ease;
   }
 
   .update-banner.force {
     border-color: var(--color-danger);
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    box-shadow: 0 4px 12px rgb(220 38 38 / 20%);
   }
 
   .update-banner.force .update-text {
@@ -83,9 +83,16 @@
     font-weight: var(--font-weight-medium);
   }
 
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   }
 
   .update-text {
@@ -122,7 +129,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (max-width: 767px) {
+  @media (width <= 767px) {
     .update-banner {
       bottom: var(--spacing-md);
       left: var(--spacing-md);
@@ -131,9 +138,16 @@
       white-space: normal;
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes slide-up {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   }
 </style>
