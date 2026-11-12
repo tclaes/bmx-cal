@@ -307,9 +307,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-inline-size: var(--touch-target-min);
+    min-block-size: var(--touch-target-min);
+    text-align: center;
+  }
+
+  /* Compact size for the desktop nav only; the mobile menu keeps the full touch target. */
+  .locale-switcher .locale-btn {
     min-inline-size: 2rem;
     min-block-size: 2rem;
-    text-align: center;
   }
 
   .locale-btn:hover {
