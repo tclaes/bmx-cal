@@ -20,7 +20,7 @@ describe('edge shared cors', () => {
     expect(corsHeaders).toEqual(DEFAULT_HEADERS);
   });
 
-  it('a custom method list changes only the methods (search-uec-livestream also accepts GET)', () => {
+  it('a custom method list changes only the methods (for a function that also accepts GET)', () => {
     expect(buildCorsHeaders('GET, POST, OPTIONS')).toEqual({
       ...DEFAULT_HEADERS,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',

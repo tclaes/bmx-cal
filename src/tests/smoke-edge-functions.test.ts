@@ -8,7 +8,6 @@ const DOCUMENTED_FUNCTIONS = [
   'delete-account',
   'get-github-issue-statuses',
   'reopen-github-issue',
-  'search-uec-livestream',
   'send-contact-email',
   'send-password-reset',
   'send-push-notifications',

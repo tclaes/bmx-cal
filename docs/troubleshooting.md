@@ -11,7 +11,7 @@
 - Check browser console for errors
 - Verify Supabase connection and environment variables
 - Check RLS policies if data is missing or writes fail
-- Verify edge function secrets are configured (e.g., `YOUTUBE_API_KEY`)
+- Verify edge function secrets are configured (e.g., `RESEND_API_KEY`)
 
 ### Import Issues
 

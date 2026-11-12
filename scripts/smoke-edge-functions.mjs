@@ -25,7 +25,6 @@ export const FUNCTIONS = [
   { name: 'delete-account', kind: 'protected' },
   { name: 'get-github-issue-statuses', kind: 'protected' },
   { name: 'reopen-github-issue', kind: 'protected' },
-  { name: 'search-uec-livestream', kind: 'protected' },
   { name: 'send-push-notifications', kind: 'protected' },
   { name: 'sync-jstiming', kind: 'protected' },
   { name: 'send-contact-email', kind: 'public', probePost: true },

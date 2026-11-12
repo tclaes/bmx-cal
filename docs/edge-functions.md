@@ -17,7 +17,6 @@ Functions run on Supabase, not in the frontend build: a deploy takes effect for 
 | `get-github-issue-statuses` | Fetches status of GitHub issues linked to bug reports | true | Admin | 401 |
 | `delete-account` | Deletes the caller's own account | true | Signed-in user (own account only) | 401 |
 | `sync-jstiming` | Syncs event data from the JSTiming API | false | Scheduler (service-role key or cron token) or admin | 401 |
-| `search-uec-livestream` | Searches YouTube for live broadcasts of UEC BMX events happening today | false | Scheduler (service-role key or cron token) or admin | 401 |
 | `send-push-notifications` | Sends push notifications | false | Scheduler or admin; any signed-in user in test mode (own device) | 401 unknown caller, 403 non-admin outside test mode |
 | `send-contact-email` | Sends contact form submissions via email | false | Anyone (input validated, rate limited) | 400 invalid input, 429 too many requests |
 | `send-password-reset` | Triggers a password reset email | false | Anyone (input validated, rate limited) | 400 invalid input, 429 too many requests |
