@@ -6,7 +6,7 @@
 
 ## 2. Feature flags (database)
 
-- [ ] 2.1 Migration `create_feature_flags`: table, RLS (public select, admin write), audit trigger, seed `notifications = false`; apply with the Supabase MCP; verify with `execute_sql` that anon can read and cannot write, and run the security advisor
+- [ ] 2.1 Migration `create_feature_flags`: table, RLS (public select, admin write), audit trigger, seed `notifications = false`; apply with the Supabase MCP; grant `select` to anon and authenticated and writes to authenticated only; verify with `execute_sql` that anon can read and cannot write, and run the security advisor; add the table to `supabase/test-env/reference-data.sql` so the local seeded environment has it
 - [ ] 2.2 `FeatureFlagService` (`getAll`, `setFlag`) and `featureFlags` store with `isEnabled(key)` that is false until loaded, when missing and on error; unit tests for fail-closed behaviour
 - [ ] 2.3 Load the flags at app start; document the table in `docs/db.md` and the mechanism in `docs/features.md`
 - [ ] 2.4 Admin dashboard "Feature flags" section with a switch per flag and last change shown; test that toggling calls `setFlag` and updates the display
@@ -27,4 +27,4 @@
 ## 5. Verification
 
 - [ ] 5.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
-- [ ] 5.2 Check `/my-events` signed in and signed out on mobile, tablet and desktop against the agreed mockup, with the notifications flag off and on; check the admin toggle changes what a visitor sees after a reload
+- [ ] 5.2 Using the local seeded environment (`docs/test-env.md`) with its seeded admin and normal logins, check `/my-events` signed in and signed out on mobile, tablet and desktop against the agreed mockup, with the notifications flag off and on; check the admin toggle changes what a visitor sees after a reload

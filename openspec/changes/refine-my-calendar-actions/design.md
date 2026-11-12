@@ -29,4 +29,5 @@ Observed in the code:
 - **A new table and policies** → apply the migration through the MCP tool, check with the Supabase security advisor, and cover the policy intent in the spec scenarios.
 - **Removing the demo loses the signed-out explanation of the feature** → one sentence in the account action; revisit if sign-ups drop.
 - **Signed-out visitors can build a selection they cannot export** → intended; the account action explains why and leads to registration, and their selection is kept when they sign up on the same device.
+- **Anon grants were tightened on master** (`revoke_anon_write_grants`) → the `feature_flags` migration grants `select` to `anon` and `authenticated` and `insert, update, delete` to `authenticated` explicitly (RLS then limits writes to admins), and never to `anon`; check with `execute_sql` as anon that a write is rejected.
 - **Existing tests and docs reference the demo** → delete the demo test and update `docs/features.md`.
