@@ -45,7 +45,9 @@ describe('edge function smoke script', () => {
   });
 
   it('only probes POST on send-contact-email among the public functions (the reset function rate-limits before validating)', () => {
-    const publicPosts = buildCases().filter(c => c.method === 'POST' && c.expectStatus === 400);
+    const publicNames = new Set(FUNCTIONS.filter(f => f.kind === 'public').map(f => f.name));
+    expect(publicNames).toEqual(new Set(['send-contact-email', 'send-password-reset']));
+    const publicPosts = buildCases().filter(c => c.method === 'POST' && publicNames.has(c.fn));
     expect(publicPosts.map(c => c.fn)).toEqual(['send-contact-email']);
   });
 
@@ -97,6 +99,19 @@ describe('edge function smoke script', () => {
     })) as typeof fetch, buildCases().filter(c => c.preflight).slice(0, 1));
     expect(incomplete[0].ok).toBe(false);
     expect(incomplete[0].detail).toContain('preflight does not allow');
+  });
+
+  it('fails a normal response that should carry CORS headers but does not', async () => {
+    const results = await runSmoke('http://x', fakeFetch(() => ({ status: 400 })) as typeof fetch, [
+      { label: 'contact', fn: 'send-contact-email', method: 'POST', body: '{}', expectStatus: 400, expectCors: true },
+    ]);
+    expect(results[0].ok).toBe(false);
+    expect(results[0].detail).toContain('CORS MISSING');
+
+    const withCors = await runSmoke('http://x', fakeFetch(() => ({ status: 400, headers: PREFLIGHT_OK })) as typeof fetch, [
+      { label: 'contact', fn: 'send-contact-email', method: 'POST', body: '{}', expectStatus: 400, expectCors: true },
+    ]);
+    expect(withCors[0].ok).toBe(true);
   });
 
   it('fails on a wrong status and on a network error', async () => {
