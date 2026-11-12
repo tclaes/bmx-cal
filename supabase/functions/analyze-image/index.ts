@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders, handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 
 interface ExtractedEvent {
@@ -132,16 +132,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        {
-          status: 405,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "Method not allowed" }, 405);
     }
 
     const authHeader = getAuthHeader(req);
@@ -174,61 +165,25 @@ Deno.serve(async (req: Request) => {
     const imageFile = formData.get("file") as File;
 
     if (!imageFile) {
-      return new Response(
-        JSON.stringify({ error: "No image file provided" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "No image file provided" }, 400);
     }
 
     const fileType = imageFile.type.toLowerCase();
     if (!ACCEPTED_TYPES.has(fileType)) {
-      return new Response(
-        JSON.stringify({ error: "File must be an image (JPG, PNG, or WebP)" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "File must be an image (JPG, PNG, or WebP)" }, 400);
     }
 
     const imageBuffer = await imageFile.arrayBuffer();
     const events = await analyzeImageWithAI(imageBuffer, fileType);
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         success: true,
         events,
-      }),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      });
   } catch (error) {
     console.error("Error processing image:", error);
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         error: error.message || "Failed to process image",
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      }, 500);
   }
 });
