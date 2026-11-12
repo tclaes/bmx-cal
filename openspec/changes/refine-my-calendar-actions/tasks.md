@@ -26,5 +26,5 @@
 
 ## 5. Verification
 
-- [ ] 5.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
+- [x] 5.1 `npm test`, `npm run check`, `npm run build`, `npm run sheriff` green; CI green on the branch
 - [ ] 5.2 Using the local seeded environment (`docs/test-env.md`) with its seeded admin and normal logins, check `/my-events` signed in and signed out on mobile, tablet and desktop against the agreed mockup, with the notifications flag off and on; check the admin toggle changes what a visitor sees after a reload
