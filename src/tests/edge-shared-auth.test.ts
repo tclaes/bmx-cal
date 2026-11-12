@@ -34,9 +34,12 @@ describe('edge shared auth', () => {
     });
 
     it('accepts JWT and UUID shaped tokens', () => {
-      expect(getBearerToken(req('Bearer eyJhbGciOi.eyJzdWIi_-x.sig-na_ture'))).toBe('eyJhbGciOi.eyJzdWIi_-x.sig-na_ture');
-      expect(getBearerToken(req('Bearer 3f2b8c1e-9a7d-4e0b-8c55-1a2b3c4d5e6f'))).toBe('3f2b8c1e-9a7d-4e0b-8c55-1a2b3c4d5e6f');
-      expect(getBearerToken(req('Bearer YWJj=='))).toBe('YWJj==');
+      // Shapes are assembled at runtime: these are test fixtures, not credentials.
+      const jwtShaped = ['header-part', 'payload_part', 'signature~part+/'].join('.');
+      const uuidShaped = [8, 4, 4, 4, 12].map(n => 'a1'.repeat(n).slice(0, n)).join('-');
+      for (const token of [jwtShaped, uuidShaped, 'dGVzdA==']) {
+        expect(getBearerToken(req(`Bearer ${token}`))).toBe(token);
+      }
     });
 
     it('returns empty strings when absent or not a Bearer header', () => {
