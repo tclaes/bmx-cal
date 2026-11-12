@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .bolt
+
+# Supabase CLI local state
+supabase/.temp/
