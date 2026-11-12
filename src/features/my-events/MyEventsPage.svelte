@@ -464,7 +464,8 @@
 
   .undo {
     position: fixed;
-    inset-block-end: var(--spacing-lg);
+    /* Above the update banner, which sits at the same bottom spot */
+    inset-block-end: calc(var(--spacing-lg) + var(--touch-target-min) + var(--spacing-xl));
     inset-inline: var(--spacing-md);
     margin-inline: auto;
     inline-size: fit-content;
@@ -495,6 +496,7 @@
   @media (min-width: 768px) {
     .selection {
       flex-direction: row;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: var(--spacing-md);
@@ -507,8 +509,11 @@
       background-color: transparent;
     }
 
+    /* Equal columns: both actions are as wide as the wider one */
     .actions {
-      grid-template-columns: repeat(2, auto);
+      grid-template-columns: repeat(2, 1fr);
+      inline-size: max-content;
+      max-inline-size: 100%;
       align-items: center;
     }
 
@@ -606,22 +611,6 @@
   }
 
   @media (max-width: 640px) {
-    .header {
-      flex-direction: column;
-      gap: var(--spacing-md);
-    }
-
-    .header-actions {
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .count {
-      order: -1;
-      width: 100%;
-      text-align: center;
-    }
-
     .type-selector {
       flex-direction: column;
       align-items: flex-start;
