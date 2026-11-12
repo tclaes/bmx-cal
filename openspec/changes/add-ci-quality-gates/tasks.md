@@ -19,6 +19,6 @@
 
 ## 4. Documentation
 
-- [x] 4.1 `git mv SECURITY_DEPLOYMENT.md docs/security-deployment.md`, update inbound links, and verify with `grep -r SECURITY_DEPLOYMENT` returning nothing.
+- [x] 4.1 `git mv SECURITY_DEPLOYMENT.md docs/security-deployment.md`, update inbound links, and verify with `grep -r SECURITY_DEPLOYMENT --exclude-dir=openspec --exclude-dir=node_modules --exclude-dir=.git .` returning nothing.
 - [x] 4.2 Normalise cron doc naming (`docs/cron.md` stays the entry point, details file lowercase), update links and `src/tests/cron-jobs.test.ts` if it references the path; verify `npm test` passes.
 - [x] 4.3 Update `docs/contribute.md` to list the checks CI enforces and the Node version; verify the commands listed run as written.

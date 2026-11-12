@@ -15,14 +15,6 @@
     },
     "custom-property-pattern": null,
     "selector-class-pattern": null,
-    "selector-pseudo-class-no-unknown": [
-      true,
-      {
-        "ignorePseudoClasses": [
-          "global"
-        ]
-      }
-    ],
     "no-descending-specificity": null,
     "media-feature-range-notation": null
   },
@@ -35,7 +27,17 @@
       "files": [
         "**/*.svelte"
       ],
-      "customSyntax": "postcss-html"
+      "customSyntax": "postcss-html",
+      "rules": {
+        "selector-pseudo-class-no-unknown": [
+          true,
+          {
+            "ignorePseudoClasses": [
+              "global"
+            ]
+          }
+        ]
+      }
     }
   ]
 }
