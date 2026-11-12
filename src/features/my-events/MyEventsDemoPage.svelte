@@ -426,7 +426,7 @@
     margin: 0;
   }
 
-  @media (width <= 768px) {
+  @media (max-width: 768px) {
     .preview-grid {
       grid-template-columns: 1fr;
     }

@@ -2,7 +2,6 @@ name: CI
 
 on:
   pull_request:
-    branches: [master]
   push:
     branches: [master, 'feat/**', 'fix/**']
   workflow_dispatch:
@@ -28,13 +27,10 @@ jobs:
       - name: Type check
         run: npm run check
 
-      - name: Module boundaries
-        run: npm run sheriff
-
       - name: Lint styles
         run: npm run stylelint
 
-      - name: Check module boundaries
+      - name: Module boundaries
         run: npm run sheriff
 
       - name: Run tests

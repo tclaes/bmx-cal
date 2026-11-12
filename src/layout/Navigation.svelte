@@ -430,7 +430,7 @@
     margin-top: var(--spacing-sm);
   }
 
-  @media (width <= 1023px) {
+  @media (max-width: 1023px) {
     .nav-container {
       align-items: center;
     }
@@ -444,7 +444,7 @@
     }
   }
 
-  @media (width >= 1024px) {
+  @media (min-width: 1024px) {
     .mobile-menu {
       display: none !important;
     }

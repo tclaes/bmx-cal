@@ -986,7 +986,7 @@
     margin-top: var(--spacing-sm);
   }
 
-  @media (width <= 600px) {
+  @media (max-width: 600px) {
     .form-row--cols {
       grid-template-columns: 1fr;
     }

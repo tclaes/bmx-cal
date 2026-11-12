@@ -211,7 +211,7 @@
     flex: 1;
   }
 
-  @media (width >= 769px) {
+  @media (min-width: 769px) {
     .install-prompt-overlay {
       align-items: center;
     }
@@ -222,7 +222,7 @@
     }
   }
 
-  @media (width <= 768px) {
+  @media (max-width: 768px) {
     .install-prompt {
       max-width: 100%;
       margin: 0;

@@ -209,7 +209,7 @@
     color: var(--color-primary);
   }
 
-  @media (width <= 640px) {
+  @media (max-width: 640px) {
     .news-page {
       padding: var(--spacing-lg) var(--spacing-sm);
     }

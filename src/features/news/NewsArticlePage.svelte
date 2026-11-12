@@ -214,7 +214,7 @@
     border-top: 1px solid var(--color-border);
   }
 
-  @media (width <= 640px) {
+  @media (max-width: 640px) {
     .article-page {
       padding: var(--spacing-lg) var(--spacing-sm);
     }

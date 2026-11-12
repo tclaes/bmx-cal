@@ -425,7 +425,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (width <= 700px) {
+  @media (max-width: 700px) {
     h1 {
       font-size: var(--font-size-3xl);
     }

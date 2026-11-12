@@ -343,7 +343,7 @@
   }
   .secondary:hover { border-color: var(--color-primary); }
 
-  @media (width >= 768px) {
+  @media (min-width: 768px) {
     .card, .not-found { padding: var(--spacing-xl); }
 
     .register {

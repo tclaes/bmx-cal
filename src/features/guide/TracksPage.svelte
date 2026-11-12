@@ -286,7 +286,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (width <= 640px) {
+  @media (max-width: 640px) {
     .tracks-header h1 {
       font-size: var(--font-size-3xl);
     }

@@ -199,7 +199,7 @@
     text-align: start;
   }
 
-  @media (width >= 1024px) {
+  @media (min-width: 1024px) {
     .toggle { display: none; }
 
     .filters, .filters.collapsed {

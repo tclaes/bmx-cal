@@ -164,7 +164,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (width <= 720px) {
+  @media (max-width: 720px) {
     .banner-inner {
       grid-template-columns: 1fr;
     }

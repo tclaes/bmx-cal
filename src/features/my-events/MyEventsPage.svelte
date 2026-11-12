@@ -427,7 +427,7 @@
     margin: 0;
   }
 
-  @media (width <= 640px) {
+  @media (max-width: 640px) {
     .header {
       flex-direction: column;
       gap: var(--spacing-md);

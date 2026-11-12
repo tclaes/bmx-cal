@@ -283,7 +283,7 @@
     color: var(--color-text-secondary);
   }
 
-  @media (width >= 768px) {
+  @media (min-width: 768px) {
     .hero { padding: var(--spacing-xl); }
     .light-text { display: inline; }
   }

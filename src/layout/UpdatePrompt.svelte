@@ -129,7 +129,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (width <= 767px) {
+  @media (max-width: 767px) {
     .update-banner {
       bottom: var(--spacing-md);
       left: var(--spacing-md);
