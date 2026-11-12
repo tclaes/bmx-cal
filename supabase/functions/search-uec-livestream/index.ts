@@ -1,11 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { buildCorsHeaders, handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, getBearerToken, isScheduledBearer, isAdmin } from "../_shared/auth.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+const corsHeaders = buildCorsHeaders("GET, POST, OPTIONS");
 
 async function getUecCyclismeChannelId(apiKey: string): Promise<string | null> {
   try {
@@ -33,17 +31,13 @@ async function getUecCyclismeChannelId(apiKey: string): Promise<string | null> {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req, corsHeaders);
+  if (preflight) return preflight;
 
   try {
     const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
     if (!youtubeApiKey) {
-      return new Response(
-        JSON.stringify({ error: "YOUTUBE_API_KEY secret is not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "YOUTUBE_API_KEY secret is not configured" }, 500, corsHeaders);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -51,8 +45,8 @@ Deno.serve(async (req: Request) => {
 
     // Only the scheduled cron run (service-role bearer) or a platform admin may
     // trigger this; it spends third-party API quota and writes with the service role.
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    const authHeader = getAuthHeader(req);
+    const bearer = getBearerToken(req);
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
@@ -65,17 +59,14 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     const cronToken = tokenRow?.token ?? "";
 
-    if (bearer !== serviceRoleKey && !(cronToken.length > 0 && bearer === cronToken)) {
+    if (!isScheduledBearer(bearer, { serviceRoleKey, cronToken })) {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
       const { data: userData } = await userClient.auth.getUser();
-      if (userData?.user?.app_metadata?.role !== "admin") {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      if (!isAdmin(userData?.user)) {
+        return jsonResponse({ error: "Unauthorized" }, 401, corsHeaders);
       }
     }
 
@@ -104,10 +95,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!events || events.length === 0) {
-      return new Response(
-        JSON.stringify({ message: "No UEC events today", updated: 0 }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ message: "No UEC events today", updated: 0 }, 200, corsHeaders);
     }
 
     const channelId = await getUecCyclismeChannelId(youtubeApiKey);
@@ -215,15 +203,9 @@ Deno.serve(async (req: Request) => {
 
     const updated = results.filter(r => r.status === "updated").length;
 
-    return new Response(
-      JSON.stringify({ message: `Processed ${events.length} UEC event(s)`, updated, results }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ message: `Processed ${events.length} UEC event(s)`, updated, results }, 200, corsHeaders);
 
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: String(err) }, 500, corsHeaders);
   }
 });
