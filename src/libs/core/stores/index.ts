@@ -5,3 +5,4 @@ export type { FiltersState } from './filters.store';
 export { importStore } from './import.store';
 export { selectedEventIds, selectedCount, loadUserSelections, toggleEventSelection, clearAllSelections, selectEventsByType, deselectEventsByType } from './selection.store';
 export { updateStore, installPromptStore } from './pwa.store';
+export { featureFlagsStore, featureEnabled, isFeatureEnabled } from './feature-flags.store';

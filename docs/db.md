@@ -15,6 +15,7 @@
 | `import_logs` | File import history with success/error details |
 | `sync_logs` | Cron job sync history |
 | `bug_reports` | User-submitted bug reports with optional GitHub issue link |
+| `feature_flags` | Named on/off switches (e.g. `notifications`), readable by everyone, changeable by admins, off by default; `updated_at`/`updated_by` are set by a trigger |
 
 ### Row Level Security (RLS)
 

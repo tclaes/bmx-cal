@@ -7,7 +7,7 @@
   import { RaceRow, TypeChip } from '@ui';
   import { navigate } from '../../router';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
-  import { authStore } from '@core/stores';
+  import { authStore, featureEnabled } from '@core/stores';
 
   import { PushService } from '@core/services';
   import SaveCalendarModal from './SaveCalendarModal.svelte';
@@ -64,16 +64,30 @@
     }
   }
 
+  // The notification block is behind the `notifications` flag. The flag may load after
+  // this page mounts, so the push check runs once, as soon as the block is allowed.
+  const notificationsFlag = featureEnabled('notifications');
+  let pushChecked = false;
+
+  $: showNotifications = $notificationsFlag && isLoggedIn;
+  $: if (showNotifications && !pushChecked) {
+    pushChecked = true;
+    checkPush();
+  }
+
+  async function checkPush() {
+    try {
+      pushSupported = PushService.isSupported();
+      pushEnabled = pushSupported && await PushService.isSubscribed();
+    } catch {
+      pushEnabled = false;
+    }
+  }
+
   onMount(async () => {
     try {
       events = await EventsService.getAllEvents();
       await loadUserSelections();
-
-      if ($authStore.user) {
-        pushSupported = PushService.isSupported();
-        pushEnabled = pushSupported && await PushService.isSubscribed();
-
-      }
     } catch (e) {
       error = e instanceof Error ? e.message : $t.myEvents.failedToLoad;
     } finally {
@@ -212,7 +226,7 @@
     />
   {/if}
 
-  {#if isLoggedIn && !loading}
+  {#if showNotifications && !loading}
     <div class="notif-section">
       <h2 class="notif-title">{$t.myEvents.notifTitle}</h2>
       <p class="notif-description">{$t.myEvents.notifDescription}</p>

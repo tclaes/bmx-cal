@@ -2,18 +2,18 @@
 
 ## 1. Preparation
 
-- [ ] 1.1 Branch `feat/my-calendar-actions` from `feat/redesign-my-calendar`; `npm test`, `npm run build`, `npm run sheriff` green
+- [x] 1.1 Branch `feat/my-calendar-actions` from `feat/redesign-my-calendar`; `npm test`, `npm run build`, `npm run sheriff` green
 
 ## 2. Feature flags (database)
 
-- [ ] 2.1 Migration `create_feature_flags`: table, RLS (public select, admin write), audit trigger, seed `notifications = false`; apply with the Supabase MCP; grant `select` to anon and authenticated and writes to authenticated only; verify with `execute_sql` that anon can read and cannot write, and run the security advisor; add the table to `supabase/test-env/reference-data.sql` so the local seeded environment has it
-- [ ] 2.2 `FeatureFlagService` (`getAll`, `setFlag`) and `featureFlags` store with `isEnabled(key)` that is false until loaded, when missing and on error; unit tests for fail-closed behaviour
-- [ ] 2.3 Load the flags at app start; document the table in `docs/db.md` and the mechanism in `docs/features.md`
-- [ ] 2.4 Admin dashboard "Feature flags" section with a switch per flag and last change shown; test that toggling calls `setFlag` and updates the display
+- [ ] 2.1 Migration `create_feature_flags`: table, RLS (public select, admin write), audit trigger, seed `notifications = false`; apply with the Supabase MCP; grant `select` to anon and authenticated and writes to authenticated only; verify with `execute_sql` that anon can read and cannot write, and run the security advisor;
+- [x] 2.2 `FeatureFlagService` (`getAll`, `setFlag`) and `featureFlags` store with `isEnabled(key)` that is false until loaded, when missing and on error; unit tests for fail-closed behaviour
+- [x] 2.3 Load the flags at app start; document the table in `docs/db.md` and the mechanism in `docs/features.md`
+- [x] 2.4 Admin dashboard "Feature flags" section with a switch per flag and last change shown; test that toggling calls `setFlag` and updates the display
 
 ## 3. Notification block behind the flag
 
-- [ ] 3.1 Gate the notification block and the `PushService` calls in `MyEventsPage` behind `isEnabled('notifications')` and sign-in; tests: flag off means no block and no `PushService` call, flag on shows it, signed out never shows it
+- [x] 3.1 Gate the notification block and the `PushService` calls in `MyEventsPage` behind `isEnabled('notifications')` and sign-in; tests: flag off means no block and no `PushService` call, flag on shows it, signed out never shows it
 
 ## 4. Selection bar and actions
 

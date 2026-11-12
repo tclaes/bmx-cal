@@ -1,7 +1,9 @@
 import './app.css'
 import App from './App.svelte'
-import { updateStore } from '@core/stores';
+import { updateStore, featureFlagsStore } from '@core/stores';
 import { checkForUpdate, storeCurrentVersion } from '@shared/utils';
+
+featureFlagsStore.load();
 
 const app = new App({
   target: document.getElementById('app')!,

@@ -4,13 +4,16 @@ import { get } from 'svelte/store';
 import type { EventWithDetails } from '@types';
 
 const events = vi.hoisted(() => ({ list: [] as any[] }));
+const push = vi.hoisted(() => ({ isSupported: vi.fn(() => true), isSubscribed: vi.fn(async () => false) }));
+const flagsSvc = vi.hoisted(() => ({ getAll: vi.fn(async () => [] as any[]), setFlag: vi.fn() }));
 
 vi.mock('@core/services', async (orig) => {
   const actual = await orig<typeof import('@core/services')>();
   return {
     ...actual,
     EventsService: { getAllEvents: vi.fn(async () => events.list) },
-    PushService: { isSupported: () => false, isSubscribed: async () => false },
+    PushService: push,
+    FeatureFlagService: flagsSvc,
   };
 });
 
@@ -32,7 +35,7 @@ vi.mock('@core/stores', async (orig) => {
 });
 
 import MyEventsPage from '../features/my-events/MyEventsPage.svelte';
-import { selectedEventIds } from '@core/stores';
+import { selectedEventIds, authStore, featureFlagsStore } from '@core/stores';
 import { locale } from '../i18n';
 
 const type = (name: string, color = '#ff0000') => ({ id: name, name, color_code: color });
@@ -87,5 +90,54 @@ describe('MyEventsPage', () => {
     await waitFor(() => expect(cv()).toHaveAttribute('aria-pressed', 'true'));
     await fireEvent.click(cv());
     await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+  });
+});
+
+describe('MyEventsPage notifications flag', () => {
+  const flag = (enabled: boolean) => ({ key: 'notifications', enabled, updated_at: '', updated_by: null });
+  const signIn = () => authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+
+  beforeEach(() => {
+    push.isSupported.mockClear();
+    push.isSubscribed.mockClear();
+    authStore.setUser(null);
+  });
+
+  it('shows no block and makes no push call while the flag is off', async () => {
+    flagsSvc.getAll.mockResolvedValue([flag(false)]);
+    await featureFlagsStore.load();
+    signIn();
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    expect(screen.queryByText('Deadline meldingen')).not.toBeInTheDocument();
+    expect(push.isSupported).not.toHaveBeenCalled();
+    expect(push.isSubscribed).not.toHaveBeenCalled();
+  });
+
+  it('shows the block and checks push once the flag is on and the user is signed in', async () => {
+    flagsSvc.getAll.mockResolvedValue([flag(true)]);
+    await featureFlagsStore.load();
+    signIn();
+    render(MyEventsPage);
+    expect(await screen.findByText('Deadline meldingen')).toBeInTheDocument();
+    expect(push.isSupported).toHaveBeenCalled();
+  });
+
+  it('never shows the block to signed-out visitors, even with the flag on', async () => {
+    flagsSvc.getAll.mockResolvedValue([flag(true)]);
+    await featureFlagsStore.load();
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    expect(screen.queryByText('Deadline meldingen')).not.toBeInTheDocument();
+    expect(push.isSupported).not.toHaveBeenCalled();
+  });
+
+  it('stays hidden when the flags cannot be read', async () => {
+    flagsSvc.getAll.mockRejectedValue(new Error('network'));
+    await featureFlagsStore.load();
+    signIn();
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    expect(screen.queryByText('Deadline meldingen')).not.toBeInTheDocument();
   });
 });

@@ -32,3 +32,4 @@
 - Bulk import events from CSV, Excel, iCal, or PDF files
 - View import history and sync logs
 - Bug report triage with GitHub issue integration
+- Turn feature flags on and off from the admin dashboard ("Feature flags"). Flags live in the `feature_flags` table, are readable by everyone, and a feature is off while its flag is missing, not loaded yet or unreadable. A change reaches visitors on their next load. Currently: `notifications` (deadline notifications block on My calendar, off by default).
