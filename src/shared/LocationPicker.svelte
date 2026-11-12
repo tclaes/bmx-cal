@@ -137,7 +137,7 @@
 
   .required {
     color: var(--color-error, #dc2626);
-    margin-left: 2px;
+    margin-left: 0.125rem;
   }
 
   .location-select {

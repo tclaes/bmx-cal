@@ -40,16 +40,39 @@
     background: var(--race-unknown-stripe);
   }
 
-  .type-cv { background-color: var(--race-cv-bg); color: var(--race-cv-fg); }
+  .type-cv {
+    background-color: var(--race-cv-bg);
+    color: var(--race-cv-fg);
+  }
   .type-cv .stripe { background: var(--race-cv-stripe); }
-  .type-tc { background-color: var(--race-tc-bg); color: var(--race-tc-fg); }
+
+  .type-tc {
+    background-color: var(--race-tc-bg);
+    color: var(--race-tc-fg);
+  }
   .type-tc .stripe { background: var(--race-tc-stripe); }
-  .type-cw { background-color: var(--race-cw-bg); color: var(--race-cw-fg); }
+
+  .type-cw {
+    background-color: var(--race-cw-bg);
+    color: var(--race-cw-fg);
+  }
   .type-cw .stripe { background: var(--race-cw-stripe); }
-  .type-3nc { background-color: var(--race-3nc-bg); color: var(--race-3nc-fg); }
+
+  .type-3nc {
+    background-color: var(--race-3nc-bg);
+    color: var(--race-3nc-fg);
+  }
   .type-3nc .stripe { background: var(--race-3nc-stripe); }
-  .type-ec { background-color: var(--race-ec-bg); color: var(--race-ec-fg); }
+
+  .type-ec {
+    background-color: var(--race-ec-bg);
+    color: var(--race-ec-fg);
+  }
   .type-ec .stripe { background: var(--race-ec-stripe); }
-  .type-wc { background-color: var(--race-wc-bg); color: var(--race-wc-fg); }
+
+  .type-wc {
+    background-color: var(--race-wc-bg);
+    color: var(--race-wc-fg);
+  }
   .type-wc .stripe { background: var(--race-wc-stripe); }
 </style>

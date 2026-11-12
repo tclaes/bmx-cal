@@ -175,7 +175,7 @@
     letter-spacing: 0.08em;
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
     margin-block-end: var(--spacing-sm);
@@ -322,7 +322,7 @@
 
   .related-card:hover {
     border-color: var(--color-primary);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    box-shadow: 0 2px 8px rgb(37 99 235 / 8%);
   }
 
   .related-card strong {

@@ -126,7 +126,11 @@
 
   .filters.collapsed { display: none; }
 
-  .group { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
 
   .group-label {
     font-family: var(--font-family-heading);
@@ -148,12 +152,29 @@
     font: inherit;
   }
 
-  .field:focus-visible { outline: 2px solid var(--color-primary-hover); outline-offset: 1px; }
+  .field:focus-visible {
+    outline: 2px solid var(--color-primary-hover);
+    outline-offset: 1px;
+  }
 
-  .chips { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
 
-  .dates { flex-direction: row; gap: var(--spacing-sm); }
-  .date { display: flex; flex-direction: column; gap: var(--spacing-xs); flex: 1; min-inline-size: 0; }
+  .dates {
+    flex-direction: row;
+    gap: var(--spacing-sm);
+  }
+
+  .date {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+    min-inline-size: 0;
+  }
 
   .check {
     display: flex;
@@ -164,7 +185,11 @@
     cursor: pointer;
   }
 
-  .check input { inline-size: 22px; block-size: 22px; accent-color: var(--color-primary); }
+  .check input {
+    inline-size: 22px;
+    block-size: 22px;
+    accent-color: var(--color-primary);
+  }
 
   .reset {
     min-block-size: var(--touch-target-min);
@@ -176,6 +201,10 @@
 
   @media (min-width: 1024px) {
     .toggle { display: none; }
-    .filters, .filters.collapsed { display: flex; margin-block-start: 0; }
+
+    .filters, .filters.collapsed {
+      display: flex;
+      margin-block-start: 0;
+    }
   }
 </style>

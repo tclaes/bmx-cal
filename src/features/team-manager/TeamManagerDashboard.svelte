@@ -797,7 +797,7 @@
   }
 
   .members-chevron {
-    color: currentColor;
+    color: currentcolor;
     transition: transform 0.2s ease;
     flex-shrink: 0;
   }

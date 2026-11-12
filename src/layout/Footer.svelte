@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from '../router';
-  import { APP_VERSION } from '@config/version';
+  import { APP_VERSION } from '@config';
   import { updateStore } from '@core/stores';
   import { t, interpolate } from '../i18n';
 
@@ -140,11 +140,18 @@
     padding: var(--spacing-xxs) var(--spacing-sm);
     background-color: var(--color-primary-light);
     border-radius: var(--border-radius-sm);
-    animation: fadeIn 0.3s ease;
+    animation: fade-in 0.3s ease;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>

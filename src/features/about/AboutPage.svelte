@@ -160,7 +160,7 @@
     font-size: var(--font-size-xl);
     color: var(--color-primary);
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .feature-item div {

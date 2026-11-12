@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.8",
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -28,6 +31,7 @@
     "eslint": "^9.39.5",
     "jiti": "^2.7.0",
     "jsdom": "^28.1.0",
+    "postcss-html": "^2.0.0",
     "stylelint": "^17.5.0",
     "stylelint-config-recommended": "^18.0.0",
     "stylelint-config-standard": "^40.0.0",
