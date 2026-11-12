@@ -37,17 +37,20 @@
       "@shared": [
         "src/shared"
       ],
-      "@data/*": [
-        "src/data/*"
-      ],
       "@data": [
         "src/data"
+      ],
+      "@data/*": [
+        "src/data/*"
       ],
       "@types/*": [
         "src/types/*"
       ],
       "@types": [
         "src/types"
+      ],
+      "@config": [
+        "src/config"
       ],
       "@config/*": [
         "src/config/*"

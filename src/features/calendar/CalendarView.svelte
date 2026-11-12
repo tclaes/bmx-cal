@@ -80,7 +80,10 @@
       top: calc(var(--spacing-xl) * 2 + 24px);
     }
 
-    .calendar-main { grid-column: 1; grid-row: 1; }
+    .calendar-main {
+      grid-column: 1;
+      grid-row: 1;
+    }
     .export { display: block; }
   }
 

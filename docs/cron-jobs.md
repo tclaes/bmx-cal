@@ -4,7 +4,7 @@ This project uses PostgreSQL's `pg_cron` extension to run automated background t
 
 ## Overview
 
-Two cron jobs are configured to keep the event data up-to-date:
+A cron job keeps the event data up-to-date:
 
 ### 1. JSTiming Sync (Weekly)
 - **Name**: `sync-jstiming-weekly`
@@ -12,15 +12,9 @@ Two cron jobs are configured to keep the event data up-to-date:
 - **Function**: `/functions/v1/sync-jstiming`
 - **Purpose**: Syncs event data from JSTiming API to keep registration links and event details current
 
-### 2. UEC Livestream Search (Daily)
-- **Name**: `search-uec-livestream-daily`
-- **Schedule**: Every day at 08:00 UTC
-- **Function**: `/functions/v1/search-uec-livestream`
-- **Purpose**: Searches YouTube for live broadcasts of UEC BMX events happening today
-
 ## Configuration
 
-Both cron jobs are configured in the database migration:
+The JSTiming cron job is configured in the database migration:
 - `supabase/migrations/20260315205718_fix_cron_jobs_pg_net_schema.sql`
 
 They use `pg_cron.schedule()` to schedule tasks and `extensions.http_post()` to call Edge Functions.
@@ -83,26 +77,6 @@ curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/sync-jstimin
   -H "Content-Type: application/json"
 ```
 
-### Test UEC Livestream Search
-```bash
-# Search for today's events
-curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/search-uec-livestream" \
-  -H "Authorization: Bearer <YOUR_ANON_KEY>" \
-  -H "Content-Type: application/json"
-
-# Test specific event
-curl -X POST "https://wateawaecktywtlfhomn.supabase.co/functions/v1/search-uec-livestream" \
-  -H "Authorization: Bearer <YOUR_ANON_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{"event_id":"<EVENT_UUID>"}'
-```
-
-Or use the test scripts:
-```bash
-node test-livestream-search.js
-node test-youtube-api.js
-```
-
 ## Troubleshooting
 
 ### Cron Job Not Running
@@ -138,14 +112,8 @@ node test-youtube-api.js
    - Filter by function name
 
 2. **Verify secrets are configured**:
-   - Check that `YOUTUBE_API_KEY` is set for livestream search
-   - See `YOUTUBE_SETUP.md` for instructions
 
 ### Common Issues
-
-**"YOUTUBE_API_KEY secret is not configured"**
-- Solution: Add the YouTube API key as a secret in Supabase Edge Functions settings
-- See: `YOUTUBE_SETUP.md`
 
 **"pg_net extension not found"**
 - This was fixed in migration `20260315205718_fix_cron_jobs_pg_net_schema.sql`
@@ -177,8 +145,6 @@ node test-youtube-api.js
               │  Edge Functions  │
               │                  │
               │ • sync-jstiming  │
-              │ • search-uec-    │
-              │   livestream     │
               └──────────────────┘
                      │
                      ▼

@@ -13,7 +13,7 @@
   $: effectiveColor = variant ? variantColors[variant] : color;
 </script>
 
-<span class="badge" style="background-color: {effectiveColor}; color: #ffffff;">
+<span class="badge" style="background-color: {effectiveColor}; color: #fff;">
   {label}
 </span>
 

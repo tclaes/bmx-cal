@@ -43,3 +43,7 @@ references `docs/file-import.md`
 ## Contribute
 
 references `docs/contribute.md`
+
+## Local test environment
+
+references `docs/test-env.md`
