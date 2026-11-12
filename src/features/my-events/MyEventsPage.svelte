@@ -464,6 +464,7 @@
 
   .undo {
     position: fixed;
+
     /* Above the update banner, which sits at the same bottom spot */
     inset-block-end: calc(var(--spacing-lg) + var(--touch-target-min) + var(--spacing-xl));
     inset-inline: var(--spacing-md);
@@ -495,8 +496,7 @@
 
   @media (min-width: 768px) {
     .selection {
-      flex-direction: row;
-      flex-wrap: wrap;
+      flex-flow: row wrap;
       align-items: center;
       justify-content: space-between;
       gap: var(--spacing-md);
