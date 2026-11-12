@@ -14,9 +14,9 @@
 
 ## 3. Stage B: migrate by group
 
-- [ ] 3.1 Migrate and locally verify the public group (`send-contact-email`, `send-password-reset`): smoke script plus positive-path calls on the local stack; PR to `master`.
-- [ ] 3.2 Migrate and locally verify the user/admin group (`create-github-issue`, `reopen-github-issue`, `get-github-issue-statuses`, `analyze-pdf`, `analyze-image`, `delete-account`) with admin, team manager and plain user sessions; PR to `master`.
-- [ ] 3.3 Migrate and locally verify the scheduled group (`sync-jstiming`, `search-uec-livestream`, `send-push-notifications`) with the cron token, service-role key and an admin session; PR to `master`.
+- [x] 3.1 Migrate and locally verify the public group (`send-contact-email`, `send-password-reset`): smoke script plus positive-path calls on the local stack; PR to `master`. (PR 18; verified by running original and migrated functions side by side under Deno against a fake Supabase, not a local Supabase stack)
+- [x] 3.2 Migrate and locally verify the user/admin group (`create-github-issue`, `reopen-github-issue`, `get-github-issue-statuses`, `analyze-pdf`, `analyze-image`, `delete-account`) with admin, team manager and plain user sessions; PR to `master`. (PR 19; verified by running original and migrated functions side by side under Deno against a fake Supabase, not a local Supabase stack)
+- [x] 3.3 Migrate and locally verify the scheduled group (`sync-jstiming`, `search-uec-livestream`, `send-push-notifications`) with the cron token, service-role key and an admin session; PR to `master`. (PR 20; verified by running original and migrated functions side by side under Deno against a fake Supabase, not a local Supabase stack)
 
 ## 4. Stage C: deploy and verify, after each merge to master
 
