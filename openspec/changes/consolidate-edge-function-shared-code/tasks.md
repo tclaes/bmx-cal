@@ -8,7 +8,7 @@
 
 ## 2. Migrate public functions
 
-- [ ] 2.1 Migrate `send-contact-email` and `send-password-reset` to `_shared`, keep status codes and bodies; verify with a test or manual call that 400, 429 and CORS preflight responses are unchanged.
+- [ ] 2.1 Migrate `send-contact-email` and `send-password-reset` to `_shared`, keep status codes and bodies; verify with unit tests or a local `supabase functions serve` call (no deploy) that 400, 429 and CORS preflight responses are unchanged.
 
 ## 3. Migrate user and admin functions
 
@@ -24,4 +24,4 @@
 
 - [ ] 5.1 Use the `npm:@supabase/supabase-js@2` specifier in every function; verify with `grep -rn "jsr:@supabase/supabase-js" supabase/functions` returning nothing.
 - [ ] 5.2 Rewrite `docs/edge-functions.md` with a table of all 11 functions: purpose, `verify_jwt`, allowed callers, auth method, and a note that deploys must include `_shared/`; verify every function in `supabase/config.toml` appears in the table.
-- [ ] 5.3 Deploy one function per category, smoke-test, then deploy the rest; record results in the PR description.
+- [ ] 5.3 After everything is merged to `master` (not before), deploy one function per category, smoke-test, then deploy the rest; record results in the PR description. Until then nothing is deployed to Supabase.

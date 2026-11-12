@@ -26,7 +26,7 @@ Eleven functions, about 2,100 lines, each self-contained. Observed duplication (
 
 ## Risks / Trade-offs
 
-- [A deploy that omits `_shared/` breaks every migrated function] → Deploy each function with its shared files and smoke-test one admin-only, one scheduled and one public function after the first deploy, before the rest.
+- [A deploy that omits `_shared/` breaks every migrated function] → Deploy only after the change is merged to `master`, with each function's shared files, and smoke-test one admin-only, one scheduled and one public function after the first deploy, before the rest. Until then, verify with the unit tests and a local `supabase functions serve`, never against the live project.
 - [Subtle behavior drift during the migration, especially status codes] → The spec scenarios become tests; migrate and verify one function at a time against its current responses.
 - [`supabase/functions` is outside `tsconfig` `include`, so `svelte-check` will not type-check the shared files] → Add them to a tsconfig `include`, or type-check them through the imports in the tests.
 - [Tests run in Node against code written for Deno] → Keep `_shared` free of Deno globals and remote imports.
@@ -35,4 +35,4 @@ Eleven functions, about 2,100 lines, each self-contained. Observed duplication (
 
 1. Land `_shared/` with tests (no function changes yet).
 2. Migrate functions in order: public (2), user/admin (6), scheduled (3).
-3. After each function, deploy and smoke-test; roll back by redeploying the previous version of that function.
+3. Merge everything to `master` first. Only then deploy, one function at a time, smoke-testing each; roll back by redeploying the previous version of that function.
