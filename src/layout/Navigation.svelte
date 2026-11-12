@@ -289,15 +289,13 @@
   .locale-switcher {
     display: flex;
     align-items: center;
-    gap: 2px;
-    padding-block-end: var(--spacing-sm);
+    align-self: center;
     margin-inline-start: var(--spacing-xs);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
     overflow: hidden;
     gap: 0;
     padding: 0;
-    margin-block-end: var(--spacing-sm);
   }
 
   .locale-btn {
@@ -313,8 +311,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: var(--touch-target-min);
-    min-block-size: var(--touch-target-min);
+    min-inline-size: 2rem;
+    min-block-size: 2rem;
     text-align: center;
   }
 
