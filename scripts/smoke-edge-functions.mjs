@@ -2,9 +2,11 @@
 // Production-safe smoke test for the Supabase edge functions.
 //
 // Every request here is harmless by construction: no credentials are sent, so protected
-// functions answer 401 before doing any work, and the two public functions receive an
-// empty payload and answer 400 before sending anything. Positive paths (admin, team
-// manager, scheduler) must only be tested against a local Supabase, never production.
+// functions answer 401 before doing any work, send-contact-email receives an empty payload
+// and answers 400 before sending anything, and send-password-reset is only sent a CORS
+// preflight (it rate-limits before validating, so a POST would use up a reset slot).
+// Positive paths (admin, team manager, scheduler) must only be tested against a local
+// Supabase, never production.
 //
 // Usage: node scripts/smoke-edge-functions.mjs <base-url>
 //   e.g. node scripts/smoke-edge-functions.mjs http://127.0.0.1:54321/functions/v1
