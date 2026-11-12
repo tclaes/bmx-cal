@@ -290,7 +290,7 @@
     margin-top: var(--spacing-lg);
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     .form-group--cols {
       grid-template-columns: 1fr;
     }

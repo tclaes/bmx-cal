@@ -340,7 +340,7 @@
     margin: 0;
   }
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .page-wrapper {
       padding: var(--spacing-lg) var(--spacing-md);
     }

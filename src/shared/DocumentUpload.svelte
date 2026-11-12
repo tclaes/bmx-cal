@@ -1219,7 +1219,7 @@
     margin-top: var(--spacing-md);
   }
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .create-fields,
     .event-card-dates {
       grid-template-columns: 1fr;

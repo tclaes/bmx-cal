@@ -286,7 +286,7 @@
     flex-shrink: 0;
   }
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     .report-top {
       flex-direction: column;
     }

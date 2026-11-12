@@ -191,7 +191,7 @@
     letter-spacing: 0.08em;
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
     margin-block-end: var(--spacing-sm);
@@ -355,7 +355,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .faq-header h1 {
       font-size: var(--font-size-3xl);
     }

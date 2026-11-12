@@ -366,7 +366,7 @@
     color: var(--color-text-muted);
   }
 
-  @media (max-width: 600px) {
+  @media (width <= 600px) {
     .add-row {
       flex-direction: column;
       align-items: stretch;

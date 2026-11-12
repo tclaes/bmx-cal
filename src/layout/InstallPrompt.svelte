@@ -6,7 +6,12 @@
   import Logo from '@ui/Logo.svelte';
 
   let showPrompt = false;
-  let deferredPrompt: any = null;
+  interface BeforeInstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  }
+
+  let deferredPrompt: BeforeInstallPromptEvent | null = null;
   let dismissed = false;
 
   onMount(() => {
@@ -18,7 +23,7 @@
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      deferredPrompt = e;
+      deferredPrompt = e as BeforeInstallPromptEvent;
 
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -100,22 +105,20 @@
 <style>
   .install-prompt-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background-color: rgb(0 0 0 / 50%);
     display: flex;
     align-items: flex-end;
     justify-content: center;
     z-index: 10000;
-    animation: fadeIn 0.2s ease-out;
+    animation: fade-in 0.2s ease-out;
   }
 
-  @keyframes fadeIn {
+  @keyframes fade-in {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -127,15 +130,16 @@
     max-width: 500px;
     background-color: var(--color-bg-primary);
     border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease-out;
+    box-shadow: 0 -4px 20px rgb(0 0 0 / 20%);
+    animation: slide-up 0.3s ease-out;
     margin: 0 var(--spacing-md) 0 var(--spacing-md);
   }
 
-  @keyframes slideUp {
+  @keyframes slide-up {
     from {
       transform: translateY(100%);
     }
+
     to {
       transform: translateY(0);
     }
@@ -178,7 +182,7 @@
     height: 80px;
     border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
   }
 
 
@@ -207,7 +211,7 @@
     flex: 1;
   }
 
-  @media (min-width: 769px) {
+  @media (width >= 769px) {
     .install-prompt-overlay {
       align-items: center;
     }
@@ -218,7 +222,7 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .install-prompt {
       max-width: 100%;
       margin: 0;

@@ -343,7 +343,7 @@
     letter-spacing: 0.08em;
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
     margin-block-end: var(--spacing-sm);
@@ -412,8 +412,7 @@
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-primary);
-    margin-block-start: var(--spacing-lg);
-    margin-block-end: var(--spacing-sm);
+    margin-block: var(--spacing-lg) var(--spacing-sm);
     line-height: var(--line-height-tight);
   }
 
@@ -618,7 +617,7 @@
   }
 
   /* Responsive */
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .raceday-header h1 {
       font-size: var(--font-size-3xl);
     }

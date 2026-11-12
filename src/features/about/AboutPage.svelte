@@ -160,7 +160,7 @@
     font-size: var(--font-size-xl);
     color: var(--color-primary);
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .feature-item div {
@@ -225,7 +225,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (max-width: 640px) {
+  @media (width <= 640px) {
     .hero h1 {
       font-size: var(--font-size-3xl);
     }

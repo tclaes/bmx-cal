@@ -24,6 +24,11 @@ export const selectionService = {
     localStorage.removeItem(STORAGE_KEY);
   },
 
+  async isLoggedIn(): Promise<boolean> {
+    const { data: { user } } = await supabase.auth.getUser();
+    return !!user;
+  },
+
   async getRemoteSelections(): Promise<string[]> {
     const { data, error } = await supabase
       .from('user_event_selections')

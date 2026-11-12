@@ -306,7 +306,7 @@
   textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
   }
 
   textarea {
@@ -425,7 +425,7 @@
     color: var(--color-text-primary);
   }
 
-  @media (max-width: 700px) {
+  @media (width <= 700px) {
     h1 {
       font-size: var(--font-size-3xl);
     }

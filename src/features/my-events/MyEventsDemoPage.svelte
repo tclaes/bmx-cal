@@ -171,7 +171,7 @@
     letter-spacing: 0.08em;
     color: var(--color-success);
     background-color: var(--color-success-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
   }
@@ -230,8 +230,15 @@
   }
 
   @keyframes pulse {
-    0%, 100% { opacity: 0.35; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1); }
+    0%, 100% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .preview-grid {
@@ -279,7 +286,7 @@
     font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
   }
@@ -419,7 +426,7 @@
     margin: 0;
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .preview-grid {
       grid-template-columns: 1fr;
     }

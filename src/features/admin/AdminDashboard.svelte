@@ -498,7 +498,7 @@
     gap: var(--spacing-sm);
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .dashboard-header {
       flex-direction: column;
       gap: var(--spacing-md);
