@@ -14,8 +14,8 @@
 ## 3. Enforce in CI
 
 - [x] 3.1 Add `.nvmrc` and `engines.node` in `package.json`; verify `nvm use` picks the version and `npm ci && npm test` pass under it.
-- [ ] 3.2 Update `.github/workflows/ci.yml`: `node-version-file: .nvmrc`, `npm ci`, and steps for check, sheriff, stylelint before test and build. Verify with a PR run where all steps are green.
-- [ ] 3.3 Prove the gates bite: on a throwaway branch introduce one type error, one boundary violation and one style error, and verify each fails CI (then discard the branch).
+- [x] 3.2 Update `.github/workflows/ci.yml`: `node-version-file: .nvmrc`, `npm ci`, and steps for check, sheriff, stylelint before test and build. Verify with a PR run where all steps are green.
+- [x] 3.3 Prove the gates bite: on a throwaway branch introduce one type error, one boundary violation and one style error, and verify each fails CI (then discard the branch).
 
 ## 4. Documentation
 
