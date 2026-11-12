@@ -32,3 +32,32 @@ node scripts/smoke-edge-functions.mjs https://<project-ref>.supabase.co/function
 ```
 
 Admin, team-manager and scheduler paths must only be tested against a local Supabase, never against production.
+
+### Rollback
+
+Functions deploy independently of git, so a bad deploy is undone by redeploying earlier source, not by reverting a merge. Commit `9e9a790` is the last source from before the shared-helper migration (`_shared/` CORS and auth modules); every function there is self-contained.
+
+1. Check out the source you want to restore into a scratch worktree, so the working copy stays untouched:
+
+   ```bash
+   git worktree add ../bmx-cal-rollback 9e9a790
+   cd ../bmx-cal-rollback
+   ```
+
+2. Redeploy only the broken function (the project ref is in `docs/env.md`):
+
+   ```bash
+   supabase functions deploy <function-name> --project-ref <project-ref>
+   ```
+
+   A function that imports from `supabase/functions/_shared/` must be redeployed together with that directory, so roll back to a commit that contains the matching `_shared/` version, not just the function file.
+
+3. Verify with the smoke script (see above). It must pass before you consider the rollback done:
+
+   ```bash
+   node scripts/smoke-edge-functions.mjs https://<project-ref>.supabase.co/functions/v1
+   ```
+
+4. Remove the scratch worktree with `git worktree remove ../bmx-cal-rollback`, then fix forward on a branch from `master` and redeploy only after the fix is merged.
+
+`verify_jwt` is read from `supabase/config.toml` at the commit you deploy from, so a rollback also restores that commit's JWT settings. Compare it with the current file before redeploying a function whose setting changed.
