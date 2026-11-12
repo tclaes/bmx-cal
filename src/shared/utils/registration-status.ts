@@ -1,15 +1,19 @@
 import type { EventWithDetails } from '@types';
+import type { RegistrationState } from './registration-state';
+
+export type { RegistrationState };
 
 export interface RegistrationStatus {
   label: string;
   color: string;
+  state: RegistrationState;
 }
 
 const STATUS = {
-  closed: { label: 'Registration Closed', color: '#6b7280' },
-  opensSoon: { label: 'Registration Opens Soon', color: '#b45309' },
-  open: { label: 'Registration Open', color: '#047857' },
-  registerNow: { label: 'Register Now', color: '#1d4ed8' },
+  closed: { label: 'Registration Closed', color: '#6b7280', state: 'closed' },
+  opensSoon: { label: 'Registration Opens Soon', color: '#b45309', state: 'soon' },
+  open: { label: 'Registration Open', color: '#047857', state: 'open' },
+  registerNow: { label: 'Register Now', color: '#1d4ed8', state: 'register' },
 } as const;
 
 function parseLocalDate(dateStr: string): Date {

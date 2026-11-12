@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 import type { Event, EventWithDetails, CreateEventInput, EventType, Location } from '@types';
 
 const EVENT_SELECT = `

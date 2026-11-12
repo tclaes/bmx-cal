@@ -48,13 +48,13 @@
     {:else}
       <div class="articles-list">
         {#each articles as article (article.id)}
-          <article class="article-card" on:click={() => handleArticleClick(article.slug)} role="link" tabindex="0">
+          <article class="article-card">
             <div class="article-card-body">
               <div class="article-meta">
                 <span class="article-date">{formatLongDate(article.published_at ?? '')}</span>
                 <span class="article-author">{article.author}</span>
               </div>
-              <h2 class="article-heading">{article.title}</h2>
+              <h2 class="article-heading"><a class="article-link" href="/news/{article.slug}" on:click|preventDefault={() => handleArticleClick(article.slug)}>{article.title}</a></h2>
               {#if article.excerpt}
                 <p class="article-excerpt">{article.excerpt}</p>
               {/if}
@@ -129,6 +129,7 @@
   }
 
   .article-card {
+    position: relative;
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
@@ -143,7 +144,19 @@
     transform: translateY(-2px);
   }
 
-  .article-card:focus-visible {
+  .article-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Stretched link: the whole card is the click target */
+  .article-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .article-card:focus-within {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }

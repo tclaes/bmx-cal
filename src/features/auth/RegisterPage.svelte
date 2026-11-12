@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@ui';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { AuthService } from '@core/services';
   import { authStore } from '@core/stores';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { navigate } from '../../router';
   import { t } from '../../i18n';
 
@@ -123,9 +123,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #92400e;
-    background: #fef3c7;
-    border: 1px solid #fcd34d;
+    color: var(--color-warning);
+    background: var(--color-warning-light);
+    border: 1px solid var(--color-warning);
     border-radius: 20px;
     padding: 0.2rem 0.6rem;
   }

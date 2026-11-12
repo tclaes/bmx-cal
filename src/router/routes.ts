@@ -17,6 +17,7 @@ import GuidePage from '@features/guide/GuidePage.svelte';
 import FaqPage from '@features/guide/FaqPage.svelte';
 import RaceDayPage from '@features/guide/RaceDayPage.svelte';
 import TracksPage from '@features/guide/TracksPage.svelte';
+import EventDetailPage from '@features/calendar/EventDetailPage.svelte';
 import NewsPage from '@features/news/NewsPage.svelte';
 import NewsArticlePage from '@features/news/NewsArticlePage.svelte';
 import PrivacyPolicyPage from '@features/legal/PrivacyPolicyPage.svelte';
@@ -140,6 +141,11 @@ export const routes: RouteDefinition[] = [
       description:
         'Stay up to date with the latest features, improvements, and announcements from BMX Calendar.',
     },
+  },
+  {
+    path: '/events/:id',
+    component: EventDetailPage,
+    prefix: true,
   },
   {
     path: '/news/:slug',

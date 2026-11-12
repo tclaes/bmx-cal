@@ -1,0 +1,1 @@
+export { APP_VERSION, MIN_VERSION, FORCE_UPDATE, RELEASE_NOTES } from './version';
