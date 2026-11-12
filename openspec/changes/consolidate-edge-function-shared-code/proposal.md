@@ -26,4 +26,5 @@ Out of scope: tightening the wildcard CORS origin, changing any status code, rat
 - `supabase/functions/*/index.ts` (11 files) and new `supabase/functions/_shared/*`
 - `src/tests/edge-function-security.test.ts` (replaced), new shared-module tests
 - `docs/edge-functions.md`
+- Delivery: how this ships to `master` first and is tested is planned in `roll-out-edge-functions-via-master`
 - Deployment: functions are deployed through the Supabase MCP `deploy_edge_function` tool, so every deploy must now include the `_shared` files (see design.md)
