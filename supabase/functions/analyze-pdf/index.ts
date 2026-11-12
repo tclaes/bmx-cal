@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { corsHeaders, handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 
 interface ExtractedEvent {
@@ -139,16 +139,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        {
-          status: 405,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "Method not allowed" }, 405);
     }
 
     // The anon key satisfies verify_jwt, so the caller must be identified here:
@@ -169,29 +160,11 @@ Deno.serve(async (req: Request) => {
     const pdfFile = formData.get("file") as File;
 
     if (!pdfFile) {
-      return new Response(
-        JSON.stringify({ error: "No PDF file provided" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "No PDF file provided" }, 400);
     }
 
     if (pdfFile.type !== "application/pdf") {
-      return new Response(
-        JSON.stringify({ error: "File must be a PDF" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "File must be a PDF" }, 400);
     }
 
     const pdfBuffer = await pdfFile.arrayBuffer();
@@ -200,33 +173,15 @@ Deno.serve(async (req: Request) => {
 
     const events = await analyzeTextWithAI(extractedText);
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         success: true,
         events,
         extractedText: extractedText.substring(0, 500),
-      }),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      });
   } catch (error) {
     console.error("Error processing PDF:", error);
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         error: error.message || "Failed to process PDF",
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      }, 500);
   }
 });
