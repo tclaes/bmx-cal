@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { startRouter } from '../router';
   import RouteOutlet from '../router/RouteOutlet.svelte';
-  import { authStore } from '@core/stores';
+  import { authStore, selectedEventIds } from '@core/stores';
   import { AuthService } from '@core/services';
   import Navigation from './Navigation.svelte';
   import Footer from './Footer.svelte';
@@ -31,8 +31,9 @@
     }
 
     try {
-      AuthService.onAuthStateChange((user) => {
+      AuthService.onAuthStateChange((user, event) => {
         authStore.setUser(user);
+        if (event === 'SIGNED_OUT') selectedEventIds.set(new Set());
       });
     } catch (e) {
       console.error('Auth state change listener registration failed:', e);

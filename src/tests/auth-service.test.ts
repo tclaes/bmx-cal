@@ -213,3 +213,38 @@ describe('AuthService.isTeamManager', () => {
     expect(await AuthService.isTeamManager()).toBe(true);
   });
 });
+
+
+describe('AuthService.onAuthStateChange selection cache', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  function fire(event: string, session: unknown = null) {
+    const cb = mockOnAuthStateChange.mock.calls[0][0];
+    cb(event, session);
+  }
+
+  it('drops the cached selection whenever the session ends, whatever the path', () => {
+    localStorage.setItem('bmx_selected_events', JSON.stringify(['a', 'b']));
+    AuthService.onAuthStateChange(() => {});
+    fire('SIGNED_OUT');
+    expect(localStorage.getItem('bmx_selected_events')).toBeNull();
+  });
+
+  it('keeps races selected while signed out when the app starts without a session', () => {
+    localStorage.setItem('bmx_selected_events', JSON.stringify(['a']));
+    AuthService.onAuthStateChange(() => {});
+    fire('INITIAL_SESSION', null);
+    expect(JSON.parse(localStorage.getItem('bmx_selected_events')!)).toEqual(['a']);
+  });
+
+  it('reports the event to the caller', async () => {
+    const cb = vi.fn();
+    AuthService.onAuthStateChange(cb);
+    fire('SIGNED_OUT');
+    await Promise.resolve();
+    expect(cb).toHaveBeenCalledWith(null, 'SIGNED_OUT');
+  });
+});
