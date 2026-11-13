@@ -101,6 +101,9 @@ test('edits an existing event', async ({ page, backend }) => {
   await page.getByRole('button', { name: 'Save Changes' }).click();
 
   await expect(page.getByText('Event updated successfully')).toBeVisible();
+  await page.locator('.team-summary').filter({ hasText: team.name }).click();
+  await expect(eventRow(page, 'Team One Race Prep')).toBeVisible();
+  await expect(eventRow(page, 'Team One Training')).toHaveCount(0);
   expect(mock.writes).toContainEqual(
     expect.objectContaining({
       method: 'PATCH',
@@ -120,6 +123,7 @@ test('deletes an event after confirmation', async ({ page, backend }) => {
   await eventRow(page, 'Team One Training').getByRole('button', { name: 'Confirm?' }).click();
 
   await expect(page.getByText('"Team One Training" deleted')).toBeVisible();
+  await expect(eventRow(page, 'Team One Training')).toHaveCount(0);
   expect(mock.writes).toContainEqual(
     expect.objectContaining({ method: 'DELETE', table: 'events', query: `?id=eq.${ownEvent.id}` }),
   );

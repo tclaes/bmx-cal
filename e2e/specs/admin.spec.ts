@@ -15,13 +15,23 @@ const eventItem = (page: Page, title: string) => page.locator('.event-item').fil
 
 test.describe('dashboard', () => {
   test('lists upcoming events grouped by year', async ({ page, backend }) => {
-    await backend({ user: admin, tables: { events: [genk, zolder], event_types: [race] } });
+    // Fixed far-future dates so the two groups are two distinct years on any run date.
+    const events = [
+      makeEvent({ title: 'Early Cup', date: '2090-03-01', event_type: race, event_type_id: race.id }),
+      makeEvent({ title: 'Spring Open', date: '2090-05-10', event_type: race, event_type_id: race.id }),
+      makeEvent({ title: 'Next Year Finale', date: '2091-02-14', event_type: race, event_type_id: race.id }),
+    ];
+    await backend({ user: admin, tables: { events, event_types: [race] } });
     await page.goto('/admin');
 
     await expect(page.getByText(`Logged in as ${admin.email}`)).toBeVisible();
-    await expect(eventItem(page, 'Genk Cup')).toBeVisible();
-    await expect(eventItem(page, 'Zolder Open')).toBeVisible();
-    await expect(page.getByText('2 events')).toBeVisible();
+    const group = (year: string) => page.locator('.year-group').filter({ has: page.getByText(year, { exact: true }) });
+    await expect(page.locator('.year-group')).toHaveCount(2);
+    await expect(group('2090')).toContainText('2 events');
+    await expect(group('2090').locator('.event-item')).toHaveCount(2);
+    await expect(group('2091')).toContainText('1 event');
+    await expect(group('2091').getByText('Next Year Finale')).toBeVisible();
+    await expect(group('2090').getByText('Next Year Finale')).toHaveCount(0);
   });
 
   test('shows an empty state without events', async ({ page, backend }) => {
