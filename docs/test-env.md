@@ -1,6 +1,6 @@
 ## Local test environment
 
-A disposable local Supabase (real Auth, Postgres, RLS) with seeded users, so an agent or developer can run the app **already logged in** without touching production.
+A disposable local Supabase (real Auth, Postgres, RLS) with seeded users, so an agent or developer can run the app **already logged in** without touching production. For the short version, see the [README quick start](../README.md#run-it-locally).
 
 ### Prerequisites
 
