@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "minVersion": "1.0.0",
+  "notes": {
+    "nl": "Updates werken nu betrouwbaar: je krijgt een melding zodra er een nieuwe versie is, en belangrijke oplossingen worden meteen doorgevoerd.",
+    "fr": "Les mises à jour sont désormais fiables : vous êtes averti dès qu'une nouvelle version est disponible et les correctifs importants sont appliqués immédiatement.",
+    "en": "Updates now work reliably: you are notified as soon as a new version is available, and important fixes are applied right away."
+  }
+}

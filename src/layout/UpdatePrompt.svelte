@@ -2,65 +2,37 @@
   import { updateStore } from '@core/stores';
   import { t } from '../i18n';
 
+  let updating = false;
+
   async function reload() {
-    updateStore.confirmUpdate();
-
-    if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.getRegistration();
-
-      if (registration) {
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            window.location.reload();
-          }, { once: true });
-        } else {
-          await registration.update();
-          window.location.reload();
-        }
-      } else {
-        window.location.reload();
-      }
-    } else {
-      window.location.reload();
-    }
-  }
-
-  function dismiss() {
-    if (!$updateStore.forceUpdate) {
-      updateStore.dismiss();
-    }
+    updating = true;
+    await updateStore.applyUpdate();
   }
 </script>
 
-{#if $updateStore.available}
-  <div class="update-banner" class:force={$updateStore.forceUpdate} role="alert" aria-live="assertive">
-    <span class="update-text">
-      {#if $updateStore.forceUpdate}
-        {$t.pwa.criticalUpdate}
-      {:else}
-        {$t.pwa.newVersion}
-      {/if}
-    </span>
-    <button class="update-btn" on:click={reload}>
-      {$updateStore.forceUpdate ? $t.pwa.updateNow : $t.pwa.reload}
+{#if $updateStore.state === 'optional'}
+  <!-- Non-modal dialog: announced to assistive tech, but the app stays usable. -->
+  <dialog open class="update-banner" aria-labelledby="update-banner-text">
+    <span id="update-banner-text" class="update-text">{$t.pwa.newVersion}</span>
+    <button class="update-btn" on:click={reload} disabled={updating}>
+      {$t.pwa.reload}
     </button>
-    {#if !$updateStore.forceUpdate}
-      <button class="dismiss-btn" aria-label={$t.pwa.dismiss} on:click={dismiss}>
-        &times;
-      </button>
-    {/if}
-  </div>
+    <button class="dismiss-btn" aria-label={$t.pwa.dismiss} on:click={() => updateStore.dismiss()}>
+      &times;
+    </button>
+  </dialog>
 {/if}
 
 <style>
   .update-banner {
     position: fixed;
-    bottom: var(--spacing-lg);
+    inset: auto;
+    top: var(--spacing-md);
     left: 50%;
+    margin: 0;
+    color: var(--color-text-primary);
     transform: translateX(-50%);
-    z-index: 1000;
+    z-index: var(--z-index-toast);
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -70,23 +42,13 @@
     box-shadow: var(--shadow-lg);
     padding: var(--spacing-sm) var(--spacing-md);
     white-space: nowrap;
-    animation: slide-up 0.2s ease;
+    animation: slide-down 0.2s ease;
   }
 
-  .update-banner.force {
-    border-color: var(--color-danger);
-    box-shadow: 0 4px 12px rgb(220 38 38 / 20%);
-  }
-
-  .update-banner.force .update-text {
-    color: var(--color-text-primary);
-    font-weight: var(--font-weight-medium);
-  }
-
-  @keyframes slide-up {
+  @keyframes slide-down {
     from {
       opacity: 0;
-      transform: translateX(-50%) translateY(12px);
+      transform: translateX(-50%) translateY(-12px);
     }
 
     to {
@@ -101,6 +63,7 @@
   }
 
   .update-btn {
+    min-height: var(--touch-target-min);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-on-accent);
@@ -116,6 +79,8 @@
   }
 
   .dismiss-btn {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
     font-size: 1.1rem;
     line-height: 1;
     color: var(--color-text-muted);
@@ -131,17 +96,18 @@
 
   @media (max-width: 767px) {
     .update-banner {
-      bottom: var(--spacing-md);
+      top: var(--spacing-sm);
       left: var(--spacing-md);
       right: var(--spacing-md);
+      width: auto;
       transform: none;
       white-space: normal;
     }
 
-    @keyframes slide-up {
+    @keyframes slide-down {
       from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(-12px);
       }
 
       to {

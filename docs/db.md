@@ -15,6 +15,7 @@
 | `import_logs` | File import history with success/error details |
 | `sync_logs` | Cron job sync history |
 | `bug_reports` | User-submitted bug reports with optional GitHub issue link |
+| `app_release_policy` | Single row (`id = 1`) with an optional admin override of the minimum app version (`min_version`) and an optional localised `message`. See `docs/releases.md` |
 
 ### Row Level Security (RLS)
 
@@ -24,6 +25,7 @@ RLS is enabled on all tables. Key policies:
 - **Authenticated users** can manage their own `user_event_selections` and `user_calendars`
 - **Team managers** can manage events, event types, and locations for their teams
 - **Admins** have full CRUD on all tables
+- **`app_release_policy`**: readable by anon + authenticated; only admins can update `min_version` and `message`. Inserting or deleting the row is not possible through the API
 - Admin role is stored in `auth.users.raw_app_metadata` as `{"role": "admin"}`
 
 ### Migrations

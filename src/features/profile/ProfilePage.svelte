@@ -29,19 +29,12 @@
     updateCheckMessage = '';
     updateCheckSuccess = false;
 
-    try {
-      const versionInfo = await updateStore.checkForUpdates();
-
-      if (versionInfo.hasUpdate || $updateStore.available) {
-        updateCheckMessage = $t.profile.updateAvailable;
-        updateCheckSuccess = true;
-      } else {
-        updateCheckMessage = $t.profile.latestVersion;
-        updateCheckSuccess = true;
-      }
-    } catch (err) {
+    const result = await updateStore.check();
+    if (result === 'error') {
       updateCheckMessage = $t.profile.updateFailed;
-      updateCheckSuccess = false;
+    } else {
+      updateCheckMessage = result === 'none' ? $t.profile.latestVersion : $t.profile.updateAvailable;
+      updateCheckSuccess = true;
     }
 
     setTimeout(() => {

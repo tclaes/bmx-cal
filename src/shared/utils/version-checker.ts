@@ -1,26 +1,50 @@
-import { APP_VERSION, MIN_VERSION, FORCE_UPDATE } from '@config';
+export type UpdateState = 'none' | 'optional' | 'mandatory';
 
-const VERSION_KEY = 'app_version';
+export type LocalizedText = Partial<Record<'nl' | 'fr' | 'en', string>>;
 
-export interface VersionInfo {
-  current: string;
-  stored: string | null;
-  hasUpdate: boolean;
-  forceUpdate: boolean;
+/** Release information published by every deployment at /version.json. */
+export interface ReleaseManifest {
+  version: string;
   minVersion: string;
+  notes?: LocalizedText;
+}
+
+/** Admin override stored in Supabase (app_release_policy). */
+export interface ReleaseOverride {
+  minVersion: string | null;
+  message: LocalizedText | null;
+}
+
+export interface UpdateInput {
+  running: string;
+  deployed: string;
+  publishedMin: string;
+  overrideMin?: string | null;
+  dismissedVersion?: string | null;
+}
+
+const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
+
+export function isValidVersion(value: unknown): value is string {
+  return typeof value === 'string' && VERSION_PATTERN.test(value);
 }
 
 /**
- * Compare two semantic version strings
- * Returns: 1 if v1 > v2, -1 if v1 < v2, 0 if equal
+ * Compare two x.y.z version strings.
+ * Returns 1 if v1 > v2, -1 if v1 < v2, 0 if equal.
+ * Non-numeric parts (e.g. a prerelease suffix) count as 0.
  */
 export function compareVersions(v1: string, v2: string): number {
-  const parts1 = v1.split('.').map(Number);
-  const parts2 = v2.split('.').map(Number);
+  const toParts = (v: string) => v.split('.').map((p) => {
+    const n = Number.parseInt(p, 10);
+    return Number.isFinite(n) ? n : 0;
+  });
+  const parts1 = toParts(v1);
+  const parts2 = toParts(v2);
 
   for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-    const part1 = parts1[i] || 0;
-    const part2 = parts2[i] || 0;
+    const part1 = parts1[i] ?? 0;
+    const part2 = parts2[i] ?? 0;
 
     if (part1 > part2) return 1;
     if (part1 < part2) return -1;
@@ -29,89 +53,61 @@ export function compareVersions(v1: string, v2: string): number {
   return 0;
 }
 
-/**
- * Check if current version meets minimum required version
- */
-export function meetsMinVersion(currentVersion: string, minVersion: string): boolean {
-  return compareVersions(currentVersion, minVersion) >= 0;
+export function isValidManifest(value: unknown): value is ReleaseManifest {
+  if (!value || typeof value !== 'object') return false;
+  const m = value as Record<string, unknown>;
+  if (!isValidVersion(m.version) || !isValidVersion(m.minVersion)) return false;
+  if (m.notes !== undefined && (m.notes === null || typeof m.notes !== 'object')) return false;
+  return true;
 }
 
 /**
- * Get stored version from localStorage
+ * Decide which update prompt, if any, the running app must show.
+ * - mandatory: running is below the effective minimum and the deployed version satisfies it
+ * - optional: running is below the deployed version and the user has not dismissed that version
  */
-export function getStoredVersion(): string | null {
-  try {
-    return localStorage.getItem(VERSION_KEY);
-  } catch {
-    return null;
+export function resolveUpdateState(input: UpdateInput): UpdateState {
+  const { running, deployed, publishedMin, overrideMin, dismissedVersion } = input;
+
+  const effectiveMin = isValidVersion(overrideMin) && compareVersions(overrideMin, publishedMin) > 0
+    ? overrideMin
+    : publishedMin;
+
+  const belowMin = compareVersions(running, effectiveMin) < 0;
+  const deployedSatisfiesMin = compareVersions(deployed, effectiveMin) >= 0;
+  if (belowMin && deployedSatisfiesMin) return 'mandatory';
+
+  const behind = compareVersions(running, deployed) < 0;
+  if (behind && dismissedVersion !== deployed) return 'optional';
+
+  return 'none';
+}
+
+/** True when the mandatory state comes from the override rather than the published minimum. */
+export function isOverrideActive(publishedMin: string, overrideMin: string | null | undefined): boolean {
+  return isValidVersion(overrideMin) && compareVersions(overrideMin, publishedMin) > 0;
+}
+
+/**
+ * Release notes are shown once after the app starts on a newer version than the one
+ * last used on this device. First-time visitors (no last seen version) never see them.
+ */
+export function shouldShowReleaseNotes(
+  lastSeenVersion: string | null,
+  currentVersion: string,
+  notes: string | undefined,
+): boolean {
+  if (!lastSeenVersion || !notes?.trim()) return false;
+  return compareVersions(lastSeenVersion, currentVersion) < 0;
+}
+
+/** Narrow an untyped override message to the supported locales. */
+export function toLocalizedText(value: unknown): LocalizedText | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const result: LocalizedText = {};
+  for (const key of ['nl', 'fr', 'en'] as const) {
+    const text = (value as Record<string, unknown>)[key];
+    if (typeof text === 'string' && text.trim()) result[key] = text;
   }
-}
-
-/**
- * Store current version in localStorage
- */
-export function storeCurrentVersion(): void {
-  try {
-    localStorage.setItem(VERSION_KEY, APP_VERSION);
-  } catch {
-    // Silently fail if localStorage is not available
-  }
-}
-
-/**
- * Check if app version has been updated
- */
-export function checkForUpdate(): VersionInfo {
-  const storedVersion = getStoredVersion();
-  const hasUpdate = storedVersion !== null && compareVersions(APP_VERSION, storedVersion) > 0;
-
-  return {
-    current: APP_VERSION,
-    stored: storedVersion,
-    hasUpdate,
-    forceUpdate: FORCE_UPDATE,
-    minVersion: MIN_VERSION,
-  };
-}
-
-/**
- * Check if stored version is outdated (below minimum required)
- */
-export function isVersionOutdated(): boolean {
-  const storedVersion = getStoredVersion();
-
-  if (!storedVersion) {
-    return false; // First time user
-  }
-
-  return !meetsMinVersion(storedVersion, MIN_VERSION);
-}
-
-/**
- * Manually check for updates by clearing cache and reloading
- */
-export async function manualUpdateCheck(): Promise<boolean> {
-  try {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      // Tell service worker to skip waiting and activate new version
-      const registration = await navigator.serviceWorker.getRegistration();
-
-      if (registration) {
-        // Force update check
-        await registration.update();
-
-        // Check if there's a waiting worker
-        if (registration.waiting) {
-          // Send skip waiting message
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          return true;
-        }
-      }
-    }
-
-    return false;
-  } catch (error) {
-    console.error('Manual update check failed:', error);
-    return false;
-  }
+  return Object.keys(result).length > 0 ? result : null;
 }
