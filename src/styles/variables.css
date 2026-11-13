@@ -1,4 +1,6 @@
 :root {
+  --hero-radius: 24px;
+  --touch-target-min: 44px;
   --spacing-xxs: 2px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -8,9 +10,8 @@
   --spacing-xl: 32px;
   --spacing-2xl: 48px;
   --spacing-3xl: 64px;
-
-  --font-family: 'Barlow', 'Arial Narrow', Arial, sans-serif;
-  --font-family-heading: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  --font-family: 'Barlow', 'Arial Narrow', arial, sans-serif;
+  --font-family-heading: 'Barlow Condensed', 'Arial Narrow', arial, sans-serif;
   --font-size-xs: 12px;
   --font-size-sm: 14px;
   --font-size-base: 16px;
@@ -19,30 +20,27 @@
   --font-size-2xl: 24px;
   --font-size-3xl: 30px;
   --font-size-4xl: 36px;
-
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-
   --line-height-tight: 1.2;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   --border-radius-full: 9999px;
-
+  --radius-sm: var(--border-radius-sm);
+  --radius-md: var(--border-radius-md);
+  --radius-lg: var(--border-radius-lg);
   --shadow-sm: 0 1px 2px 0 color-mix(in srgb, var(--color-shadow) 5%, transparent);
   --shadow-md: 0 4px 6px -1px color-mix(in srgb, var(--color-shadow) 10%, transparent), 0 2px 4px -1px color-mix(in srgb, var(--color-shadow) 6%, transparent);
   --shadow-lg: 0 10px 15px -3px color-mix(in srgb, var(--color-shadow) 10%, transparent), 0 4px 6px -2px color-mix(in srgb, var(--color-shadow) 5%, transparent);
   --shadow-xl: 0 20px 25px -5px color-mix(in srgb, var(--color-shadow) 10%, transparent), 0 10px 10px -5px color-mix(in srgb, var(--color-shadow) 4%, transparent);
-
   --transition-fast: 150ms ease-in-out;
   --transition-base: 200ms ease-in-out;
   --transition-slow: 300ms ease-in-out;
-
   --z-index-dropdown: 1000;
   --z-index-modal: 2000;
   --z-index-toast: 3000;

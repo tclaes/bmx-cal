@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="22" fill="#14171c"/>
+  <g transform="translate(50 50) scale(.9) translate(-50 -50)">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="#1c9ad6" stroke-width="6"/>
+    <g fill="#1c9ad6">
+      <rect x="46" y="1" width="8" height="9" rx="2"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(30 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(60 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(90 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(120 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(150 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(180 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(210 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(240 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(270 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(300 50 50)"/>
+      <rect x="46" y="1" width="8" height="9" rx="2" transform="rotate(330 50 50)"/>
+    </g>
+    <rect x="35" y="36" width="30" height="28" rx="4" fill="#f3f5f7"/>
+    <path d="M35 40a4 4 0 0 1 4-4h22a4 4 0 0 1 4 4v5H35z" fill="#f26b1d"/>
+    <circle cx="58.5" cy="58" r="2.6" fill="#f26b1d"/>
+  </g>
+</svg>

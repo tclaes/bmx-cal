@@ -175,7 +175,7 @@
     letter-spacing: 0.08em;
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: 0.125rem;
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
     margin-block-end: var(--spacing-sm);
@@ -227,7 +227,7 @@
   }
 
   .toc a:hover {
-    color: var(--color-primary-hover);
+    color: var(--color-primary-dark);
   }
 
   section h2 {
@@ -292,7 +292,7 @@
   }
 
   .links-list a:hover {
-    color: var(--color-primary-hover);
+    color: var(--color-primary-dark);
   }
 
   .related-section h2 {
@@ -356,7 +356,7 @@
   .btn-primary {
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: var(--color-on-color);
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--border-radius-md);

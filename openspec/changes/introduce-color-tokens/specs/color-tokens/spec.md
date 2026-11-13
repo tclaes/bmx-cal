@@ -1,25 +1,25 @@
 ## ADDED Requirements
 
 ### Requirement: Colors are defined as design tokens
-The app SHALL define all colors in `src/styles/colors.css` as CSS custom properties in two tiers: primitive palette tokens (`--palette-*`) and semantic tokens (`--color-*`) that reference the palette.
+The app SHALL define all colors as CSS custom properties in `src/styles/colors.css`.
 
-#### Scenario: Semantic token resolves through the palette
-- **WHEN** a component uses `var(--color-primary)`
-- **THEN** it resolves to a value defined by a `--palette-*` token in `colors.css`
+#### Scenario: Token lookup
+- **WHEN** a component needs a color
+- **THEN** it uses a `var(--color-*)` token (or a `--race-*`, `--badge-*`, `--hero-*` token) defined in `colors.css`
 
 #### Scenario: A needed color has no token
-- **WHEN** a developer needs a color role not covered by existing semantic tokens
-- **THEN** they add a semantic token (and a palette token if needed) in `colors.css` instead of writing a literal in the component
+- **WHEN** a developer needs a color role not covered by existing tokens
+- **THEN** they add a token in `colors.css` instead of writing a literal in the component
 
-### Requirement: Components use semantic tokens only
-Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT contain literal color values (hex, `rgb()/rgba()`, `hsl()/hsla()`, other color functions, or named colors other than `transparent`, `currentColor`, `inherit`, `none`). They SHALL NOT reference `--palette-*` tokens directly.
+### Requirement: Components use tokens only
+Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT contain literal color values (hex, `rgb()`/`hsl()`-style functions, or named colors other than `transparent`, `currentColor`, `inherit`, `none`).
 
 #### Scenario: Hex color in a component
 - **WHEN** a `.svelte` file contains `color: #2563eb`
 - **THEN** `npm run stylelint` fails with a `color-no-hex` error
 
 #### Scenario: Functional color in a component
-- **WHEN** a `.svelte` file contains `box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1)`
+- **WHEN** a `.svelte` file contains `box-shadow: 0 0 0 3px rgb(37 99 235 / 10%)`
 - **THEN** `npm run stylelint` fails with a `function-disallowed-list` error
 
 #### Scenario: Named color in a component
@@ -38,7 +38,7 @@ Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT co
 Literal colors SHALL be permitted only in `src/styles/colors.css`.
 
 #### Scenario: Palette definition
-- **WHEN** `colors.css` defines `--palette-blue-600: #2563eb`
+- **WHEN** `colors.css` defines `--color-white: #fff`
 - **THEN** lint passes for that file
 
 ### Requirement: TypeScript does not hold color literals

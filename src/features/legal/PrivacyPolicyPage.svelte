@@ -267,7 +267,7 @@
   }
 
   a:hover {
-    color: var(--color-primary-hover);
+    color: var(--color-primary-dark);
   }
 
   code {

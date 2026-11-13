@@ -38,8 +38,8 @@
 
 <style>
   .account-cta {
-    background: linear-gradient(145deg, var(--color-info-bg) 0%, var(--color-info-bg-strong) 100%);
-    border: 1px solid var(--color-primary-light);
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     display: flex;
@@ -47,7 +47,8 @@
     gap: var(--spacing-md);
   }
 
-  .cta-badge {
+  .cta-badge,
+  .benefit-badge {
     display: inline-flex;
     align-items: center;
     align-self: flex-start;
@@ -59,12 +60,12 @@
     letter-spacing: 0.06em;
     padding: 2px var(--spacing-sm);
     border-radius: var(--border-radius-full);
-    border: 1px solid var(--color-success-border);
+    border: 1px solid var(--color-success);
   }
 
   .cta-title {
     font-family: var(--font-family-heading);
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     margin: 0;
@@ -97,20 +98,6 @@
     gap: var(--spacing-xs);
   }
 
-  .benefit-badge {
-    display: inline-flex;
-    align-items: center;
-    background-color: var(--color-success-light);
-    color: var(--color-success);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 1px var(--spacing-xs);
-    border-radius: var(--border-radius-full);
-    border: 1px solid var(--color-success-border);
-  }
-
   .cta-benefits li::before {
     content: '✓';
     position: absolute;
@@ -127,36 +114,37 @@
 
   .cta-btn {
     width: 100%;
+    min-block-size: var(--touch-target-min);
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all var(--transition-base);
     text-align: center;
   }
 
   .cta-btn--primary {
-    background-color: var(--color-primary);
-    color: var(--color-on-color);
-    border: 2px solid var(--color-primary);
+    background-color: var(--color-accent);
+    color: var(--color-text-on-accent);
+    border: 2px solid var(--color-accent);
   }
 
   .cta-btn--primary:hover {
-    background-color: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
   }
 
   .cta-btn--ghost {
     background-color: transparent;
-    color: var(--color-primary);
+    color: var(--color-primary-hover);
     border: 2px solid var(--color-primary);
   }
 
   .cta-btn--ghost:hover {
     background-color: var(--color-primary-light);
   }
-
 </style>

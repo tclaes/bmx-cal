@@ -1,10 +1,11 @@
 <script lang="ts">
   import { authStore, selectedEventIds } from '@core/stores';
   import { AuthService } from '@core/services';
-  import { selectionService } from '@core/services/selection.service';
+  import { selectionService } from '@core/services';
   import { currentRoute, navigate } from '../router';
   import { locale, t } from '../i18n';
   import type { Locale } from '../i18n';
+  import Logo from '@ui/Logo.svelte';
 
   let menuOpen = false;
   let navEl: HTMLElement;
@@ -20,7 +21,7 @@
   }
 
   function handleResize() {
-    if (window.innerWidth >= 768 && menuOpen) closeMenu();
+    if (window.innerWidth >= 1024 && menuOpen) closeMenu();
   }
 
   function handleOutsideClick(e: MouseEvent) {
@@ -59,12 +60,12 @@
 <nav class="navigation" aria-label="Main navigation" bind:this={navEl} on:click={handleOutsideClick}>
   <div class="nav-container">
     <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label={$t.nav.home}>
-      <img src="/bmx-calendar-transparent.png" alt="BMX Calendar" />
+      <Logo size={48} />
     </a>
 
     <ul class="nav-links" role="list">
       <li>
-        <a class="nav-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
+        <a class="nav-link" class:active={route === '/' || route.startsWith('/events/')} href="/" on:click={(e) => handleNav(e, '/')}>
           {$t.nav.events}
         </a>
       </li>
@@ -143,7 +144,7 @@
   {#if menuOpen}
     <ul class="mobile-menu" id="mobile-menu" role="list">
       <li>
-        <a class="mobile-link" class:active={route === '/'} href="/" on:click={(e) => handleNav(e, '/')}>
+        <a class="mobile-link" class:active={route === '/' || route.startsWith('/events/')} href="/" on:click={(e) => handleNav(e, '/')}>
           {$t.nav.events}
         </a>
       </li>
@@ -231,12 +232,6 @@
     padding: var(--spacing-sm) 0 var(--spacing-sm);
   }
 
-  .nav-brand img {
-    height: 5rem;
-    width: auto;
-    display: block;
-  }
-
   .nav-links {
     display: flex;
     align-items: flex-end;
@@ -249,43 +244,54 @@
   .nav-link {
     display: block;
     padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-base);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
     color: var(--color-text-secondary);
-    border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
     text-decoration: none;
+    text-transform: uppercase;
+    border-radius: 0;
+    border-block-end: 3px solid transparent;
   }
 
-  .nav-link:hover,
+  .nav-link:hover {
+    color: var(--color-text-primary);
+  }
+
   .nav-link.active {
-    color: var(--color-primary);
-    background-color: var(--color-primary-light);
+    color: var(--color-text-primary);
+    border-block-end-color: var(--color-accent);
   }
 
   .nav-link--signin {
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--border-radius-md);
   }
 
   .nav-link--signin:hover {
-    background-color: var(--color-primary);
-    color: var(--color-on-color);
+    border-color: var(--color-primary);
+    color: var(--color-primary-hover);
   }
 
   .nav-link--signout:hover {
-    color: var(--color-danger-text);
-    background-color: var(--color-danger-bg);
+    color: var(--color-danger);
+    background-color: var(--color-danger-light);
   }
 
   .locale-switcher {
     display: flex;
     align-items: center;
-    gap: 2px;
-    padding-block-end: var(--spacing-sm);
-    border-inline-start: 1px solid var(--color-border);
-    padding-inline-start: var(--spacing-md);
+    align-self: center;
     margin-inline-start: var(--spacing-xs);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    gap: 0;
+    padding: 0;
   }
 
   .locale-btn {
@@ -294,12 +300,22 @@
     letter-spacing: 0.04em;
     color: var(--color-text-muted);
     padding: var(--spacing-xxs) var(--spacing-xs);
-    border-radius: var(--border-radius-sm);
+    border-radius: 0;
     cursor: pointer;
     transition: all var(--transition-base);
     line-height: 1;
-    min-width: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--touch-target-min);
+    min-block-size: var(--touch-target-min);
     text-align: center;
+  }
+
+  /* Compact size for the desktop nav only; the mobile menu keeps the full touch target. */
+  .locale-switcher .locale-btn {
+    min-inline-size: 2rem;
+    min-block-size: 2rem;
   }
 
   .locale-btn:hover {
@@ -308,8 +324,8 @@
   }
 
   .locale-btn.active {
-    color: var(--color-primary);
-    background-color: var(--color-primary-light);
+    color: var(--color-text-on-accent);
+    background-color: var(--color-primary);
     font-weight: var(--font-weight-bold);
   }
 
@@ -318,8 +334,8 @@
     flex-direction: column;
     justify-content: center;
     gap: var(--spacing-xs);
-    width: 36px;
-    height: 36px;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
     padding: var(--spacing-sm);
     cursor: pointer;
     border-radius: var(--border-radius-md);
@@ -361,12 +377,19 @@
     padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
     border-top: 1px solid var(--color-border);
     background-color: var(--color-bg-primary);
-    animation: slideDown 0.15s ease;
+    animation: slide-down 0.15s ease;
   }
 
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .mobile-link {
@@ -395,12 +418,12 @@
 
   .mobile-link--signin:hover {
     background-color: var(--color-primary);
-    color: var(--color-on-color);
+    color: var(--color-text-on-accent);
   }
 
   .mobile-link--signout:hover {
-    color: var(--color-danger-text);
-    background-color: var(--color-danger-bg);
+    color: var(--color-danger);
+    background-color: var(--color-danger-light);
   }
 
   .mobile-locale-switcher {
@@ -412,7 +435,7 @@
     margin-top: var(--spacing-sm);
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 1023px) {
     .nav-container {
       align-items: center;
     }
@@ -426,7 +449,7 @@
     }
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 1024px) {
     .mobile-menu {
       display: none !important;
     }

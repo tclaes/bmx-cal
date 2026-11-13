@@ -244,7 +244,7 @@ describe('Badge Accessibility', () => {
 
     const badge = container.querySelector('.badge') as HTMLElement;
 
-    expect(badge.style.color).toBe('var(--color-on-color)');
+    expect(badge.style.color).toBe('var(--badge-fg)');
     expect(badge.style.backgroundColor).toBeTruthy();
   });
 });

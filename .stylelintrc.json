@@ -4,23 +4,17 @@
   ],
   "rules": {
     "declaration-property-value-disallowed-list": {
-      "/^(padding|margin)$/": [
-        "/^\\d+px$/",
-        "/^\\d+\\.\\d+px$/"
-      ],
-      "/^(padding|margin)-(top|right|bottom|left|block|inline|block-start|block-end|inline-start|inline-end)$/": [
-        "/^\\d+px$/",
-        "/^\\d+\\.\\d+px$/"
+      "/^(margin|padding)(-[a-z-]+)?$|^(grid-)?(row-|column-)?gap$/i": [
+        "/(^|[^\\w-])-?(\\d+\\.?\\d*|\\.\\d+)(px|rem|em)\\b/i"
       ],
       "/^(color|background|background-color|background-image|border(-[a-z]+)*|outline(-color)?|fill|stroke|box-shadow|text-shadow|caret-color|text-decoration(-color)?|accent-color)$/": [
         "/(^|\\s)(white|black|red|green|blue|gray|grey|orange|yellow|purple|pink|brown|cyan|magenta|silver|navy|teal|maroon|lime|aqua|fuchsia|olive)(\\s|;|$)/i"
-      ],
-      "/^[a-z]/": [
-        "/var\\(--palette-/"
       ]
     },
     "custom-property-pattern": null,
     "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "media-feature-range-notation": null,
     "color-no-hex": true,
     "function-disallowed-list": [
       "rgb",
@@ -44,7 +38,17 @@
       "files": [
         "**/*.svelte"
       ],
-      "customSyntax": "postcss-html"
+      "customSyntax": "postcss-html",
+      "rules": {
+        "selector-pseudo-class-no-unknown": [
+          true,
+          {
+            "ignorePseudoClasses": [
+              "global"
+            ]
+          }
+        ]
+      }
     },
     {
       "files": [

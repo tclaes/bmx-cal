@@ -1,13 +1,14 @@
 schema: spec-driven
 
-# Project context (optional)
-# Add only constraints that should guide OpenSpec artifacts and workflows.
-# Include constraints an agent cannot infer by reading the code.
-# Keep general project documentation and discoverable codebase facts out.
-# Example:
-#   context: |
-#     Designs and tasks must cover Windows, macOS, and Linux
-#     Write all artifacts in Spanish
+context: |
+  BMX Kalender (bmxkalender.be): a simple, fast app to look up when which BMX race is ridden.
+  Stack: Svelte 4, TypeScript, Vite, Supabase, PWA, i18n (nl/fr/en), vitest, sheriff, stylelint.
+  Mobile is the priority; desktop is secondary. Touch targets are at least 44px.
+  Design source of truth is "Proposal B - Startlicht" (dark, cyan + orange, start-light registration indicator);
+  reference images live in each change's design/ folder.
+  Styling goes through CSS custom properties in src/styles/variables.css; no hardcoded colours in components.
+  Race type colours (CV, TC, CW, 3NC, EC, WC) are tokens, not component-local values.
+  User-facing strings go through i18n (nl, fr, en).
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.

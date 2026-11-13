@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@ui';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { AuthService } from '@core/services';
-  import { authStore } from '@core/stores';
-  import { supabase } from '@data/supabase';
+  import { authStore, adoptLocalSelections } from '@core/stores';
+  import { supabase } from '@data';
   import { navigate } from '../../router';
   import { t } from '../../i18n';
 
@@ -38,6 +38,7 @@
       await AuthService.login(email, password);
       const user = await AuthService.getCurrentUser();
       authStore.setUser(user);
+      await adoptLocalSelections();
       navigate('/my-events');
     } catch (err) {
       error = toUserMessage(err, $t.auth.registrationFailed);
@@ -123,9 +124,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--color-warning-text);
+    color: var(--color-warning);
     background: var(--color-warning-light);
-    border: 1px solid var(--color-warning-border);
+    border: 1px solid var(--color-warning);
     border-radius: 20px;
     padding: 0.2rem 0.6rem;
   }

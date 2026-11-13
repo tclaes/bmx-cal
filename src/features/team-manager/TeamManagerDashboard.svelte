@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { Card, Button, Input, Select, Alert, LoadingSpinner } from '@ui';
-  import { LocationPicker } from '@shared';
+  import { LocationPicker, DocumentUpload } from '@shared';
   import { authStore } from '@core/stores';
-  import TeamMemberManager from '../admin/TeamMemberManager.svelte';
-  import DocumentUpload from '../admin/DocumentUpload.svelte';
+  import TeamMemberManager from './TeamMemberManager.svelte';
   import { EventsService, TeamService } from '@core/services';
   import type { TeamMemberWithEmail } from '@core/services';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { getInitialTeamExpandedState, formatDate, toUserMessage } from '@shared/utils';
   import type { EventWithDetails, EventType, Location, Team } from '@types';
 
@@ -330,11 +329,6 @@
                   <span class="team-name">{team.name}</span>
                   <span class="event-count">{teamEvts.length} event{teamEvts.length !== 1 ? 's' : ''}</span>
                 </div>
-                <div class="team-summary-action" on:click|stopPropagation role="none">
-                  <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
-                    + Add Event
-                  </Button>
-                </div>
               </summary>
 
               <div class="team-group-body">
@@ -442,6 +436,12 @@
                 </details>
               </div>
             </details>
+            <!-- Outside the summary: interactive elements must not be nested in it -->
+            <div class="team-summary-action">
+              <Button variant="primary" size="sm" on:click={() => openCreateForm(team.id)}>
+                + Add Event
+              </Button>
+            </div>
           </div>
         {/each}
       {/if}
@@ -585,11 +585,11 @@
   .team-badge {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    background: var(--color-primary-light);
-    color: var(--color-primary-hover);
+    background: var(--color-primary-100);
+    color: var(--color-primary-700);
     border-radius: 20px;
     padding: 0.25rem 0.75rem;
-    border: 1px solid var(--color-primary-border);
+    border: 1px solid var(--color-primary-200);
   }
 
   .type-badge {
@@ -637,6 +637,7 @@
 
   /* Team group */
   .team-group {
+    position: relative;
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg, 12px);
@@ -660,7 +661,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-md) var(--spacing-lg);
+    min-block-size: calc(var(--touch-target-min) + var(--spacing-md));
+    padding: var(--spacing-md) 10rem var(--spacing-md) var(--spacing-lg);
     cursor: pointer;
     transition: background 0.15s ease;
     user-select: none;
@@ -679,7 +681,9 @@
   }
 
   .team-summary-action {
-    flex-shrink: 0;
+    position: absolute;
+    inset-block-start: var(--spacing-sm);
+    inset-inline-end: var(--spacing-lg);
   }
 
   .team-chevron {
@@ -793,7 +797,7 @@
   }
 
   .members-chevron {
-    color: currentColor;
+    color: currentcolor;
     transition: transform 0.2s ease;
     flex-shrink: 0;
   }
@@ -988,12 +992,17 @@
     }
 
     .team-summary {
-      flex-wrap: wrap;
-      gap: var(--spacing-sm);
+      padding-inline-end: var(--spacing-lg);
+      padding-block-end: calc(var(--touch-target-min) + var(--spacing-md) + var(--spacing-sm));
     }
 
     .team-summary-action {
-      width: 100%;
+      inset-block-start: calc(var(--spacing-md) + var(--touch-target-min));
+      inset-inline: var(--spacing-lg);
+    }
+
+    .team-summary-action :global(.button) {
+      inline-size: 100%;
     }
 
     .event-row {

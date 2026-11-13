@@ -1,8 +1,8 @@
-@import './styles/colors.css';
-@import './styles/variables.css';
-@import './styles/reset.css';
-@import './styles/layout.css';
-@import './styles/utilities.css';
+@import url('./styles/colors.css');
+@import url('./styles/variables.css');
+@import url('./styles/reset.css');
+@import url('./styles/layout.css');
+@import url('./styles/utilities.css');
 
 #app {
   min-height: 100vh;

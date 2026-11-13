@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { Card, Input, Button, Alert } from '@ui';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { navigate } from '../../router';
   import { t } from '../../i18n';
 
@@ -107,8 +107,8 @@
         <div class="success-state">
           <div class="success-icon">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="24" style="fill: var(--color-success-bg)"/>
-              <path d="M14 24L21 31L34 17" style="stroke: var(--color-success-text)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="24" cy="24" r="24" style="fill: var(--color-success-light)"/>
+              <path d="M14 24L21 31L34 17" style="stroke: var(--color-success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <h2 class="success-title">{$t.auth.passwordUpdated}</h2>

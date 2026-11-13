@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { Card, Input, Button, Alert } from '@ui';
   import { AuthService } from '@core/services';
   import { authStore } from '@core/stores';

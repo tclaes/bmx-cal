@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from '../../router';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { t, interpolate } from '../../i18n';
 
   let name = '';
@@ -318,7 +318,7 @@
   .btn-submit {
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: var(--color-on-color);
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-md);
@@ -345,8 +345,8 @@
 
   .alert-error {
     padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--color-danger-bg);
-    border: 1px solid var(--color-danger-border);
+    background-color: var(--color-danger-light);
+    border: 1px solid var(--color-danger);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     color: var(--color-danger);
@@ -364,7 +364,7 @@
     height: 56px;
     border-radius: 50%;
     background-color: var(--color-success);
-    color: var(--color-on-color);
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-2xl);
     display: flex;
     align-items: center;
@@ -396,7 +396,7 @@
   .btn-primary {
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: var(--color-on-color);
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-md);

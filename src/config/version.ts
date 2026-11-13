@@ -1,4 +1,7 @@
-export const APP_VERSION = '0.3.0';
-export const MIN_VERSION = '0.3.0';
-export const FORCE_UPDATE = true;
-export const RELEASE_NOTES = 'Core library extraction';
+import release from './release.json';
+
+export type ReleaseNotes = Partial<Record<'nl' | 'fr' | 'en', string>>;
+
+export const APP_VERSION: string = release.version;
+export const MIN_VERSION: string = release.minVersion;
+export const RELEASE_NOTES: ReleaseNotes = release.notes;

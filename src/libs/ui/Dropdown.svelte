@@ -96,8 +96,7 @@
   .dropdown-menu {
     position: absolute;
     inset-block-start: 100%;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
+    inset-inline: 0;
     margin-block-start: var(--spacing-xs);
     padding: var(--spacing-xs);
     background-color: var(--color-bg-primary);
