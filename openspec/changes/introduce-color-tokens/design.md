@@ -23,14 +23,14 @@ Existing `--color-*` names are kept so current usages keep working untouched. On
 
 ## Where raw values are allowed
 
-Only `src/styles/variables.css`. That file is the single exemption in the lint config (via `overrides`).
+Only `src/styles/colors.css`. That file is the single exemption in the lint config (via `overrides`).
 
 ## Enforcement (Stylelint, in `.stylelintrc.json`)
 
 - `color-no-hex: true`
 - `function-disallowed-list: ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch", "color"]`. `color-mix()` stays allowed when its inputs are `var()` tokens, which covers alpha variants (e.g. focus rings).
 - `declaration-property-value-disallowed-list` for color-bearing properties (`color`, `background(-color)`, `border*`, `outline*`, `fill`, `stroke`, `box-shadow`, `text-shadow`, `caret-color`, …) disallowing named colors (`white`, `black`, `red`, …) while still allowing `transparent`, `currentColor`, `inherit`, `none`.
-- `overrides` entry that turns these rules off for `src/styles/variables.css`.
+- `overrides` entry that turns these rules off for `src/styles/colors.css`.
 - The existing `npm run stylelint` script is already run in CI. Confirm it is a required check on `master`.
 
 ## TypeScript

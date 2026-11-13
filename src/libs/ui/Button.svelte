@@ -56,7 +56,7 @@
 
   .button-primary {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .button-primary:hover:not(:disabled) {
@@ -65,7 +65,7 @@
 
   .button-secondary {
     background-color: var(--color-secondary);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .button-secondary:hover:not(:disabled) {
@@ -74,7 +74,7 @@
 
   .button-danger {
     background-color: var(--color-danger);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .button-danger:hover:not(:disabled) {

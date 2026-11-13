@@ -136,7 +136,7 @@
   }
 
   .required {
-    color: var(--color-error, #dc2626);
+    color: var(--color-danger-text);
     margin-left: 2px;
   }
 

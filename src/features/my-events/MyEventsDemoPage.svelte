@@ -223,7 +223,7 @@
   }
 
   .preview-card--cta {
-    background: linear-gradient(145deg, #f0f7ff 0%, #e8f2ff 100%);
+    background: linear-gradient(145deg, var(--color-info-bg) 0%, var(--color-info-bg-strong) 100%);
     border-color: var(--color-primary-light);
     display: flex;
     flex-direction: column;
@@ -290,7 +290,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--color-on-color);
   }
 
   .event--selected .check {
@@ -349,7 +349,7 @@
     align-items: center;
     justify-content: center;
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
     border-radius: 50%;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
@@ -398,7 +398,7 @@
 
   .btn--primary {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
     border: 2px solid var(--color-primary);
   }
 

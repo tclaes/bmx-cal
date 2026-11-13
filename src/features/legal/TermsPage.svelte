@@ -210,6 +210,6 @@
   }
 
   a:hover {
-    color: var(--color-primary-dark, #1d4ed8);
+    color: var(--color-primary-hover);
   }
 </style>

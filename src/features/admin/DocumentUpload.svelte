@@ -977,8 +977,8 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--color-warning, #f59e0b);
-    color: white;
+    background: var(--color-warning);
+    color: var(--color-on-color);
     font-size: 12px;
     font-weight: bold;
     flex-shrink: 0;
@@ -1009,7 +1009,7 @@
   .resolution-tab.active {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .resolution-skip-hint {
@@ -1091,7 +1091,7 @@
   .nav-dot.active {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .nav-dot.done {
@@ -1101,7 +1101,7 @@
 
   .nav-dot.done.active {
     background: var(--color-success);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .editor-actions {

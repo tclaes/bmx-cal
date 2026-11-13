@@ -59,7 +59,7 @@ describe('getRegistrationStatus', () => {
     });
     expect(result).not.toBeNull();
     expect(result!.label).toBe('Registration Closed');
-    expect(result!.color).toBe('#6b7280');
+    expect(result!.color).toBe('var(--color-status-closed)');
   });
 
   it('returns Registration Closed when status is closed and deadline not passed', () => {
@@ -82,7 +82,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Opens Soon');
-    expect(result!.color).toBe('#b45309');
+    expect(result!.color).toBe('var(--color-status-opens-soon)');
   });
 
   it('returns Registration Open when registration_opens is today or in the past', () => {
@@ -105,7 +105,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Open');
-    expect(result!.color).toBe('#047857');
+    expect(result!.color).toBe('var(--color-status-open)');
   });
 
   it('returns Registration Opens Soon when status is upcoming', () => {
@@ -117,7 +117,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Opens Soon');
-    expect(result!.color).toBe('#b45309');
+    expect(result!.color).toBe('var(--color-status-opens-soon)');
   });
 
   it('returns Registration Open when status is open and deadline is in the future', () => {
@@ -129,7 +129,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Open');
-    expect(result!.color).toBe('#047857');
+    expect(result!.color).toBe('var(--color-status-open)');
   });
 
   it('returns Register Now when status is null and no deadline', () => {
@@ -141,7 +141,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Register Now');
-    expect(result!.color).toBe('#1d4ed8');
+    expect(result!.color).toBe('var(--color-status-register-now)');
   });
 
   it('returns Registration Closed via deadline fallback when status is null but deadline passed', () => {

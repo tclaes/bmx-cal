@@ -103,7 +103,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--color-overlay);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -126,7 +126,7 @@
     max-width: 500px;
     background-color: var(--color-bg-primary);
     border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -4px 20px color-mix(in srgb, var(--color-shadow) 20%, transparent);
     animation: slideUp 0.3s ease-out;
     margin: 0 var(--spacing-md) 0 var(--spacing-md);
   }
@@ -177,7 +177,7 @@
     height: 80px;
     border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 10%, transparent);
   }
 
   .app-icon img {

@@ -78,7 +78,7 @@
     inset-inline: 0;
     background-color: var(--color-bg-primary);
     border-block-start: 1px solid var(--color-border);
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-shadow) 8%, transparent);
     padding-block: var(--spacing-md);
     padding-inline: var(--spacing-lg);
     z-index: 9999;
@@ -138,12 +138,12 @@
 
   .btn--primary {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
     border: 1px solid var(--color-primary);
   }
 
   .btn--primary:hover {
-    background-color: var(--color-primary-dark, #1d4ed8);
+    background-color: var(--color-primary-hover);
   }
 
   .btn--ghost {

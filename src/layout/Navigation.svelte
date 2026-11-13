@@ -270,12 +270,12 @@
 
   .nav-link--signin:hover {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .nav-link--signout:hover {
-    color: var(--color-error, #dc2626);
-    background-color: var(--color-error-bg, #fef2f2);
+    color: var(--color-danger-text);
+    background-color: var(--color-danger-bg);
   }
 
   .locale-switcher {
@@ -395,12 +395,12 @@
 
   .mobile-link--signin:hover {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
   }
 
   .mobile-link--signout:hover {
-    color: var(--color-error, #dc2626);
-    background-color: var(--color-error-bg, #fef2f2);
+    color: var(--color-danger-text);
+    background-color: var(--color-danger-bg);
   }
 
   .mobile-locale-switcher {

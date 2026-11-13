@@ -257,7 +257,7 @@
   .btn-primary {
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--border-radius-md);
@@ -266,7 +266,7 @@
   }
 
   .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
   }
 
   .btn-secondary {

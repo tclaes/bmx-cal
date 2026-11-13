@@ -81,7 +81,7 @@
     top: -40px;
     left: 0;
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-color);
     padding: var(--spacing-sm);
     text-decoration: none;
     z-index: 10000;

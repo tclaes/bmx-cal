@@ -1,0 +1,107 @@
+:root {
+  /* Tier 1: palette primitives. Only referenced from this file. */
+  --palette-white: #ffffff;
+  --palette-black: #000000;
+
+  --palette-slate-50: #f8fafc;
+  --palette-slate-100: #f1f5f9;
+  --palette-slate-200: #e2e8f0;
+  --palette-slate-400: #94a3b8;
+  --palette-slate-500: #64748b;
+  --palette-slate-600: #475569;
+  --palette-slate-900: #0f172a;
+  --palette-gray-500: #6b7280;
+
+  --palette-blue-25: #f0f7ff;
+  --palette-blue-50: #e8f2ff;
+  --palette-blue-100: #dbeafe;
+  --palette-blue-200: #bfdbfe;
+  --palette-blue-500: #3b82f6;
+  --palette-blue-600: #2563eb;
+  --palette-blue-700: #1d4ed8;
+
+  --palette-red-50: #fef2f2;
+  --palette-red-100: #fee2e2;
+  --palette-red-200: #fecaca;
+  --palette-red-500: #ef4444;
+  --palette-red-600: #dc2626;
+  --palette-red-700: #b91c1c;
+  --palette-red-800: #991b1b;
+
+  --palette-green-100: #dcfce7;
+  --palette-green-600: #16a34a;
+  --palette-green-700: #15803d;
+  --palette-emerald-100: #d1fae5;
+  --palette-emerald-200: #a7f3d0;
+  --palette-emerald-500: #10b981;
+  --palette-emerald-700: #047857;
+
+  --palette-amber-100: #fef3c7;
+  --palette-amber-300: #fcd34d;
+  --palette-amber-500: #f59e0b;
+  --palette-amber-700: #b45309;
+  --palette-amber-800: #92400e;
+
+  --palette-video-red: #ff0000;
+  --palette-video-red-dark: #cc0000;
+
+  /* Tier 2: semantic tokens. Components use only these. */
+  --color-primary: var(--palette-blue-600);
+  --color-primary-hover: var(--palette-blue-700);
+  --color-primary-light: var(--palette-blue-100);
+  --color-primary-border: var(--palette-blue-200);
+
+  --color-secondary: var(--palette-slate-500);
+  --color-secondary-hover: var(--palette-slate-600);
+  --color-secondary-light: var(--palette-slate-100);
+
+  --color-success: var(--palette-emerald-500);
+  --color-success-light: var(--palette-emerald-100);
+  --color-success-bg: var(--palette-green-100);
+  --color-success-border: var(--palette-emerald-200);
+  --color-success-text: var(--palette-green-600);
+  --color-success-strong: var(--palette-green-700);
+
+  --color-warning: var(--palette-amber-500);
+  --color-warning-light: var(--palette-amber-100);
+  --color-warning-border: var(--palette-amber-300);
+  --color-warning-text: var(--palette-amber-800);
+  --color-warning-strong: var(--palette-amber-700);
+
+  --color-danger: var(--palette-red-500);
+  --color-danger-hover: var(--palette-red-600);
+  --color-danger-light: var(--palette-red-100);
+  --color-danger-bg: var(--palette-red-50);
+  --color-danger-border: var(--palette-red-200);
+  --color-danger-text: var(--palette-red-600);
+  --color-danger-strong: var(--palette-red-700);
+  --color-danger-dark: var(--palette-red-800);
+
+  --color-info: var(--palette-blue-500);
+  --color-info-bg: var(--palette-blue-25);
+  --color-info-bg-strong: var(--palette-blue-50);
+
+  --color-text-primary: var(--palette-slate-900);
+  --color-text-secondary: var(--palette-slate-500);
+  --color-text-muted: var(--palette-slate-400);
+  --color-on-color: var(--palette-white);
+
+  --color-bg-primary: var(--palette-white);
+  --color-bg-secondary: var(--palette-slate-50);
+  --color-bg-tertiary: var(--palette-slate-100);
+
+  --color-border: var(--palette-slate-200);
+  --color-border-light: var(--palette-slate-100);
+
+  --color-shadow: var(--palette-black);
+  --color-overlay: color-mix(in srgb, var(--color-shadow) 50%, transparent);
+  --color-focus-ring: color-mix(in srgb, var(--color-primary) 10%, transparent);
+
+  --color-status-closed: var(--palette-gray-500);
+  --color-status-opens-soon: var(--color-warning-strong);
+  --color-status-open: var(--palette-emerald-700);
+  --color-status-register-now: var(--color-primary-hover);
+
+  --color-livestream: var(--palette-video-red);
+  --color-livestream-hover: var(--palette-video-red-dark);
+}

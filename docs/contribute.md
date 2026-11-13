@@ -13,3 +13,15 @@ When adding new features:
 ## Ignored artifacts
 
 `vite.config.ts.timestamp-*.mjs` files are Vite temp files from crashed runs and can be deleted.
+## Colors
+
+Colors are design tokens defined in `src/styles/colors.css` in two tiers:
+
+- **Palette** (`--palette-*`): raw values. Referenced only inside `colors.css`.
+- **Semantic** (`--color-*`): role-based aliases of the palette. This is what components use.
+
+Never write a literal color (hex, `rgb()/rgba()/hsl()`, or a named color such as `white`) in a `.svelte`, `.css` or non-test `.ts` file. Use `var(--color-*)` instead. Allowed keywords: `transparent`, `currentColor`, `inherit`, `none`. For a translucent variant use `color-mix(in srgb, var(--color-primary) 10%, transparent)`.
+
+If no token fits, add a semantic token (and a palette entry if needed) in `colors.css`.
+
+Enforced by `npm run stylelint:colors` (runs in CI) and a Vitest guard test (`src/tests/no-color-literals.test.ts`) for TypeScript.

@@ -305,7 +305,7 @@
   }
 
   .collapsible-header:hover {
-    background: var(--color-surface-secondary, #f8f9fa);
+    background: var(--color-bg-secondary);
   }
 
   .collapsible-title {
@@ -387,14 +387,14 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--color-surface-secondary, #f8f9fa);
+    background: var(--color-bg-secondary);
     cursor: pointer;
     transition: background-color 0.15s ease;
     user-select: none;
   }
 
   .year-toggle:hover {
-    background: var(--color-surface-hover, #f0f1f2);
+    background: var(--color-bg-tertiary);
   }
 
   .year-label {

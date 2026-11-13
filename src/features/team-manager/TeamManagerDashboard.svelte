@@ -585,11 +585,11 @@
   .team-badge {
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
-    background: var(--color-primary-100, #dbeafe);
-    color: var(--color-primary-700, #1d4ed8);
+    background: var(--color-primary-light);
+    color: var(--color-primary-hover);
     border-radius: 20px;
     padding: 0.25rem 0.75rem;
-    border: 1px solid var(--color-primary-200, #bfdbfe);
+    border: 1px solid var(--color-primary-border);
   }
 
   .type-badge {

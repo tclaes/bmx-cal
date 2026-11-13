@@ -1,19 +1,19 @@
 <script lang="ts">
-  export let color = '#3b82f6';
+  export let color = 'var(--color-info)';
   export let label = '';
   export let variant: 'default' | 'success' | 'warning' | 'error' | undefined = undefined;
 
   const variantColors: Record<NonNullable<typeof variant>, string> = {
-    default: '#3b82f6',
-    success: '#15803d',
-    warning: '#b45309',
-    error: '#b91c1c',
+    default: 'var(--color-info)',
+    success: 'var(--color-success-strong)',
+    warning: 'var(--color-warning-strong)',
+    error: 'var(--color-danger-strong)',
   };
 
   $: effectiveColor = variant ? variantColors[variant] : color;
 </script>
 
-<span class="badge" style="background-color: {effectiveColor}; color: #ffffff;">
+<span class="badge" style="background-color: {effectiveColor}; color: var(--color-on-color);">
   {label}
 </span>
 

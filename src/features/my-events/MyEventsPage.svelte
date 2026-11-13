@@ -435,7 +435,7 @@
   .type-btn.fully-selected {
     border-color: var(--type-color);
     background: color-mix(in srgb, var(--type-color) 85%, white);
-    color: white;
+    color: var(--color-on-color);
     font-weight: var(--font-weight-bold);
     font-size: var(--font-size-sm);
     padding: 0.65rem 1rem;
@@ -472,8 +472,8 @@
   }
 
   .type-btn.fully-selected .type-count {
-    color: white;
-    background: rgba(255, 255, 255, 0.25);
+    color: var(--color-on-color);
+    background: color-mix(in srgb, var(--color-on-color) 25%, transparent);
   }
 
   .type-check {
@@ -482,7 +482,7 @@
   }
 
   .type-btn.fully-selected .type-check {
-    color: white;
+    color: var(--color-on-color);
   }
 
   .events-list {

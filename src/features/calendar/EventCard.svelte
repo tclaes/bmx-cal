@@ -356,22 +356,22 @@
     gap: var(--spacing-xs);
     padding: 0.625rem 1rem;
     border-radius: 6px;
-    color: white;
+    color: var(--color-on-color);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
     text-decoration: none;
     transition: all 0.2s;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .registration-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px color-mix(in srgb, var(--color-shadow) 10%, transparent);
   }
 
   .registration-btn:active {
     transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .livestream-section {
@@ -386,23 +386,23 @@
     padding: 0.625rem 1rem;
     border-radius: 6px;
     width: 100%;
-    background-color: #ff0000;
-    color: white;
+    background-color: var(--color-livestream);
+    color: var(--color-on-color);
     font-weight: var(--font-weight-medium);
     font-size: var(--font-size-sm);
     text-decoration: none;
     transition: all 0.2s;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 
   .livestream-btn:hover {
-    background-color: #cc0000;
+    background-color: var(--color-livestream-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px color-mix(in srgb, var(--color-shadow) 15%, transparent);
   }
 
   .livestream-btn:active {
     transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
 </style>

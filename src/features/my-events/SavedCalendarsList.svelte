@@ -80,14 +80,14 @@
 <style>
   .saved-list {
     margin-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: 1.5rem;
   }
 
   .section-title {
     font-size: 0.85rem;
     font-weight: 600;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--color-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0 0 1rem 0;
@@ -108,14 +108,14 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.625rem 0.875rem;
-    border: 1px solid var(--color-border, #e5e7eb);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: white;
+    background: var(--color-bg-primary);
     transition: border-color 0.15s ease;
   }
 
   .item:hover {
-    border-color: var(--color-primary, #2563eb);
+    border-color: var(--color-primary);
   }
 
   .item-info {
@@ -128,7 +128,7 @@
   .item-name {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--color-text-primary, #111827);
+    color: var(--color-text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -136,7 +136,7 @@
 
   .item-meta {
     font-size: 0.78rem;
-    color: var(--color-text-secondary, #6b7280);
+    color: var(--color-text-secondary);
   }
 
   .item-actions {

@@ -167,7 +167,7 @@
     padding: 0 6px;
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-semibold);
-    color: white;
+    color: var(--color-on-color);
     background-color: var(--color-primary);
     border-radius: 10px;
     margin-left: auto;
@@ -237,11 +237,11 @@
     left: 3px;
     width: 18px;
     height: 18px;
-    background-color: white;
+    background-color: var(--color-bg-primary);
     border-radius: 50%;
     transition: transform 0.2s;
     display: block;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--color-shadow) 20%, transparent);
   }
 
   .toggle-btn.active .toggle-thumb {

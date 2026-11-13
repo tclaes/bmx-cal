@@ -65,8 +65,8 @@
         <div class="success-state">
           <div class="success-icon">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="24" fill="#dcfce7"/>
-              <path d="M14 24L21 31L34 17" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="24" cy="24" r="24" style="fill: var(--color-success-bg)"/>
+              <path d="M14 24L21 31L34 17" style="stroke: var(--color-success-text)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <h2 class="success-title">{$t.auth.checkEmail}</h2>

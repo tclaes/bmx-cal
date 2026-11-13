@@ -38,7 +38,7 @@
 
 <style>
   .account-cta {
-    background: linear-gradient(145deg, #f0f7ff 0%, #e8f2ff 100%);
+    background: linear-gradient(145deg, var(--color-info-bg) 0%, var(--color-info-bg-strong) 100%);
     border: 1px solid var(--color-primary-light);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
@@ -59,7 +59,7 @@
     letter-spacing: 0.06em;
     padding: 2px var(--spacing-sm);
     border-radius: var(--border-radius-full);
-    border: 1px solid #a7f3d0;
+    border: 1px solid var(--color-success-border);
   }
 
   .cta-title {
@@ -108,7 +108,7 @@
     letter-spacing: 0.06em;
     padding: 1px var(--spacing-xs);
     border-radius: var(--border-radius-full);
-    border: 1px solid #a7f3d0;
+    border: 1px solid var(--color-success-border);
   }
 
   .cta-benefits li::before {
@@ -138,7 +138,7 @@
 
   .cta-btn--primary {
     background-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-color);
     border: 2px solid var(--color-primary);
   }
 

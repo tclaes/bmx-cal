@@ -1,15 +1,15 @@
 ## ADDED Requirements
 
 ### Requirement: Colors are defined as design tokens
-The app SHALL define all colors in `src/styles/variables.css` as CSS custom properties in two tiers: primitive palette tokens (`--palette-*`) and semantic tokens (`--color-*`) that reference the palette.
+The app SHALL define all colors in `src/styles/colors.css` as CSS custom properties in two tiers: primitive palette tokens (`--palette-*`) and semantic tokens (`--color-*`) that reference the palette.
 
 #### Scenario: Semantic token resolves through the palette
 - **WHEN** a component uses `var(--color-primary)`
-- **THEN** it resolves to a value defined by a `--palette-*` token in `variables.css`
+- **THEN** it resolves to a value defined by a `--palette-*` token in `colors.css`
 
 #### Scenario: A needed color has no token
 - **WHEN** a developer needs a color role not covered by existing semantic tokens
-- **THEN** they add a semantic token (and a palette token if needed) in `variables.css` instead of writing a literal in the component
+- **THEN** they add a semantic token (and a palette token if needed) in `colors.css` instead of writing a literal in the component
 
 ### Requirement: Components use semantic tokens only
 Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT contain literal color values (hex, `rgb()/rgba()`, `hsl()/hsla()`, other color functions, or named colors other than `transparent`, `currentColor`, `inherit`, `none`). They SHALL NOT reference `--palette-*` tokens directly.
@@ -35,10 +35,10 @@ Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT co
 - **THEN** it uses `color-mix(in srgb, var(--color-primary) 10%, transparent)` (or a dedicated token) and lint passes
 
 ### Requirement: The token file is the only exemption
-Literal colors SHALL be permitted only in `src/styles/variables.css`.
+Literal colors SHALL be permitted only in `src/styles/colors.css`.
 
 #### Scenario: Palette definition
-- **WHEN** `variables.css` defines `--palette-blue-600: #2563eb`
+- **WHEN** `colors.css` defines `--palette-blue-600: #2563eb`
 - **THEN** lint passes for that file
 
 ### Requirement: TypeScript does not hold color literals
