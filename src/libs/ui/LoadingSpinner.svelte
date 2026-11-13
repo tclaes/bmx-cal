@@ -4,7 +4,7 @@
 </script>
 
 <div class="spinner spinner-{size}" role="status" aria-live="polite">
-  <span class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-width: 0;">{label}</span>
+  <span class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border-width: 0;">{label}</span>
 </div>
 
 <style>
@@ -42,6 +42,7 @@
     width: 1px;
     height: 1px;
     padding: 0;
+    /* stylelint-disable-next-line declaration-property-value-disallowed-list -- standard visually-hidden clip pattern */
     margin: -1px;
     overflow: hidden;
     clip-path: inset(50%);

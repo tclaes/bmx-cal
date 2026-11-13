@@ -160,13 +160,13 @@
     font-size: var(--font-size-xl);
     color: var(--color-primary);
     flex-shrink: 0;
-    margin-top: 0.125rem;
+    margin-top: var(--spacing-xxs);
   }
 
   .feature-item div {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--spacing-xxs);
   }
 
   .feature-item strong {

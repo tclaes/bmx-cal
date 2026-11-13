@@ -274,7 +274,7 @@
     font-family: monospace;
     font-size: 0.95em;
     background-color: var(--color-bg-secondary);
-    padding-inline: 0.25em;
+    padding-inline: var(--spacing-xs);
     border-radius: var(--border-radius-sm);
   }
 </style>

@@ -58,7 +58,7 @@
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    padding: 2px var(--spacing-sm);
+    padding: var(--spacing-xxs) var(--spacing-sm);
     border-radius: var(--border-radius-full);
     border: 1px solid var(--color-success);
   }

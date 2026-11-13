@@ -213,7 +213,7 @@
   .type-name { color: var(--color-text-secondary); }
 
   .ongoing {
-    padding: 2px var(--spacing-sm);
+    padding: var(--spacing-xxs) var(--spacing-sm);
     border-radius: var(--border-radius-full);
     background-color: var(--color-success-light);
     color: var(--color-success);

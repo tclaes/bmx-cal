@@ -13,6 +13,10 @@ When adding new features:
 7. Keep files focused and under 300 lines when possible
 8. Make small, focused commits with descriptive messages
 
+### Spacing tokens
+
+Every `margin*`, `padding*`, `gap`, `row-gap` and `column-gap` value (and the legacy `grid-*gap` aliases) uses the `--spacing-*` tokens from `src/styles/variables.css` (`--spacing-xxs` 2px up to `--spacing-3xl` 64px), or a `calc()` of them. `0`, `auto`, `inherit` and percentages are fine, and so is a `calc()` that mixes spacing tokens with other design tokens. Snap an off-scale value to the nearest token instead of adding a new one. `npm run stylelint` fails on any `px`, `rem` or `em` literal in these properties. When a literal really is needed (for example the visually-hidden `margin: -1px`), put `/* stylelint-disable-next-line declaration-property-value-disallowed-list -- <reason> */` above it.
+
 ## End-to-end tests
 
 There are two Playwright suites:

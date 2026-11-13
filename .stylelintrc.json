@@ -4,13 +4,8 @@
   ],
   "rules": {
     "declaration-property-value-disallowed-list": {
-      "/^(padding|margin)$/": [
-        "/^\\d+px$/",
-        "/^\\d+\\.\\d+px$/"
-      ],
-      "/^(padding|margin)-(top|right|bottom|left|block|inline|block-start|block-end|inline-start|inline-end)$/": [
-        "/^\\d+px$/",
-        "/^\\d+\\.\\d+px$/"
+      "/^(margin|padding)(-[a-z-]+)?$|^(grid-)?(row-|column-)?gap$/i": [
+        "/(^|[^\\w-])-?(\\d+\\.?\\d*|\\.\\d+)(px|rem|em)\\b/i"
       ]
     },
     "custom-property-pattern": null,
