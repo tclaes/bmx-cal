@@ -150,3 +150,120 @@ describe('Multi-domain Support', () => {
     expect(manifest.prefer_related_applications).toBe(false);
   });
 });
+
+describe('Service worker caching (public/sw.js)', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, '../../public/sw.js'), 'utf-8');
+
+  type Handler = (event: any) => void;
+
+  function loadWorker(opts: { fetchImpl: (req: any) => Promise<any>; cached?: Record<string, any>; cacheNames?: string[] }) {
+    const handlers: Record<string, Handler> = {};
+    const deleted: string[] = [];
+    const postMessage = vi.fn();
+    const cache = { addAll: vi.fn().mockResolvedValue(undefined), put: vi.fn().mockResolvedValue(undefined) };
+    const selfMock = {
+      addEventListener: (type: string, handler: Handler) => { handlers[type] = handler; },
+      skipWaiting: vi.fn(),
+      clients: { claim: vi.fn().mockResolvedValue(undefined), matchAll: vi.fn().mockResolvedValue([{ postMessage }]) },
+      registration: { showNotification: vi.fn() },
+    };
+    const cachesMock = {
+      open: vi.fn().mockResolvedValue(cache),
+      match: vi.fn(async (req: any) => opts.cached?.[typeof req === 'string' ? req : new URL(req.url).pathname]),
+      keys: vi.fn().mockResolvedValue(opts.cacheNames ?? []),
+      delete: vi.fn(async (name: string) => { deleted.push(name); return true; }),
+    };
+    const run = new Function('self', 'caches', 'fetch', 'location', 'Response', source.replaceAll('__APP_VERSION__', '9.9.9'));
+    run(selfMock, cachesMock, vi.fn(opts.fetchImpl), { origin: 'https://bmxkalender.be' }, { error: () => ({ type: 'error' }) });
+    return { handlers, deleted, postMessage, cachesMock, cache };
+  }
+
+  function fetchEvent(path: string, mode = 'no-cors') {
+    const event = { request: { url: `https://bmxkalender.be${path}`, method: 'GET', mode }, respondWith: vi.fn(), waitUntil: vi.fn() };
+    return event;
+  }
+
+  it('keeps the version placeholder for the build to replace', () => {
+    expect(source).toContain("'bmx-calendar-__APP_VERSION__'");
+  });
+
+  it('loads pages from the network first', async () => {
+    const fresh = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
+    const { handlers } = loadWorker({ fetchImpl: async () => fresh, cached: { '/index.html': { stale: true } } });
+    const event = fetchEvent('/', 'navigate');
+    handlers.fetch(event);
+    expect(await event.respondWith.mock.calls[0][0]).toBe(fresh);
+  });
+
+  it('stores only HTML navigations as the offline shell', async () => {
+    const xml = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'application/xml' }), clone: () => ({}) };
+    const html = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html; charset=UTF-8' }), clone: () => ({}) };
+    const { handlers, cachesMock, cache } = loadWorker({ fetchImpl: async (req: any) => (req.url.endsWith('.xml') ? xml : html) });
+
+    const sitemap = fetchEvent('/sitemap.xml', 'navigate');
+    handlers.fetch(sitemap);
+    expect(await sitemap.respondWith.mock.calls[0][0]).toBe(xml);
+    expect(sitemap.waitUntil).not.toHaveBeenCalled();
+    expect(cachesMock.open).not.toHaveBeenCalled();
+
+    const page = fetchEvent('/calendar', 'navigate');
+    handlers.fetch(page);
+    expect(await page.respondWith.mock.calls[0][0]).toBe(html);
+    await page.waitUntil.mock.calls[0][0];
+    expect(cache.put).toHaveBeenCalledWith('/index.html', expect.anything());
+  });
+
+  it('never caches the SPA fallback HTML for a missing asset', async () => {
+    const fallback = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
+    const { handlers } = loadWorker({ fetchImpl: async () => fallback });
+    const asset = fetchEvent('/assets/missing-abc.js');
+    handlers.fetch(asset);
+    expect(await asset.respondWith.mock.calls[0][0]).toBe(fallback);
+    expect(asset.waitUntil).not.toHaveBeenCalled();
+  });
+
+  it('keeps the worker alive until the cache write finishes', async () => {
+    const html = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
+    const { handlers } = loadWorker({ fetchImpl: async () => html });
+    const page = fetchEvent('/', 'navigate');
+    handlers.fetch(page);
+    await page.respondWith.mock.calls[0][0];
+    expect(page.waitUntil).toHaveBeenCalledWith(expect.any(Promise));
+  });
+
+  it('falls back to the cached shell when offline', async () => {
+    const shell = { stale: true };
+    const { handlers } = loadWorker({ fetchImpl: async () => { throw new TypeError('offline'); }, cached: { '/index.html': shell } });
+    const event = fetchEvent('/calendar', 'navigate');
+    handlers.fetch(event);
+    expect(await event.respondWith.mock.calls[0][0]).toBe(shell);
+  });
+
+  it('never intercepts /version.json', () => {
+    const { handlers } = loadWorker({ fetchImpl: async () => ({}) });
+    const event = fetchEvent('/version.json?ts=1');
+    handlers.fetch(event);
+    expect(event.respondWith).not.toHaveBeenCalled();
+  });
+
+  it('serves hashed assets from the cache first', async () => {
+    const asset = { cached: true };
+    const fetchImpl = vi.fn();
+    const { handlers } = loadWorker({ fetchImpl, cached: { '/assets/index-abc.js': asset } });
+    const event = fetchEvent('/assets/index-abc.js');
+    handlers.fetch(event);
+    expect(await event.respondWith.mock.calls[0][0]).toBe(asset);
+  });
+
+  it('removes old caches on activate without messaging clients', async () => {
+    const { handlers, deleted, postMessage } = loadWorker({
+      fetchImpl: async () => ({}),
+      cacheNames: ['bmx-calendar-v6', 'bmx-calendar-9.9.9'],
+    });
+    let done: Promise<unknown> = Promise.resolve();
+    handlers.activate({ waitUntil: (p: Promise<unknown>) => { done = p; } });
+    await done;
+    expect(deleted).toEqual(['bmx-calendar-v6']);
+    expect(postMessage).not.toHaveBeenCalled();
+  });
+});

@@ -1,12 +1,18 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import App from '../App.svelte';
 vi.mock('@config/version', () => ({
   APP_VERSION: '0.0.2',
   MIN_VERSION: '0.0.1',
-  FORCE_UPDATE: true,
-  RELEASE_NOTES: 'Test release notes',
+  RELEASE_NOTES: {},
 }));
+
+let deployed = '0.0.2';
+const jsonResponse = (body: unknown) => ({
+  ok: true,
+  headers: new Headers({ 'content-type': 'application/json' }),
+  json: async () => body,
+});
 
 vi.mock('@data', () => ({
   supabase: {
@@ -18,7 +24,10 @@ vi.mock('@data', () => ({
     },
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          then: (resolve: (v: unknown) => void) => resolve({ data: [], error: null }),
+        }),
       }),
     }),
   },
@@ -28,6 +37,12 @@ describe('Footer version check', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    deployed = '0.0.2';
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ version: deployed, minVersion: '0.0.1' })));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('should display version number in footer', async () => {
@@ -63,17 +78,42 @@ describe('Footer version check', () => {
     }
   });
 
-  it('should display update message after check', async () => {
+  it('shows "latest version" when up to date, without a banner', async () => {
     render(App);
 
     await waitFor(() => {
-      const versionButton = screen.getByTitle(/Current version:/);
-      fireEvent.click(versionButton);
+      fireEvent.click(screen.getByTitle(/Current version:/));
     });
 
     await waitFor(() => {
-      const updateMessage = screen.queryByText(/latest version|Update available/);
-      expect(updateMessage).toBeInTheDocument();
+      expect(screen.getByText(/latest version/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+    expect(screen.queryByText('A new version is available.')).not.toBeInTheDocument();
+  });
+
+  it('shows the optional banner when a newer version is deployed', async () => {
+    deployed = '0.0.3';
+    render(App);
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByTitle(/Current version:/));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('A new version is available.')).toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('reports a failed check when the release information is unavailable', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('offline'); }));
+    render(App);
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByTitle(/Current version:/));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to check for updates.')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });

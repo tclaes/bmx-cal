@@ -9,7 +9,7 @@ features/calendar   → can import → [ui, components, services, stores, data, 
 features/admin      → can import → [ui, components, services, stores, data, types]
 shared/components   → can import → [ui, services, stores, types]
 lib/core/services   → can import → [data, types]
-lib/core/stores     → can import → [services, utils, types]
+lib/core/stores     → can import → [services, utils, types, data, config]
 data                → can import → [types]
 types               → no dependencies
 ```
@@ -52,7 +52,7 @@ src/
 ├── types/                   # TypeScript type definitions
 ├── router/                  # Client-side routing (Navaid)
 ├── i18n/                    # Internationalization (EN/NL/FR locales)
-├── config/                  # App version config
+├── config/                  # Release definition (release.json → APP_VERSION, /version.json); see docs/releases.md
 ├── styles/                  # CSS system (variables, reset, layout, utilities)
 └── assets/                  # Static assets (PDF calendar)
 ```

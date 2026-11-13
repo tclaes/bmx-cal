@@ -40,6 +40,10 @@ references `docs/cron.md`
 
 references `docs/file-import.md`
 
+## Coding styles
+
+references `docs/coding-styles.md`
+
 ## Contribute
 
 references `docs/contribute.md`
@@ -47,3 +51,7 @@ references `docs/contribute.md`
 ## Local test environment
 
 references `docs/test-env.md`
+
+## Releases and app updates
+
+references `docs/releases.md`

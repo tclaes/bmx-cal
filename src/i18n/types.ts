@@ -282,11 +282,15 @@ export interface Translations {
     install: string;
     notNow: string;
     close: string;
-    criticalUpdate: string;
+    updateRequiredTitle: string;
+    updateRequiredBody: string;
+    whatsNewTitle: string;
+    whatsNewVersion: string;
     newVersion: string;
     updateNow: string;
     reload: string;
     dismiss: string;
+    actionsAvailable: string;
   };
   notFound: {
     title: string;

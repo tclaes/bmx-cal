@@ -10,4 +10,6 @@ export { PushService } from './push.service';
 export { notificationPreferenceService } from './notification-preference.service';
 export type { NotificationPreference } from './notification-preference.service';
 export { NewsService } from './news.service';
+export { ReleaseService } from './release.service';
+export type { RawReleaseOverride } from './release.service';
 export { FeatureFlagService } from './feature-flag.service';

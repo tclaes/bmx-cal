@@ -1,7 +1,7 @@
 {
   "name": "BmxKalender",
   "private": true,
-  "version": "0.0.8",
+  "version": "1.0.0",
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -10,6 +10,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "preview:build": "vite build && vite preview --port 4173 --strictPort",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
     "sheriff": "sheriff verify && eslint src",
     "stylelint": "stylelint \"src/**/*.{css,svelte}\"",

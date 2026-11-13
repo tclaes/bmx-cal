@@ -7,6 +7,8 @@
   import Navigation from './Navigation.svelte';
   import Footer from './Footer.svelte';
   import UpdatePrompt from './UpdatePrompt.svelte';
+  import UpdateRequired from './UpdateRequired.svelte';
+  import WhatsNew from './WhatsNew.svelte';
   import InstallPrompt from './InstallPrompt.svelte';
   import CookieConsent from './CookieConsent.svelte';
   import { locale } from '../i18n';
@@ -52,7 +54,9 @@
   });
 </script>
 
+<UpdateRequired />
 <UpdatePrompt />
+<WhatsNew />
 <InstallPrompt />
 <CookieConsent />
 

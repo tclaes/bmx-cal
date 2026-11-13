@@ -14,17 +14,14 @@
   async function handleCheckForUpdates() {
     showUpdateMessage = false;
 
-    try {
-      const versionInfo = await updateStore.checkForUpdates();
-
-      if (versionInfo.hasUpdate || $updateStore.available) {
-        updateCheckMessage = $t.footer.updateAvailable;
-      } else {
-        updateCheckMessage = $t.footer.latestVersion;
-      }
-    } catch {
-      updateCheckMessage = $t.footer.updateFailed;
-    }
+    const result = await updateStore.check();
+    const messages = {
+      error: $t.footer.updateFailed,
+      none: $t.footer.latestVersion,
+      optional: $t.footer.updateAvailable,
+      mandatory: $t.footer.updateAvailable,
+    };
+    updateCheckMessage = messages[result];
 
     showUpdateMessage = true;
     setTimeout(() => {

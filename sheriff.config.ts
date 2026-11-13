@@ -57,7 +57,8 @@ export const sheriffConfig = {
     layout: ['shared', 'ui', 'services', 'stores', 'types', 'config', 'router', 'i18n'],
     ui: ['types', 'shared'],
     services: ['data', 'types'],
-    stores: ['services', 'shared', 'types', 'data'],
+    // The update store compares the bundled APP_VERSION with the published release.
+    stores: ['services', 'shared', 'types', 'data', 'config'],
     data: ['types'],
     types: noDependencies,
     config: noDependencies,

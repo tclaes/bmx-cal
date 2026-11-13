@@ -1,7 +1,9 @@
-const CACHE_NAME = 'bmx-calendar-v6';
+// __APP_VERSION__ is replaced with the release version at build time (vite.config.ts),
+// so every release ships a byte-different sw.js and gets its own cache.
+const CACHE_NAME = 'bmx-calendar-__APP_VERSION__';
+const APP_SHELL = '/index.html';
 const urlsToCache = [
-  '/',
-  '/index.html',
+  APP_SHELL,
   '/bmx-calendar.png',
   '/favicon.ico'
 ];
@@ -17,32 +19,62 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
+// Returns the cache write so the fetch event can keep the worker alive until it finishes.
+function putInCache(request, response) {
+  if (!response || response.status !== 200 || response.type !== 'basic') return Promise.resolve();
+  const copy = response.clone();
+  return caches.open(CACHE_NAME)
+    .then(cache => cache.put(request, copy))
+    .catch(err => console.warn('Cache write failed:', err));
+}
 
-  if (url.origin !== location.origin) {
+// Pages: network first, so a reload always loads the deployed release. Offline: cached shell.
+function networkFirstNavigation(event) {
+  const request = event.request;
+  return fetch(request)
+    .then(response => {
+      // Only HTML can serve as the app shell; a direct visit to /sitemap.xml or /robots.txt
+      // is a navigation too and must not replace it.
+      const isHtml = (response?.headers.get('content-type') || '').includes('text/html');
+      if (response && response.ok && isHtml) event.waitUntil(putInCache(APP_SHELL, response));
+      return response;
+    })
+    .catch(() => caches.match(APP_SHELL).then(cached => cached || Response.error()));
+}
+
+// Other files: cache first (hashed assets never change).
+function cacheFirst(event) {
+  const request = event.request;
+  return caches.match(request).then(cached => {
+    if (cached) return cached;
+    return fetch(request).then(response => {
+      // A missing asset gets the SPA fallback (index.html with status 200); never store that.
+      const isHtml = (response?.headers.get('content-type') || '').includes('text/html');
+      if (!isHtml) event.waitUntil(putInCache(request, response));
+      return response;
+    });
+  });
+}
+
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  const url = new URL(request.url);
+
+  if (url.origin !== location.origin || request.method !== 'GET') {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then(response => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-          return response;
-        });
-      })
-  );
+  // Release information must always come from the network.
+  if (url.pathname === '/version.json') {
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirstNavigation(event));
+    return;
+  }
+
+  event.respondWith(cacheFirst(event));
 });
 
 self.addEventListener('message', event => {
@@ -110,22 +142,12 @@ self.addEventListener('notificationclick', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      const hadPreviousVersion = cacheNames.some(name => name !== CACHE_NAME);
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      ).then(() => {
-        return self.clients.claim();
-      }).then(() => {
-        if (!hadPreviousVersion) return [];
-        return self.clients.matchAll({ type: 'window' });
-      });
-    }).then(clients => {
-      clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
-    })
+    caches.keys()
+      .then(cacheNames => Promise.all(
+        cacheNames
+          .filter(cacheName => cacheName !== CACHE_NAME)
+          .map(cacheName => caches.delete(cacheName))
+      ))
+      .then(() => self.clients.claim())
   );
 });
