@@ -33,7 +33,7 @@ The running app SHALL compare its own version with the published release informa
 - **THEN** the mandatory update stays shown
 
 ### Requirement: Effective minimum version
-The effective minimum version SHALL be the highest of the minimum in the published release information and the admin override, if one is set. If the override cannot be read, the published minimum SHALL apply on its own.
+The effective minimum version SHALL be the highest of the minimum in the published release information and the admin override, if one is set and not higher than the deployed version. If the override cannot be read or is higher than the deployed version, the published minimum SHALL apply on its own.
 
 #### Scenario: Override raises the minimum
 - **WHEN** the published minimum is 1.2.0, version 1.4.0 is deployed and an admin sets the override to 1.4.0

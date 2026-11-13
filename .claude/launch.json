@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "preview",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "npm run build && npx vite preview --port 4173 --strictPort"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview:build"],
       "port": 4173
     }
   ]
