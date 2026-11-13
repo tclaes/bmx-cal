@@ -61,3 +61,12 @@ Functions deploy independently of git, so a bad deploy is undone by redeploying 
 4. Remove the scratch worktree with `git worktree remove ../bmx-cal-rollback`, then fix forward on a branch from `master` and redeploy only after the fix is merged.
 
 `verify_jwt` is read from `supabase/config.toml` at the commit you deploy from, so a rollback also restores that commit's JWT settings. Compare it with the current file before redeploying a function whose setting changed.
+
+#### Local dry-run
+
+The rollback source was dry-run on 2026-11-12: commit `9e9a790` checked out into a scratch worktree, served with `supabase functions serve --env-file <file>` on a local stack, and `scripts/smoke-edge-functions.mjs http://127.0.0.1:54321/functions/v1` passed 21/21. Notes if you repeat it:
+
+- `supabase/config.toml` has no `project_id`; add one in the scratch copy before `supabase start`.
+- The committed migrations do not replay on an empty database (`20260314125514_add_missing_uec_cup_rounds.sql` inserts events that reference production-only event types). Move `supabase/migrations/` aside in the scratch copy; the smoke checks need no schema. Exclude services you do not need, for example `supabase start -x studio,imgproxy,logflare,vector,mailpit,realtime,storage-api,postgres-meta`.
+- The `9e9a790`-era functions check that their secrets exist before they check auth or input, so pass dummy values for `YOUTUBE_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `RESEND_API_KEY` and `CONTACT_EMAIL` in the env file, or three functions answer 5xx instead of 401/400.
+- `functions serve` proves the old source runs and answers correctly. It does not exercise `supabase functions deploy`, which needs a remote project.

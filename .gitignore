@@ -24,6 +24,13 @@ dist-ssr
 *.sw?
 .bolt
 
+# Local test environment (generated)
+.env.e2e.local
+.test-env/
+e2e/.auth/
+playwright-report/
+test-results/
+
 # Supabase CLI local state
 supabase/.temp/
 

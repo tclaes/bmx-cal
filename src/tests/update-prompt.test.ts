@@ -1,144 +1,225 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { get } from 'svelte/store';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
+import { tick } from 'svelte';
+
+vi.mock('@config', () => ({
+  APP_VERSION: '1.3.0',
+  MIN_VERSION: '1.0.0',
+  RELEASE_NOTES: { nl: 'Nieuw in 1.3.0', en: 'New in 1.3.0', fr: 'Nouveau en 1.3.0' },
+}));
+
+const fetchManifest = vi.fn();
+const fetchOverride = vi.fn();
+vi.mock('@core/services', () => ({
+  ReleaseService: {
+    fetchManifest: () => fetchManifest(),
+    fetchOverride: () => fetchOverride(),
+  },
+}));
+
 import { updateStore } from '@core/stores/pwa.store';
+import { locale } from '../i18n';
+import UpdatePrompt from '../layout/UpdatePrompt.svelte';
+import UpdateRequired from '../layout/UpdateRequired.svelte';
+import WhatsNew from '../layout/WhatsNew.svelte';
 
-describe('UpdateStore', () => {
-  beforeEach(() => {
-    updateStore.confirmUpdate();
-    vi.clearAllMocks();
+const manifest = (version: string, minVersion = '1.0.0') => ({ version, minVersion });
+
+beforeEach(() => {
+  localStorage.clear();
+  locale.setLocale('en');
+  updateStore.reset();
+  fetchManifest.mockReset();
+  fetchOverride.mockReset().mockResolvedValue(null);
+});
+
+describe('UpdatePrompt (optional update)', () => {
+  it('shows a dismissible banner for a feature release, not a critical notice', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    render(UpdatePrompt);
+    await updateStore.check();
+    await tick();
+
+    const banner = screen.getByRole('dialog', { name: 'A new version is available.' }) as HTMLDialogElement;
+    expect(banner.tagName).toBe('DIALOG');
+    expect(banner.open).toBe(true);
+    expect(banner.dataset.modal).toBeUndefined();
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
+    expect(screen.queryByText(/required/i)).not.toBeInTheDocument();
   });
 
-  it('should initialize with default values', () => {
-    const state = get(updateStore);
-    expect(state.available).toBe(false);
-    expect(state.forceUpdate).toBe(false);
-    expect(state.checking).toBe(false);
+  it('announces the banner through a live region that exists before it appears', async () => {
+    const { container } = render(UpdatePrompt);
+    const region = container.querySelector('[aria-live="polite"]');
+    expect(region).toBeInTheDocument();
+    expect(region).toHaveTextContent('');
+
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    await updateStore.check();
+    await tick();
+    expect(region).toHaveTextContent('A new version is available. Actions available.');
   });
 
-  it('should set update available', () => {
-    updateStore.setAvailable(true, false);
-    const state = get(updateStore);
-    expect(state.available).toBe(true);
-    expect(state.forceUpdate).toBe(false);
+  it('uses ariaNotify instead of the live region when the browser has it', async () => {
+    const ariaNotify = vi.fn();
+    Object.defineProperty(document, 'ariaNotify', { configurable: true, value: ariaNotify });
+    const { container } = render(UpdatePrompt);
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    await updateStore.check();
+    await tick();
+    expect(ariaNotify).toHaveBeenCalledWith('A new version is available. Actions available.');
+    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent('');
+    Reflect.deleteProperty(document, 'ariaNotify');
   });
 
-  it('should set force update', () => {
-    updateStore.setAvailable(true, true);
-    const state = get(updateStore);
-    expect(state.available).toBe(true);
-    expect(state.forceUpdate).toBe(true);
+  it('stays hidden after dismissing, also after another check', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    render(UpdatePrompt);
+    await updateStore.check();
+    await tick();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+    expect(screen.queryByText('A new version is available.')).not.toBeInTheDocument();
+
+    await updateStore.check();
+    await tick();
+    expect(screen.queryByText('A new version is available.')).not.toBeInTheDocument();
   });
 
-  it('should set checking state', () => {
-    updateStore.setChecking(true);
-    const state = get(updateStore);
-    expect(state.checking).toBe(true);
+  it('reloads via applyUpdate', async () => {
+    const apply = vi.spyOn(updateStore, 'applyUpdate').mockResolvedValue();
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    render(UpdatePrompt);
+    await updateStore.check();
+    await tick();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    expect(apply).toHaveBeenCalled();
+    apply.mockRestore();
   });
 
-  it('should dismiss update prompt', () => {
-    updateStore.setAvailable(true, false);
-    updateStore.dismiss();
-    const state = get(updateStore);
-    expect(state.available).toBe(false);
-  });
-
-  it('should confirm update and reset state', () => {
-    updateStore.setAvailable(true, true);
-    updateStore.confirmUpdate();
-    const state = get(updateStore);
-    expect(state.available).toBe(false);
-    expect(state.forceUpdate).toBe(false);
-    expect(state.checking).toBe(false);
+  it('is not shown for a mandatory update', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.3.1', '1.3.1'));
+    render(UpdatePrompt);
+    await updateStore.check();
+    await tick();
+    expect(screen.queryByText('A new version is available.')).not.toBeInTheDocument();
   });
 });
 
-describe('UpdatePrompt Service Worker Integration', () => {
-  let mockServiceWorker: any;
-  let mockRegistration: any;
-  let mockWaitingWorker: any;
-  let controllerChangeHandler: (() => void) | null = null;
+describe('UpdateRequired (mandatory update)', () => {
+  it('opens as a modal dialog with no way to dismiss it', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.3.1', '1.3.1'));
+    render(UpdateRequired);
+    await updateStore.check();
+    await tick();
 
-  beforeEach(() => {
-    controllerChangeHandler = null;
-
-    mockWaitingWorker = {
-      postMessage: vi.fn(),
-    };
-
-    mockRegistration = {
-      waiting: null,
-      update: vi.fn().mockResolvedValue(undefined),
-    };
-
-    mockServiceWorker = {
-      getRegistration: vi.fn().mockResolvedValue(mockRegistration),
-      addEventListener: vi.fn((event, handler, options) => {
-        if (event === 'controllerchange') {
-          controllerChangeHandler = handler;
-        }
-      }),
-      removeEventListener: vi.fn(),
-    };
-
-    Object.defineProperty(navigator, 'serviceWorker', {
-      value: mockServiceWorker,
-      configurable: true,
-    });
+    const dialog = screen.getByRole('alertdialog') as HTMLDialogElement;
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog.open).toBe(true);
+    expect(dialog.dataset.modal).toBe('true');
+    expect(screen.getByText('Update required')).toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Update Now' })).toHaveFocus());
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+  it('cannot be dismissed with Escape', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.3.1', '1.3.1'));
+    render(UpdateRequired);
+    await updateStore.check();
+    await tick();
+
+    const dialog = screen.getByRole('alertdialog') as HTMLDialogElement;
+    const cancel = new Event('cancel', { cancelable: true });
+    dialog.dispatchEvent(cancel);
+    expect(cancel.defaultPrevented).toBe(true);
+
+    dialog.close();
+    expect(dialog.open).toBe(false);
+    await waitFor(() => expect(dialog.open).toBe(true));
   });
 
-  it('should call skip waiting when waiting worker exists', async () => {
-    mockRegistration.waiting = mockWaitingWorker;
+  it('shows the override message in the user language', async () => {
+    locale.setLocale('nl');
+    fetchManifest.mockResolvedValue(manifest('1.4.0', '1.0.0'));
+    fetchOverride.mockResolvedValue({ minVersion: '1.4.0', message: { nl: 'Belangrijke fix voor inschrijvingen', en: 'Fix' } });
+    render(UpdateRequired);
+    await updateStore.check();
+    await tick();
 
-    const registration = await navigator.serviceWorker.getRegistration();
-    expect(registration).toBe(mockRegistration);
-
-    if (registration?.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      expect(mockWaitingWorker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
-    }
+    expect(screen.getByText('Belangrijke fix voor inschrijvingen')).toBeInTheDocument();
   });
 
-  it('should call update when no waiting worker exists', async () => {
-    mockRegistration.waiting = null;
+  it('falls back to another language when the message lacks the user language', async () => {
+    locale.setLocale('fr');
+    fetchManifest.mockResolvedValue(manifest('1.4.0', '1.0.0'));
+    fetchOverride.mockResolvedValue({ minVersion: '1.4.0', message: { en: 'Important fix for registrations' } });
+    render(UpdateRequired);
+    await updateStore.check();
+    await tick();
 
-    const registration = await navigator.serviceWorker.getRegistration();
-    expect(registration).toBe(mockRegistration);
-
-    if (registration && !registration.waiting) {
-      await registration.update();
-      expect(mockRegistration.update).toHaveBeenCalled();
-    }
+    expect(screen.getByText('Important fix for registrations')).toBeInTheDocument();
   });
 
-  it('should setup controller change listener', () => {
-    navigator.serviceWorker.addEventListener('controllerchange', () => {}, { once: true });
-    expect(mockServiceWorker.addEventListener).toHaveBeenCalledWith(
-      'controllerchange',
-      expect.any(Function),
-      { once: true }
-    );
+  it('calls applyUpdate from its only button', async () => {
+    const apply = vi.spyOn(updateStore, 'applyUpdate').mockResolvedValue();
+    fetchManifest.mockResolvedValue(manifest('1.3.1', '1.3.1'));
+    render(UpdateRequired);
+    await updateStore.check();
+    await tick();
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Update Now' }));
+    expect(apply).toHaveBeenCalled();
+    apply.mockRestore();
   });
 
-  it('should trigger controller change callback when set', () => {
-    let callbackTriggered = false;
+  it('stays closed for optional updates', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    const { container } = render(UpdateRequired);
+    await updateStore.check();
+    await tick();
+    expect((container.querySelector('dialog') as HTMLDialogElement).open).toBe(false);
+  });
+});
 
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      callbackTriggered = true;
-    }, { once: true });
+describe('WhatsNew (release notes)', () => {
+  it('shows the notes once after updating', async () => {
+    localStorage.setItem('last_seen_version', '1.2.0');
+    const { unmount } = render(WhatsNew);
+    await tick();
+    expect(screen.getByText('New in 1.3.0')).toBeInTheDocument();
+    expect(localStorage.getItem('last_seen_version')).toBe('1.3.0');
+    unmount();
 
-    expect(mockServiceWorker.addEventListener).toHaveBeenCalledWith(
-      'controllerchange',
-      expect.any(Function),
-      { once: true }
-    );
+    render(WhatsNew);
+    await tick();
+    expect(screen.queryByText('New in 1.3.0')).not.toBeInTheDocument();
+  });
 
-    if (controllerChangeHandler) {
-      controllerChangeHandler();
-      expect(callbackTriggered).toBe(true);
-    }
+  it('follows the locale that AppLayout initialises after mounting', async () => {
+    localStorage.setItem('last_seen_version', '1.2.0');
+    locale.setLocale('en');
+    render(WhatsNew);
+    await tick();
+    expect(screen.getByText('New in 1.3.0')).toBeInTheDocument();
+
+    locale.setLocale('nl');
+    await tick();
+    expect(screen.getByText('Nieuw in 1.3.0')).toBeInTheDocument();
+  });
+
+  it('also shows them for users coming from the old version checker', async () => {
+    localStorage.setItem('app_version', '0.3.0');
+    render(WhatsNew);
+    await tick();
+    expect(screen.getByText('New in 1.3.0')).toBeInTheDocument();
+    expect(localStorage.getItem('app_version')).toBeNull();
+  });
+
+  it('never shows them on a first visit', async () => {
+    render(WhatsNew);
+    await tick();
+    expect(screen.queryByText('New in 1.3.0')).not.toBeInTheDocument();
+    expect(localStorage.getItem('last_seen_version')).toBe('1.3.0');
   });
 });

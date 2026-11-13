@@ -1,5 +1,5 @@
 import type { Page, Route } from '@playwright/test';
-import { SUPABASE_URL } from '../../playwright.config';
+import { SUPABASE_URL } from '../../playwright.mock.config';
 
 export type Role = 'user' | 'admin';
 

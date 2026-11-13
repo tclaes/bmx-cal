@@ -10,30 +10,20 @@
 </script>
 
 <div class="calendar-view">
-  <div class="calendar-layout" class:no-sidebar={isAuthenticated}>
-    <div class="calendar-main">
-      <div class="calendar-header">
-        <div class="header-content">
-          <div>
-            <h1 class="calendar-title">{$t.calendar.title}</h1>
-            <p class="calendar-subtitle">{$t.calendar.subtitle}</p>
-          </div>
-          <ExportButton />
-        </div>
-      </div>
+  <h1 class="visually-hidden">{$t.calendar.title}</h1>
 
+  <div class="calendar-layout">
+    <aside class="calendar-sidebar" aria-label={$t.calendar.sidebar}>
       <EventFilters />
-
-      <div class="calendar-content">
-        <EventList />
-      </div>
-    </div>
-
-    {#if !isAuthenticated}
-      <aside class="calendar-sidebar" aria-label={$t.calendar.sidebar}>
+      <div class="export"><ExportButton /></div>
+      {#if !isAuthenticated}
         <AccountCTA />
-      </aside>
-    {/if}
+      {/if}
+    </aside>
+
+    <div class="calendar-main">
+      <EventList />
+    </div>
   </div>
 </div>
 
@@ -42,86 +32,62 @@
     width: 100%;
     max-width: 1440px;
     margin: 0 auto;
-    padding: var(--spacing-xl) var(--spacing-md);
+    padding: var(--spacing-md);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .calendar-layout {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: var(--spacing-xl);
-    align-items: start;
-  }
-
-  .calendar-layout.no-sidebar {
-    grid-template-columns: 1fr;
-  }
-
-  .calendar-main {
-    min-width: 0;
-  }
-
-  .calendar-header {
-    margin-bottom: var(--spacing-xl);
-  }
-
-  .header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-lg);
-  }
-
-  .calendar-title {
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    margin: 0 0 var(--spacing-sm) 0;
-  }
-
-  .calendar-subtitle {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
-
-  .calendar-content {
-    margin-top: var(--spacing-xl);
-  }
-
-  .calendar-sidebar {
-    position: sticky;
-    top: calc(60px + var(--spacing-lg));
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
   }
 
-  @media (max-width: 1024px) {
-    .calendar-layout:not(.no-sidebar) {
-      grid-template-columns: 1fr 260px;
-    }
+  /* Mobile: filters sit above the list, collapsed behind their toggle */
+  .calendar-sidebar {
+    order: -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
   }
 
-  @media (max-width: 768px) {
-    .calendar-layout:not(.no-sidebar) {
-      grid-template-columns: 1fr;
+  .export { display: none; }
+
+  .calendar-main { min-width: 0; }
+
+  @media (min-width: 1024px) {
+    .calendar-view { padding: var(--spacing-xl) var(--spacing-md); }
+
+    .calendar-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: var(--spacing-xl);
+      align-items: start;
     }
 
     .calendar-sidebar {
-      display: none;
+      order: 0;
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: calc(var(--spacing-xl) * 2 + 24px);
     }
 
-    .header-content {
-      flex-direction: column;
-      align-items: stretch;
+    .calendar-main {
+      grid-column: 1;
+      grid-row: 1;
     }
+    .export { display: block; }
+  }
 
-    .calendar-title {
-      font-size: var(--font-size-3xl);
-    }
-
-    .calendar-subtitle {
-      font-size: var(--font-size-base);
-    }
+  @media (max-width: 1023px) {
+    .calendar-sidebar :global(.account-cta) { display: none; }
   }
 </style>

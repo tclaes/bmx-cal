@@ -1,33 +1,24 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4173;
-export const SUPABASE_URL = 'http://127.0.0.1:54321';
-export const SUPABASE_ANON_KEY = 'e2e-anon-key';
-
 export default defineConfig({
-  testDir: './e2e/specs',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  testDir: './e2e',
+  // Hermetic specs (mocked Supabase) run via playwright.mock.config.ts.
+  testIgnore: ['specs/**'],
+  globalSetup: './e2e/global-setup.ts',
+  fullyParallel: false,
+  workers: 1,
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: `http://localhost:${PORT}`,
-    trace: 'on-first-retry',
-    serviceWorkers: 'block',
-    reducedMotion: 'reduce',
+    baseURL: 'http://localhost:5173',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: `npm run dev -- --port ${PORT} --strictPort`,
-    url: `http://localhost:${PORT}`,
+    command: 'npm run dev:e2e',
+    url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
-    // Dummy values: the app needs them to boot, and every request to this origin is mocked.
-    env: {
-      VITE_SUPABASE_URL: SUPABASE_URL,
-      VITE_SUPABASE_ANON_KEY: SUPABASE_ANON_KEY,
-      VITE_GA_MEASUREMENT_ID: '',
-    },
   },
 });

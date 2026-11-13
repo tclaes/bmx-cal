@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [master]
   push:
-    branches: [master]
+    branches: [master, 'feat/**', 'fix/**']
+  workflow_dispatch:
 
 jobs:
   test:
@@ -18,10 +18,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
-        run: npm i
+        run: npm ci
+
+      - name: Type check
+        run: npm run check
+
+      - name: Lint styles
+        run: npm run stylelint
+
+      - name: Module boundaries
+        run: npm run sheriff
 
       - name: Run tests
         run: npm test
@@ -29,8 +39,8 @@ jobs:
       - name: Build
         run: npm run build
 
-  e2e:
-    name: E2E
+  e2e-mocked:
+    name: E2E (mocked Supabase)
     runs-on: ubuntu-latest
 
     steps:
@@ -49,12 +59,12 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npm run test:e2e
+        run: npm run test:e2e:mock
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-mocked
           path: playwright-report/
           retention-days: 7

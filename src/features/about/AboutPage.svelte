@@ -160,7 +160,7 @@
     font-size: var(--font-size-xl);
     color: var(--color-primary);
     flex-shrink: 0;
-    margin-top: 2px;
+    margin-top: 0.125rem;
   }
 
   .feature-item div {
@@ -193,7 +193,7 @@
     align-items: center;
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-md);
@@ -203,7 +203,7 @@
   }
 
   .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
   }
 
   .btn-secondary {
