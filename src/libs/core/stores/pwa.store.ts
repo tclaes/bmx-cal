@@ -62,16 +62,14 @@ async function updateServiceWorker(): Promise<boolean> {
   try {
     const registration = await navigator.serviceWorker.getRegistration();
     if (!registration) return false;
-    const timedOut = Symbol('timeout');
-    const result = await Promise.race([
+    const updatedInTime = await Promise.race([
       registration.update().then(() => true),
-      new Promise<typeof timedOut>((resolve) => setTimeout(() => resolve(timedOut), SW_UPDATE_TIMEOUT_MS)),
+      new Promise<false>((resolve) => setTimeout(() => resolve(false), SW_UPDATE_TIMEOUT_MS)),
     ]);
-    if (result === timedOut) {
+    if (!updatedInTime) {
       console.warn(`[updates] Service worker update took longer than ${SW_UPDATE_TIMEOUT_MS} ms; reloading anyway.`);
-      return false;
     }
-    return true;
+    return updatedInTime;
   } catch (error) {
     console.warn('[updates] Service worker update failed; reloading anyway.', error);
     return false;

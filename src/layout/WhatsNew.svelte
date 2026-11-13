@@ -23,7 +23,7 @@
 
   onMount(() => {
     const lastSeen = read(LAST_SEEN_KEY) ?? read(LEGACY_KEY);
-    open = shouldShowReleaseNotes(lastSeen, APP_VERSION, RELEASE_NOTES[$locale]);
+    open = shouldShowReleaseNotes(lastSeen, APP_VERSION, notes);
     try {
       localStorage.setItem(LAST_SEEN_KEY, APP_VERSION);
       localStorage.removeItem(LEGACY_KEY);

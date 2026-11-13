@@ -61,6 +61,11 @@ export function isValidManifest(value: unknown): value is ReleaseManifest {
   return true;
 }
 
+/** True when the admin override raises the minimum above the published one. */
+export function isOverrideActive(publishedMin: string, overrideMin: string | null | undefined): overrideMin is string {
+  return isValidVersion(overrideMin) && compareVersions(overrideMin, publishedMin) > 0;
+}
+
 /**
  * Decide which update prompt, if any, the running app must show.
  * - mandatory: running is below the effective minimum and the deployed version satisfies it
@@ -69,9 +74,7 @@ export function isValidManifest(value: unknown): value is ReleaseManifest {
 export function resolveUpdateState(input: UpdateInput): UpdateState {
   const { running, deployed, publishedMin, overrideMin, dismissedVersion } = input;
 
-  const effectiveMin = isValidVersion(overrideMin) && compareVersions(overrideMin, publishedMin) > 0
-    ? overrideMin
-    : publishedMin;
+  const effectiveMin = isOverrideActive(publishedMin, overrideMin) ? overrideMin : publishedMin;
 
   const belowMin = compareVersions(running, effectiveMin) < 0;
   const deployedSatisfiesMin = compareVersions(deployed, effectiveMin) >= 0;
@@ -83,10 +86,6 @@ export function resolveUpdateState(input: UpdateInput): UpdateState {
   return 'none';
 }
 
-/** True when the mandatory state comes from the override rather than the published minimum. */
-export function isOverrideActive(publishedMin: string, overrideMin: string | null | undefined): boolean {
-  return isValidVersion(overrideMin) && compareVersions(overrideMin, publishedMin) > 0;
-}
 
 /**
  * Release notes are shown once after the app starts on a newer version than the one
