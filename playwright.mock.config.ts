@@ -1,8 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from './e2e/fixtures/env';
 
 const PORT = 4173;
-export const SUPABASE_URL = 'http://127.0.0.1:54321';
-export const SUPABASE_ANON_KEY = 'e2e-anon-key';
 
 export default defineConfig({
   testDir: './e2e/specs',

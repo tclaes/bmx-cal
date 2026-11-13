@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test, expect } from '../fixtures/test';
 import type { SessionUser } from '../fixtures/mock-supabase';
 
@@ -11,7 +12,7 @@ const manager: SessionUser = {
 };
 
 // Fallback screens: LoginPage ("Sign in") for most routes, admin Login ("Admin Login") for /admin.
-const signInHeading = (page: import('@playwright/test').Page) =>
+const signInHeading = (page: Page) =>
   page.getByRole('heading', { name: /^(Sign in|Admin Login)$/ });
 
 test.describe('anonymous visitor', () => {

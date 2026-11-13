@@ -1,7 +1,7 @@
 import type { Page, Route } from '@playwright/test';
-import { SUPABASE_URL } from '../../playwright.mock.config';
+import { SUPABASE_URL } from './env';
 
-export type Role = 'user' | 'admin';
+type Role = 'user' | 'admin';
 
 export interface SessionUser {
   id: string;
