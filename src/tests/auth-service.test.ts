@@ -240,6 +240,18 @@ describe('AuthService.onAuthStateChange selection cache', () => {
     expect(JSON.parse(localStorage.getItem('bmx_selected_events')!)).toEqual(['a']);
   });
 
+  it('still reports the sign-out when browser storage is unavailable', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const remove = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('blocked'); });
+    const cb = vi.fn();
+    AuthService.onAuthStateChange(cb);
+    expect(() => fire('SIGNED_OUT')).not.toThrow();
+    await Promise.resolve();
+    expect(cb).toHaveBeenCalledWith(null, 'SIGNED_OUT');
+    remove.mockRestore();
+    spy.mockRestore();
+  });
+
   it('reports the event to the caller', async () => {
     const cb = vi.fn();
     AuthService.onAuthStateChange(cb);
