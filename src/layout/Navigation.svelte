@@ -394,7 +394,7 @@
 
   .mobile-link {
     display: block;
-    padding: 0.75rem var(--spacing-sm);
+    padding: var(--spacing-sm-plus) var(--spacing-sm);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-secondary);

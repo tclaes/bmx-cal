@@ -222,7 +222,7 @@
 
   .textarea {
     width: 100%;
-    padding: 0.625rem 0.75rem;
+    padding: var(--spacing-sm-plus);
     font-size: var(--font-size-sm);
     font-family: inherit;
     color: var(--color-text-primary);

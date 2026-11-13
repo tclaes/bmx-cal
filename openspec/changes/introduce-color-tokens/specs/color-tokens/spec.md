@@ -53,11 +53,11 @@ Non-test `.ts` files under `src/` SHALL NOT contain color literals. Status and c
 - **THEN** the Vitest guard test fails
 
 ### Requirement: Enforcement runs in CI
-The Stylelint color rules SHALL run in CI and block merges to `master` on violation.
+The Stylelint color rules SHALL run in CI and fail the CI job on violation. Making that job a required status check on `master` is a repository setting (task 4.3).
 
 #### Scenario: PR introduces a raw color
 - **WHEN** a pull request adds a literal color to a component
-- **THEN** the CI stylelint step fails
+- **THEN** the CI lint job fails
 
 ### Requirement: Accessibility contrast is preserved
 Text/background token pairs used for status and form feedback SHALL meet WCAG AA contrast (4.5:1 for normal text).

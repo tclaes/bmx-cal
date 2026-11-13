@@ -7,7 +7,7 @@
       "/^(margin|padding)(-[a-z-]+)?$|^(grid-)?(row-|column-)?gap$/i": [
         "/(^|[^\\w-])-?(\\d+\\.?\\d*|\\.\\d+)(px|rem|em)\\b/i"
       ],
-      "/^(color|background|background-color|background-image|border(-[a-z]+)*|outline(-color)?|fill|stroke|box-shadow|text-shadow|caret-color|text-decoration(-color)?|accent-color)$/": [
+      "/^(color|background|background-color|background-image|border(-[a-z]+)*|outline(-color)?|fill|stroke|box-shadow|text-shadow|caret-color|text-decoration(-color)?|accent-color)$/i": [
         "/(^|\\s)(white|black|red|green|blue|gray|grey|orange|yellow|purple|pink|brown|cyan|magenta|silver|navy|teal|maroon|lime|aqua|fuchsia|olive)(\\s|;|$)/i"
       ]
     },

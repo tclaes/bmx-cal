@@ -18,7 +18,7 @@ describe('color tokens', () => {
     const offenders = collectTsFiles(SRC).filter((file) =>
       readFileSync(file, 'utf8')
         .split('\n')
-        .some((line) => COLOR_LITERAL.test(line) && !/&#\d+;/.test(line))
+        .some((line) => COLOR_LITERAL.test(line))
     );
     expect(offenders).toEqual([]);
   });

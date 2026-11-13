@@ -128,7 +128,7 @@
     background: var(--color-warning-light);
     border: 1px solid var(--color-warning);
     border-radius: 20px;
-    padding: 0.2rem 0.6rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
 
   .register-title {

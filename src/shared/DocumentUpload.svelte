@@ -869,7 +869,7 @@
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: 20px;
-    padding: 0.15rem 0.5rem;
+    padding: var(--spacing-xxs) var(--spacing-sm);
     white-space: nowrap;
   }
 
@@ -935,7 +935,7 @@
 
   .event-desc {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: var(--spacing-sm) var(--spacing-sm-plus);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm, 4px);
     font-family: inherit;
@@ -1061,7 +1061,7 @@
   .event-nav-dots {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--spacing-sm);
     justify-content: center;
     padding: var(--spacing-xs) 0;
   }
