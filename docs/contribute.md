@@ -1,5 +1,7 @@
 ## Contributing
 
+To run the app locally, follow the [README quick start](../README.md#run-it-locally).
+
 When adding new features:
 
 1. Follow the smart/dumb component pattern - feature pages in `src/features/`, reusable UI in `src/libs/ui/`
