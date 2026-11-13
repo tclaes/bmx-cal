@@ -191,7 +191,13 @@ export async function mockSupabase(page: Page, data: MockData = {}): Promise<Sup
     if (rest) {
       const table = rest[1];
       if (method !== 'GET' && method !== 'HEAD') {
-        mock.writes.push({ method, table, body: readBody(req) });
+        const body = readBody(req);
+        mock.writes.push({ method, table, body });
+        // `.insert(...).select().single()` expects the created row back.
+        const wantsObject = (req.headers()['accept'] ?? '').includes('vnd.pgrst.object');
+        if (method === 'POST' && wantsObject) {
+          return json(route, { id: `new-${table}-${mock.writes.length}`, created_at: '2025-01-01T00:00:00Z', ...(body as object) }, 201);
+        }
         return json(route, [], method === 'POST' ? 201 : 200);
       }
       let rows = data.tables?.[table] ?? [];
