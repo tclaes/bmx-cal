@@ -17,7 +17,12 @@ for (const { path, heading } of PAGES) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1, name: heading }).first()).toBeVisible();
 
-    const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      // Known app issue (WCAG 2.5.3): the header logo's visible text is "BMX KALENDER" but its
+      // accessible name is "BMX Calendar home". Needs a product decision on the wording; remove
+      // this exclusion once the label contains the visible text.
+      .disableRules(['label-content-name-mismatch'])
+      .analyze();
 
     expect(
       violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(' | ')}`),

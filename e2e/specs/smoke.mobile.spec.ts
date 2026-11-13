@@ -46,6 +46,7 @@ test('Escape closes the menu', async ({ page, backend }) => {
   await page.goto('/');
   const toggle = page.getByRole('button', { name: 'Toggle menu' });
   await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
   await page.keyboard.press('Escape');
 

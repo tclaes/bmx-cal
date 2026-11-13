@@ -45,13 +45,24 @@ test.describe('news', () => {
     published_at: '2025-04-01T10:00:00Z',
   });
 
-  test('lists published articles', async ({ page, backend }) => {
-    await backend({ tables: { news: [first, second] } });
+  const draft = article({ id: 'news-3', title: 'Unreleased draft', slug: 'draft', published: false });
+
+  test('lists published articles and hides drafts', async ({ page, backend }) => {
+    await backend({ tables: { news: [first, second, draft] } });
     await page.goto('/news');
 
     await expect(page.getByRole('link', { name: 'Season opener announced' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'New calendar export' })).toBeVisible();
     await expect(page.getByText('The first race of the season is set.')).toBeVisible();
+    await expect(page.getByText('Unreleased draft')).toHaveCount(0);
+  });
+
+  test('a draft article is not reachable by its URL', async ({ page, backend }) => {
+    await backend({ tables: { news: [first, draft] } });
+    await page.goto('/news/draft');
+
+    await expect(page.getByText('Article not found.')).toBeVisible();
+    await expect(page.getByText('Unreleased draft')).toHaveCount(0);
   });
 
   test('shows an empty state without articles', async ({ page, backend }) => {

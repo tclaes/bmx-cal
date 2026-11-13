@@ -23,16 +23,27 @@ test('sends the message to the contact function', async ({ page, backend }) => {
   await expect(page.getByText(/sam@example\.test/)).toBeVisible();
 });
 
-test('requires name, email and message', async ({ page, backend }) => {
-  const mock = await backend();
-  await page.goto('/get-in-touch');
+const complete = { name: 'Sam Rider', email: 'sam@example.test', message: 'Hello there.' };
 
-  await page.locator('form').evaluate((f) => ((f as HTMLFormElement).noValidate = true));
-  await send(page);
+for (const [missing, form] of [
+  ['name', { ...complete, name: '' }],
+  ['email', { ...complete, email: '' }],
+  ['message', { ...complete, message: '' }],
+  ['message (whitespace only)', { ...complete, message: '   ' }],
+] as const) {
+  test(`is rejected without a ${missing}`, async ({ page, backend }) => {
+    const mock = await backend();
+    await page.goto('/get-in-touch');
 
-  await expect(page.getByText('Please fill in all required fields.')).toBeVisible();
-  expect(mock.calls.filter((c) => c.path === '/functions/v1/send-contact-email')).toEqual([]);
-});
+    // Bypass native `required` validation so the app's own check runs.
+    await page.locator('form').evaluate((f) => ((f as HTMLFormElement).noValidate = true));
+    await fillForm(page, form);
+    await send(page);
+
+    await expect(page.getByText('Please fill in all required fields.')).toBeVisible();
+    expect(mock.calls.filter((c) => c.path === '/functions/v1/send-contact-email')).toEqual([]);
+  });
+}
 
 test('shows an error when the message cannot be sent', async ({ page, backend }) => {
   await backend({ failingFunctions: ['send-contact-email'] });

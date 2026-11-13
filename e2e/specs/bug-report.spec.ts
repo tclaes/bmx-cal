@@ -108,12 +108,15 @@ test.describe('signed in', () => {
   });
 
   test('still succeeds when the GitHub issue cannot be created', async ({ page, backend }) => {
-    await backend({ user: rider, failingFunctions: ['create-github-issue'] });
+    const mock = await backend({ user: rider, failingFunctions: ['create-github-issue'] });
     await page.goto('/report-bug');
 
     await describeBug(page, 'Export button does nothing.');
     await submit(page);
 
     await expect(page.getByRole('heading', { name: 'Report submitted' })).toBeVisible();
+    expect(mock.calls).toContainEqual(expect.objectContaining({ path: '/functions/v1/create-github-issue' }));
+    // No issue URL is stored when the issue could not be created.
+    expect(mock.writes.filter((w) => w.method === 'PATCH' && w.table === 'bug_reports')).toEqual([]);
   });
 });
