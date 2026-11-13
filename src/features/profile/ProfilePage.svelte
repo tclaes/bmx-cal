@@ -30,12 +30,14 @@
     updateCheckSuccess = false;
 
     const result = await updateStore.check();
-    if (result === 'error') {
-      updateCheckMessage = $t.profile.updateFailed;
-    } else {
-      updateCheckMessage = result === 'none' ? $t.profile.latestVersion : $t.profile.updateAvailable;
-      updateCheckSuccess = true;
-    }
+    const messages = {
+      error: $t.profile.updateFailed,
+      none: $t.profile.latestVersion,
+      optional: $t.profile.updateAvailable,
+      mandatory: $t.profile.updateAvailable,
+    };
+    updateCheckMessage = messages[result];
+    updateCheckSuccess = result !== 'error';
 
     setTimeout(() => {
       updateCheckMessage = '';

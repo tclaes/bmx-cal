@@ -15,13 +15,13 @@
     showUpdateMessage = false;
 
     const result = await updateStore.check();
-    if (result === 'error') {
-      updateCheckMessage = $t.footer.updateFailed;
-    } else if (result === 'none') {
-      updateCheckMessage = $t.footer.latestVersion;
-    } else {
-      updateCheckMessage = $t.footer.updateAvailable;
-    }
+    const messages = {
+      error: $t.footer.updateFailed,
+      none: $t.footer.latestVersion,
+      optional: $t.footer.updateAvailable,
+      mandatory: $t.footer.updateAvailable,
+    };
+    updateCheckMessage = messages[result];
 
     showUpdateMessage = true;
     setTimeout(() => {

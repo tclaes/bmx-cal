@@ -19,9 +19,9 @@
     const doc = document as Document & { ariaNotify?: (message: string) => void };
     if (typeof doc.ariaNotify === 'function') {
       doc.ariaNotify(text);
-    } else {
-      announcement = text;
+      return;
     }
+    announcement = text;
   }
 
   async function reload() {
