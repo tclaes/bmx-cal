@@ -27,7 +27,27 @@ describe('ReleaseService.fetchManifest', () => {
     expect(await ReleaseService.fetchManifest()).toEqual({ version: '1.0.0', minVersion: '1.0.0' });
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toMatch(/^\/version\.json\?ts=\d+$/);
-    expect(init).toEqual({ cache: 'no-store' });
+    expect(init).toMatchObject({ cache: 'no-store', priority: 'low' });
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('gives up when the request hangs, so later checks are not blocked', async () => {
+    vi.useFakeTimers();
+    // AbortSignal.timeout runs on Node's internal timers; route it through the fake clock.
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(new DOMException('timed out', 'TimeoutError')), ms);
+      return controller.signal;
+    });
+    fetchMock.mockImplementation((_url: string, init: RequestInit) => new Promise((_resolve, reject) => {
+      init.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+    }));
+    const result = ReleaseService.fetchManifest();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(await result).toBeNull();
+    expect(timeoutSpy).toHaveBeenCalledWith(5000);
+    timeoutSpy.mockRestore();
+    vi.useRealTimers();
   });
 
   it('returns null for the SPA fallback (HTML with status 200)', async () => {

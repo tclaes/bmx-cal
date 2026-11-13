@@ -188,11 +188,27 @@ describe('Service worker caching (public/sw.js)', () => {
   });
 
   it('loads pages from the network first', async () => {
-    const fresh = { ok: true, status: 200, type: 'basic', clone: () => ({}) };
+    const fresh = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
     const { handlers } = loadWorker({ fetchImpl: async () => fresh, cached: { '/index.html': { stale: true } } });
     const event = fetchEvent('/', 'navigate');
     handlers.fetch(event);
     expect(await event.respondWith.mock.calls[0][0]).toBe(fresh);
+  });
+
+  it('stores only HTML navigations as the offline shell', async () => {
+    const xml = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'application/xml' }), clone: () => ({}) };
+    const html = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html; charset=UTF-8' }), clone: () => ({}) };
+    const { handlers, cachesMock } = loadWorker({ fetchImpl: async (req: any) => (req.url.endsWith('.xml') ? xml : html) });
+
+    const sitemap = fetchEvent('/sitemap.xml', 'navigate');
+    handlers.fetch(sitemap);
+    await sitemap.respondWith.mock.calls[0][0];
+    expect(cachesMock.open).not.toHaveBeenCalled();
+
+    const page = fetchEvent('/calendar', 'navigate');
+    handlers.fetch(page);
+    await page.respondWith.mock.calls[0][0];
+    expect(cachesMock.open).toHaveBeenCalled();
   });
 
   it('falls back to the cached shell when offline', async () => {

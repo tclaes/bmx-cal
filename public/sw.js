@@ -29,7 +29,10 @@ function putInCache(request, response) {
 function networkFirstNavigation(request) {
   return fetch(request)
     .then(response => {
-      if (response && response.ok) putInCache(APP_SHELL, response);
+      // Only HTML can serve as the app shell; a direct visit to /sitemap.xml or /robots.txt
+      // is a navigation too and must not replace it.
+      const isHtml = (response?.headers.get('content-type') || '').includes('text/html');
+      if (response && response.ok && isHtml) putInCache(APP_SHELL, response);
       return response;
     })
     .catch(() => caches.match(APP_SHELL).then(cached => cached || Response.error()));

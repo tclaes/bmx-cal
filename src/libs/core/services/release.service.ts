@@ -1,6 +1,7 @@
 import { supabase } from '@data';
 
 const OVERRIDE_TIMEOUT_MS = 3000;
+const MANIFEST_TIMEOUT_MS = 5000;
 
 export interface RawReleaseOverride {
   minVersion: string | null;
@@ -20,12 +21,19 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
 export class ReleaseService {
   /**
    * Fetch the published release information. Returns the parsed JSON, or null when it
-   * cannot be fetched or is not JSON (e.g. the SPA fallback answering with index.html).
+   * cannot be fetched within 5 seconds or is not JSON (e.g. the SPA fallback answering with index.html).
    * Shape validation is up to the caller.
    */
   static async fetchManifest(): Promise<unknown | null> {
     try {
-      const response = await fetch(`/version.json?ts=${Date.now()}`, { cache: 'no-store' });
+      // A hung request would otherwise keep the shared in-flight check pending forever,
+      // blocking every later check. Low priority: this background check must not compete
+      // with requests the current view needs.
+      const response = await fetch(`/version.json?ts=${Date.now()}`, {
+        cache: 'no-store',
+        priority: 'low',
+        signal: AbortSignal.timeout(MANIFEST_TIMEOUT_MS),
+      });
       if (!response.ok) return null;
       const contentType = response.headers.get('content-type') ?? '';
       if (!contentType.includes('application/json')) return null;
