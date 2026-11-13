@@ -51,9 +51,12 @@ export async function mockSupabase(page: Page, data: MockData = {}): Promise<Sup
   const mock: SupabaseMock = { unmocked: [], writes: [] };
   const user = data.user ?? null;
 
-  // Consent + locale pre-seeded so banners never cover the page under test.
+  // Consent, locale and session are seeded once per tab: init scripts re-run on every
+  // navigation, which would otherwise resurrect a session the app just signed out of.
   await page.addInitScript(
     ({ key, session }) => {
+      if (sessionStorage.getItem('e2e-seeded')) return;
+      sessionStorage.setItem('e2e-seeded', 'true');
       localStorage.setItem(
         'bmx-cookie-consent',
         JSON.stringify({ analytics: 'denied', ads: 'denied', decidedAt: '2025-01-01T00:00:00Z' }),

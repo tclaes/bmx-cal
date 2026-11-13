@@ -33,7 +33,3 @@ test-results/
 
 # Supabase CLI local state
 supabase/.temp/
-
-# Playwright
-playwright-report/
-test-results/
