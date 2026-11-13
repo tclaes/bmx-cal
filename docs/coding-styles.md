@@ -28,7 +28,17 @@ When the platform has an element or API for something, use it instead of rebuild
 - All user-facing text goes through i18n (`nl`, `fr`, `en`).
 - Module boundaries are enforced by Sheriff; see `docs/architecture.md` and `docs/contribute.md`.
 
-### About the skill
+### Review with the `/code-review-and-quality` skill when the implementation is done
+
+When an implementation is finished (all tasks done, tests green) and before it is committed for a pull request, run the `/code-review-and-quality` skill on the change. It reviews five axes: correctness, readability, architecture, security and performance.
+
+- Label every finding: **Critical** (blocks merge), required (no prefix), **Consider**, **Nit** or **FYI**.
+- Fix every Critical and required finding before the PR is opened, or record why it is deferred.
+- Follow-up changes after review feedback get a quick review too.
+
+The skill lives in the project at `.claude/skills/code-review-and-quality/SKILL.md`. Source: [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (`skills/code-review-and-quality`), copied on 2026-11-13. Do not edit it by hand; to update it, reinstall from the source and copy its `SKILL.md` over. Its links to `references/security-checklist.md` and `references/performance-checklist.md` point outside the skill and are not vendored; use the `security-and-hardening` and `performance-optimization` skills instead.
+
+### About the `modern-web-guidance` skill
 
 The skill lives in the project at `.claude/skills/modern-web-guidance/`, so every agent working in this repo has it.
 
