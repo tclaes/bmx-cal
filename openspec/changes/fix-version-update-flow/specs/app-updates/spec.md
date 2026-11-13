@@ -18,7 +18,7 @@ Every deployment SHALL publish the deployed release's version, its minimum requi
 - **THEN** the version shown in the app and the published version are identical
 
 ### Requirement: Running app detects new releases
-The running app SHALL compare its own version with the published release information when it starts, when it returns to the foreground, and at least every 30 minutes while it is open. When the check fails (offline, network error, invalid response), the app SHALL keep working, SHALL NOT show a new update prompt, and SHALL keep the result of its last successful check.
+The running app SHALL compare its own version with the published release information when it starts, when it returns to the foreground (at most once per minute), and at least every 30 minutes while it is open. When the check fails (offline, network error, invalid response), the app SHALL keep working, SHALL NOT show a new update prompt, and SHALL keep the result of its last successful check.
 
 #### Scenario: Old client learns about a new release
 - **WHEN** a user runs 1.3.0 and 1.4.0 has been deployed, and the user brings the app back to the foreground

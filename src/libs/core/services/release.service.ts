@@ -3,6 +3,16 @@ import { supabase } from '@data';
 const OVERRIDE_TIMEOUT_MS = 3000;
 const MANIFEST_TIMEOUT_MS = 5000;
 
+/**
+ * An AbortSignal that aborts after `ms`. AbortSignal.timeout() is missing in Safari < 16
+ * and Chrome < 103, which Vite's default build target still includes.
+ */
+function timeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 export interface RawReleaseOverride {
   minVersion: string | null;
   message: unknown;
@@ -22,7 +32,7 @@ export class ReleaseService {
       const response = await fetch(`/version.json?ts=${Date.now()}`, {
         cache: 'no-store',
         priority: 'low',
-        signal: AbortSignal.timeout(MANIFEST_TIMEOUT_MS),
+        signal: timeoutSignal(MANIFEST_TIMEOUT_MS),
       });
       if (!response.ok) return null;
       // The SPA fallback answers unknown paths with index.html; parsing that throws,
@@ -41,7 +51,7 @@ export class ReleaseService {
         .from('app_release_policy')
         .select('min_version, message')
         .eq('id', 1)
-        .abortSignal(AbortSignal.timeout(OVERRIDE_TIMEOUT_MS))
+        .abortSignal(timeoutSignal(OVERRIDE_TIMEOUT_MS))
         .maybeSingle();
       if (error || !data) return null;
       return { minVersion: data.min_version ?? null, message: data.message ?? null };

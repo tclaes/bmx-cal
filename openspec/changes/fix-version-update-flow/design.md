@@ -74,7 +74,7 @@ create table public.app_release_policy (
   message jsonb,            -- {"nl": "...", "fr": "...", "en": "..."} or null
   updated_at timestamptz not null default now()
 );
--- RLS: select for anon+authenticated; insert/update/delete only when
+-- RLS: select for anon+authenticated; only UPDATE of min_version/message, only when
 -- (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'. Seed one row with min_version null.
 ```
 A single-row table keeps the semantics obvious ("current policy").

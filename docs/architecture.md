@@ -9,7 +9,7 @@ features/calendar   → can import → [ui, components, services, stores, data, 
 features/admin      → can import → [ui, components, services, stores, data, types]
 shared/components   → can import → [ui, services, stores, types]
 lib/core/services   → can import → [data, types]
-lib/core/stores     → can import → [services, utils, types]
+lib/core/stores     → can import → [services, utils, types, data, config]
 data                → can import → [types]
 types               → no dependencies
 ```

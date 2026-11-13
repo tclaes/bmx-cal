@@ -25,7 +25,7 @@ RLS is enabled on all tables. Key policies:
 - **Public read** on events, event_types, and locations (anon + authenticated)
 - **Authenticated users** can manage their own `user_event_selections` and `user_calendars`
 - **Team managers** can manage events, event types, and locations for their teams
-- **Admins** have full CRUD on all tables
+- **Admins** have full CRUD on all tables, except `app_release_policy` (update only, see below)
 - **`app_release_policy`**: readable by anon + authenticated; only admins can update `min_version` and `message`. Inserting or deleting the row is not possible through the API
 - Admin role is stored in `auth.users.raw_app_metadata` as `{"role": "admin"}`
 

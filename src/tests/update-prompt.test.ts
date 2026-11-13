@@ -196,6 +196,18 @@ describe('WhatsNew (release notes)', () => {
     expect(screen.queryByText('New in 1.3.0')).not.toBeInTheDocument();
   });
 
+  it('follows the locale that AppLayout initialises after mounting', async () => {
+    localStorage.setItem('last_seen_version', '1.2.0');
+    locale.setLocale('en');
+    render(WhatsNew);
+    await tick();
+    expect(screen.getByText('New in 1.3.0')).toBeInTheDocument();
+
+    locale.setLocale('nl');
+    await tick();
+    expect(screen.getByText('Nieuw in 1.3.0')).toBeInTheDocument();
+  });
+
   it('also shows them for users coming from the old version checker', async () => {
     localStorage.setItem('app_version', '0.3.0');
     render(WhatsNew);

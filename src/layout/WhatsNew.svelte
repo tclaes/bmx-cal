@@ -11,7 +11,10 @@
 
   let open = false;
 
-  $: notes = RELEASE_NOTES[$locale];
+  // The locale is initialised in AppLayout's onMount, which runs after this component's,
+  // so only the text follows the locale; whether to open depends on any notes existing.
+  $: notes = RELEASE_NOTES[$locale] ?? RELEASE_NOTES.en ?? RELEASE_NOTES.nl ?? RELEASE_NOTES.fr;
+  const anyNotes = RELEASE_NOTES.en ?? RELEASE_NOTES.nl ?? RELEASE_NOTES.fr;
 
   function read(key: string): string | null {
     try {
@@ -23,7 +26,7 @@
 
   onMount(() => {
     const lastSeen = read(LAST_SEEN_KEY) ?? read(LEGACY_KEY);
-    open = shouldShowReleaseNotes(lastSeen, APP_VERSION, notes);
+    open = shouldShowReleaseNotes(lastSeen, APP_VERSION, anyNotes);
     try {
       localStorage.setItem(LAST_SEEN_KEY, APP_VERSION);
       localStorage.removeItem(LEGACY_KEY);

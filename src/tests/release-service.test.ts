@@ -30,6 +30,7 @@ describe('ReleaseService.fetchManifest', () => {
   });
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   it('fetches /version.json uncached with a cache-busting query', async () => {
@@ -43,21 +44,12 @@ describe('ReleaseService.fetchManifest', () => {
 
   it('gives up when the request hangs, so later checks are not blocked', async () => {
     vi.useFakeTimers();
-    // AbortSignal.timeout runs on Node's internal timers; route it through the fake clock.
-    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(new DOMException('timed out', 'TimeoutError')), ms);
-      return controller.signal;
-    });
     fetchMock.mockImplementation((_url: string, init: RequestInit) => new Promise((_resolve, reject) => {
       init.signal?.addEventListener('abort', () => reject(init.signal?.reason));
     }));
     const result = ReleaseService.fetchManifest();
     await vi.advanceTimersByTimeAsync(5000);
     expect(await result).toBeNull();
-    expect(timeoutSpy).toHaveBeenCalledWith(5000);
-    timeoutSpy.mockRestore();
-    vi.useRealTimers();
   });
 
   it('returns null for the SPA fallback (HTML with status 200)', async () => {
@@ -113,12 +105,6 @@ describe('ReleaseService.fetchOverride', () => {
 
   it('aborts the request after 3 seconds', async () => {
     vi.useFakeTimers();
-    // AbortSignal.timeout runs on Node's internal timers; route it through the fake clock.
-    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
-      const controller = new AbortController();
-      setTimeout(() => controller.abort(new DOMException('timed out', 'TimeoutError')), ms);
-      return controller.signal;
-    });
     // Like supabase-js, resolve with an error once the signal aborts.
     maybeSingle.mockImplementation((signal: AbortSignal) => new Promise((resolve) => {
       signal.addEventListener('abort', () => resolve({ data: null, error: { message: 'AbortError' } }));
@@ -126,6 +112,5 @@ describe('ReleaseService.fetchOverride', () => {
     const result = ReleaseService.fetchOverride();
     await vi.advanceTimersByTimeAsync(3000);
     expect(await result).toBeNull();
-    expect(timeoutSpy).toHaveBeenCalledWith(3000);
   });
 });

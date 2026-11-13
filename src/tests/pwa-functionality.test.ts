@@ -160,7 +160,7 @@ describe('Service worker caching (public/sw.js)', () => {
     const handlers: Record<string, Handler> = {};
     const deleted: string[] = [];
     const postMessage = vi.fn();
-    const cache = { addAll: vi.fn().mockResolvedValue(undefined), put: vi.fn() };
+    const cache = { addAll: vi.fn().mockResolvedValue(undefined), put: vi.fn().mockResolvedValue(undefined) };
     const selfMock = {
       addEventListener: (type: string, handler: Handler) => { handlers[type] = handler; },
       skipWaiting: vi.fn(),
@@ -175,7 +175,7 @@ describe('Service worker caching (public/sw.js)', () => {
     };
     const run = new Function('self', 'caches', 'fetch', 'location', 'Response', source.replaceAll('__APP_VERSION__', '9.9.9'));
     run(selfMock, cachesMock, vi.fn(opts.fetchImpl), { origin: 'https://bmxkalender.be' }, { error: () => ({ type: 'error' }) });
-    return { handlers, deleted, postMessage, cachesMock };
+    return { handlers, deleted, postMessage, cachesMock, cache };
   }
 
   function fetchEvent(path: string, mode = 'no-cors') {
@@ -198,17 +198,19 @@ describe('Service worker caching (public/sw.js)', () => {
   it('stores only HTML navigations as the offline shell', async () => {
     const xml = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'application/xml' }), clone: () => ({}) };
     const html = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html; charset=UTF-8' }), clone: () => ({}) };
-    const { handlers, cachesMock } = loadWorker({ fetchImpl: async (req: any) => (req.url.endsWith('.xml') ? xml : html) });
+    const { handlers, cachesMock, cache } = loadWorker({ fetchImpl: async (req: any) => (req.url.endsWith('.xml') ? xml : html) });
 
     const sitemap = fetchEvent('/sitemap.xml', 'navigate');
     handlers.fetch(sitemap);
-    await sitemap.respondWith.mock.calls[0][0];
+    expect(await sitemap.respondWith.mock.calls[0][0]).toBe(xml);
+    expect(sitemap.waitUntil).not.toHaveBeenCalled();
     expect(cachesMock.open).not.toHaveBeenCalled();
 
     const page = fetchEvent('/calendar', 'navigate');
     handlers.fetch(page);
-    await page.respondWith.mock.calls[0][0];
-    expect(cachesMock.open).toHaveBeenCalled();
+    expect(await page.respondWith.mock.calls[0][0]).toBe(html);
+    await page.waitUntil.mock.calls[0][0];
+    expect(cache.put).toHaveBeenCalledWith('/index.html', expect.anything());
   });
 
   it('never caches the SPA fallback HTML for a missing asset', async () => {

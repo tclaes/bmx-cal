@@ -12,8 +12,8 @@ The app's version system cannot reliably push a new version to users. Every upda
 - **Mandatory update**: a blocking full-screen overlay with an explanation and a single "Update now" action. It is shown only when the running version is below the effective minimum and a version that satisfies it is actually deployed.
 - **Optional update**: a dismissible banner. Dismissing it hides the banner for that release only; a newer release shows it again.
 - After an update, show the release notes once in the user's language (nl/fr/en).
-- The service worker fetches navigations network-first and derives its cache name from the build version, so reloading always loads the new release and old caches are removed. Remove the competing skip-waiting / `SW_UPDATED` paths.
-- **BREAKING (internal)**: remove `FORCE_UPDATE`, `MIN_VERSION`, `RELEASE_NOTES` from `src/config/version.ts` and the `localStorage`-based detection (`checkForUpdate`, `isVersionOutdated`, `storeCurrentVersion` as update trigger).
+- The service worker fetches navigations network-first and derives its cache name from the build version, so reloading always loads the new release and old caches are removed. The worker keeps calling `skipWaiting()` on install; the competing paths are removed: the `SKIP_WAITING` message that `main.ts` posted on `updatefound`, and the `SW_UPDATED` message.
+- **BREAKING (internal)**: remove `FORCE_UPDATE` and the `localStorage`-based detection (`checkForUpdate`, `isVersionOutdated`, `storeCurrentVersion`, `manualUpdateCheck`). `APP_VERSION`, `MIN_VERSION` and `RELEASE_NOTES` stay as exports, now read from the release definition.
 - Document the release procedure (feature release vs. mandatory fix vs. emergency override).
 
 Out of scope: an admin UI for the override (it is edited in the Supabase dashboard), native app store updates, push notifications about new versions.
