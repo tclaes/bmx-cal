@@ -8,7 +8,7 @@ const worldCup = makeEventType({ name: 'World Cup' });
 const events = [
   makeEvent({ title: 'Genk Euro Race', location: 'Genk', date: futureDate(5), event_type: europeanCup, event_type_id: europeanCup.id }),
   makeEvent({ title: 'Zolder Worlds', location: 'Zolder', date: futureDate(20), event_type: worldCup, event_type_id: worldCup.id }),
-  makeEvent({ title: 'Heusden Euro Finale', location: 'Heusden', date: futureDate(40), event_type: europeanCup, event_type_id: europeanCup.id }),
+  makeEvent({ title: 'Heusden Euro Finale', location: 'Hasselt', date: futureDate(40), event_type: europeanCup, event_type_id: europeanCup.id }),
   makeEvent({ title: 'Last Season Classic', location: 'Lommel', date: futureDate(-15), event_type: worldCup, event_type_id: worldCup.id }),
 ];
 
@@ -53,12 +53,22 @@ test('filtering by race type narrows the list, ALL restores it', async ({ page, 
   await expect(visible(page, 'Heusden Euro Finale')).toBeVisible();
 });
 
-test('search matches title and location', async ({ page, backend }) => {
+test('search matches the title', async ({ page, backend }) => {
   await openCalendar(page, backend);
 
-  await filters(page).getByLabel('Search', { exact: true }).fill('zolder');
+  await filters(page).getByLabel('Search', { exact: true }).fill('worlds');
 
   await expect(visible(page, 'Zolder Worlds')).toBeVisible();
+  await expect(visible(page, 'Genk Euro Race')).toHaveCount(0);
+});
+
+test('search matches the location', async ({ page, backend }) => {
+  await openCalendar(page, backend);
+
+  // "Hasselt" appears only in the location of "Heusden Euro Finale", not in any title.
+  await filters(page).getByLabel('Search', { exact: true }).fill('hasselt');
+
+  await expect(visible(page, 'Heusden Euro Finale')).toBeVisible();
   await expect(visible(page, 'Genk Euro Race')).toHaveCount(0);
 });
 
@@ -77,12 +87,19 @@ test('reset filters clears every active filter', async ({ page, backend }) => {
   await openCalendar(page, backend);
   await filters(page).getByLabel('Search', { exact: true }).fill('zolder');
   await filters(page).getByTitle('World Cup', { exact: true }).click();
+  await filters(page).getByLabel('Start Date').fill(futureDate(10));
+  await filters(page).getByLabel('End Date').fill(futureDate(30));
+  await filters(page).getByLabel('Show Past Events').check();
 
   await filters(page).getByRole('button', { name: 'Reset Filters' }).click();
 
   await expect(visible(page, 'Genk Euro Race')).toBeVisible();
   await expect(visible(page, 'Zolder Worlds')).toBeVisible();
+  await expect(visible(page, 'Last Season Classic')).toHaveCount(0);
   await expect(filters(page).getByLabel('Search', { exact: true })).toHaveValue('');
+  await expect(filters(page).getByLabel('Start Date')).toHaveValue('');
+  await expect(filters(page).getByLabel('End Date')).toHaveValue('');
+  await expect(filters(page).getByLabel('Show Past Events')).not.toBeChecked();
 });
 
 test('a search with no matches shows the empty state', async ({ page, backend }) => {

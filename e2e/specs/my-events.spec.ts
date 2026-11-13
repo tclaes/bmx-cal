@@ -15,8 +15,13 @@ const tables = { events: [genk, zolder, heusden], event_types: [europeanCup, wor
 const rider: SessionUser = { id: 'u1', email: 'rider@example.test', role: 'user' };
 
 const row = (page: Page, title: string) => page.getByRole('article').filter({ hasText: title });
-const toggleSave = (page: Page, title: string) =>
-  row(page, title).getByRole('button', { name: /^(Save race|Saved)$/ }).click();
+/** Toggles a race's save button and waits for its state to flip (the store updates after the write). */
+const toggleSave = async (page: Page, title: string) => {
+  const button = row(page, title).getByRole('button', { name: /^(Save race|Saved)$/ });
+  const wasSaved = (await button.getAttribute('aria-pressed')) === 'true';
+  await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', wasSaved ? 'false' : 'true');
+};
 
 test.describe('signed out', () => {
   test('selecting races keeps them across a reload and asks for an account to export', async ({ page, backend }) => {
@@ -87,8 +92,14 @@ test.describe('signed in', () => {
     await expect(page.getByText('2 events cleared')).toBeVisible();
     await expect(page.getByText('2 selected')).toHaveCount(0);
 
+    // A race picked after clearing must not survive: undo restores exactly the cleared selection.
+    await toggleSave(page, 'Heusden Euro Finale');
+
     await page.getByRole('button', { name: 'Undo' }).click();
     await expect(page.getByText('2 selected')).toBeVisible();
+    await expect(row(page, 'Genk Euro Race').getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect(row(page, 'Zolder Worlds').getByRole('button', { name: 'Saved' })).toBeVisible();
+    await expect(row(page, 'Heusden Euro Finale').getByRole('button', { name: 'Save race' })).toBeVisible();
   });
 
   test('saving a calendar writes the calendar and its races', async ({ page, backend }) => {
