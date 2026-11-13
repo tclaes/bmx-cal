@@ -1,16 +1,14 @@
 <script lang="ts">
   import { updateStore } from '@core/stores';
+  import { pickLocalized } from '@shared/utils';
   import { t, locale } from '../i18n';
 
   let dialog: HTMLDialogElement;
   let updating = false;
 
   $: required = $updateStore.state === 'mandatory';
-  // Prefer the user's language; an admin may write the message in one language only,
-  // and any explanation beats the generic text.
-  $: message = $updateStore.message
-    ? $updateStore.message[$locale] ?? $updateStore.message.en ?? $updateStore.message.nl ?? $updateStore.message.fr ?? null
-    : null;
+  // An admin may write the message in one language only; any explanation beats the generic text.
+  $: message = pickLocalized($updateStore.message, $locale);
 
   // showModal() puts the notice in the top layer (above every z-index) and makes the rest
   // of the page inert, so the app cannot be used while an update is required.

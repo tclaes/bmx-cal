@@ -3,6 +3,7 @@ import {
   compareVersions,
   shouldShowReleaseNotes,
   toLocalizedText,
+  pickLocalized,
   isValidManifest,
   isValidVersion,
   isOverrideActive,
@@ -167,6 +168,19 @@ describe('shouldShowReleaseNotes', () => {
   it('does not show notes again for the same or an older version', () => {
     expect(shouldShowReleaseNotes('1.4.0', '1.4.0', 'Nieuw')).toBe(false);
     expect(shouldShowReleaseNotes('1.5.0', '1.4.0', 'Nieuw')).toBe(false);
+  });
+});
+
+describe('pickLocalized', () => {
+  it('prefers the requested language, then en, nl, fr', () => {
+    expect(pickLocalized({ nl: 'Fix', en: 'Fix EN' }, 'nl')).toBe('Fix');
+    expect(pickLocalized({ nl: 'Fix', en: 'Fix EN' }, 'fr')).toBe('Fix EN');
+    expect(pickLocalized({ fr: 'Correctif' }, 'nl')).toBe('Correctif');
+  });
+
+  it('returns undefined without any text', () => {
+    expect(pickLocalized(null, 'nl')).toBeUndefined();
+    expect(pickLocalized({}, 'nl')).toBeUndefined();
   });
 });
 

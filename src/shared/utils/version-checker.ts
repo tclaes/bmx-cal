@@ -115,6 +115,15 @@ export function shouldShowReleaseNotes(
   return compareVersions(lastSeenVersion, currentVersion) < 0;
 }
 
+/**
+ * Text in the user's language, or else in another supported language: a message written in
+ * one language beats no message at all.
+ */
+export function pickLocalized(text: LocalizedText | null | undefined, locale: keyof LocalizedText): string | undefined {
+  if (!text) return undefined;
+  return text[locale] ?? text.en ?? text.nl ?? text.fr;
+}
+
 /** Narrow an untyped override message to the supported locales. */
 export function toLocalizedText(value: unknown): LocalizedText | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;

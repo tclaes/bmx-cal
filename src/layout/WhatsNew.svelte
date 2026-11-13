@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { Modal } from '@ui';
   import { APP_VERSION, RELEASE_NOTES } from '@config';
-  import { shouldShowReleaseNotes } from '@shared/utils';
+  import { shouldShowReleaseNotes, pickLocalized } from '@shared/utils';
   import { t, locale, interpolate } from '../i18n';
 
   const LAST_SEEN_KEY = 'last_seen_version';
@@ -13,13 +13,14 @@
 
   // The locale is initialised in AppLayout's onMount, which runs after this component's,
   // so only the text follows the locale; whether to open depends on any notes existing.
-  $: notes = RELEASE_NOTES[$locale] ?? RELEASE_NOTES.en ?? RELEASE_NOTES.nl ?? RELEASE_NOTES.fr;
-  const anyNotes = RELEASE_NOTES.en ?? RELEASE_NOTES.nl ?? RELEASE_NOTES.fr;
+  $: notes = pickLocalized(RELEASE_NOTES, $locale);
+  const anyNotes = pickLocalized(RELEASE_NOTES, 'en');
 
   function read(key: string): string | null {
     try {
       return localStorage.getItem(key);
-    } catch {
+    } catch (error) {
+      console.warn(`[updates] Could not read "${key}" from localStorage; release notes may show again.`, error);
       return null;
     }
   }
@@ -30,8 +31,8 @@
     try {
       localStorage.setItem(LAST_SEEN_KEY, APP_VERSION);
       localStorage.removeItem(LEGACY_KEY);
-    } catch {
-      // Storage unavailable: notes may show again next time, which is harmless.
+    } catch (error) {
+      console.warn('[updates] Could not save the last seen version; release notes may show again.', error);
     }
   });
 </script>
