@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/test';
 import type { Page } from '@playwright/test';
-import type { Account } from '../fixtures/mock-supabase';
+import { AUTH_STORAGE_KEY, type Account } from '../fixtures/mock-supabase';
 
 const account: Account = {
   id: 'u1',
@@ -110,9 +110,12 @@ test('signing out returns the visitor to signed-out navigation', async ({ page, 
   await expect(page.getByRole('link', { name: 'Sign in' }).first()).toBeVisible();
   expect(mock.calls.map((c) => c.path)).toContain('/auth/v1/logout');
 
-  // The session must not come back after a reload.
+  // The session must not come back after a reload: check the persisted session itself,
+  // not just first paint, which shows signed-out navigation before any session is restored.
   await page.reload();
+  expect(await page.evaluate((key) => localStorage.getItem(key), AUTH_STORAGE_KEY)).toBeNull();
   await expect(page.getByRole('link', { name: 'Sign in' }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sign out' })).toHaveCount(0);
 });
 
 test.describe('forgot password', () => {

@@ -30,7 +30,7 @@ The notes below apply to the mocked suite.
 
 - Use `test` from `e2e/fixtures/test.ts` and call `await backend({ tables, user })` before `page.goto()`.
 - `tables` supplies response data (RPCs as `rpc:<fn>`); unlisted tables and RPCs return `[]`. Only requests to endpoints the mock does not handle at all (e.g. a new auth or functions path) fail the test, so extend `mock-supabase.ts` for those. A test that never calls `backend()` also fails.
-- Auth is mocked too: pass `accounts` to let a test sign in/register through the UI, and assert on `mock.calls` (auth and edge-function requests) or `mock.writes` (PostgREST writes).
+- Auth is mocked too. Pass `accounts` to seed users who can sign in; registration needs no setup (`backend()` alone is enough) and adds the new user to the mock. Assert on `mock.calls` (auth and edge-function requests, except the `GET /auth/v1/user` session lookup, which is not logged) or `mock.writes` (PostgREST writes).
 - Sign in as a role by passing `user` (`role: 'admin'`, or `managedTeams` for a team manager).
 - Prefer `getByRole` / `getByLabel`; use `data-testid` only when there is no accessible handle.
 

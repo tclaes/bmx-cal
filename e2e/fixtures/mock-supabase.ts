@@ -44,7 +44,7 @@ export interface SupabaseMock {
 }
 
 // supabase-js stores the session under sb-<first hostname label>-auth-token.
-const AUTH_STORAGE_KEY = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+export const AUTH_STORAGE_KEY = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
 
 function toAuthUser(u: SessionUser) {
   return {
