@@ -5,7 +5,7 @@ const nextId = (prefix: string) => `${prefix}-${++seq}`;
 
 export function futureDate(daysAhead: number): string {
   const d = new Date();
-  d.setDate(d.getDate() + daysAhead);
+  d.setUTCDate(d.getUTCDate() + daysAhead);
   return d.toISOString().split('T')[0];
 }
 

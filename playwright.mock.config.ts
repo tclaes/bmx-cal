@@ -21,7 +21,8 @@ export default defineConfig({
   webServer: {
     command: `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
+    // Never attach to an existing server: it would not have the dummy Supabase env.
+    reuseExistingServer: false,
     timeout: 60_000,
     // Dummy values: the app needs them to boot, and every request to this origin is mocked.
     env: {

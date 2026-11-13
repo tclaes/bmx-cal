@@ -10,7 +10,8 @@ export const test = base.extend<Fixtures>({
   backend: async ({ page }, use) => {
     let mock: SupabaseMock | undefined;
     await use(async (data) => (mock = await mockSupabase(page, data)));
-    expect(mock?.unmocked ?? [], 'requests to Supabase with no mock').toEqual([]);
+    expect(mock, 'test must call backend() before navigating').toBeDefined();
+    expect(mock!.unmocked, 'requests to Supabase with no mock').toEqual([]);
   },
 });
 

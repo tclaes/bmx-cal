@@ -28,7 +28,7 @@ test.describe('signed-in user without elevated role', () => {
   test('can open /profile', async ({ page, backend }) => {
     await backend({ user });
     await page.goto('/profile');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
     await expect(signInHeading(page)).toBeHidden();
   });
 
