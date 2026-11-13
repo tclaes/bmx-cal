@@ -6,7 +6,7 @@
 
 ## 2. Feature flags (database)
 
-- [ ] 2.1 Migration `create_feature_flags` (written and verified against the local test environment with real anon, user and admin sessions; still to apply to the hosted project): table, RLS (public select, admin write), audit trigger, seed `notifications = false`; apply with the Supabase MCP; grant `select` to anon and authenticated and writes to authenticated only; verify with `execute_sql` that anon can read and cannot write, and run the security advisor;
+- [x] 2.1 Migration `create_feature_flags` (written and verified against the local test environment with real anon, user and admin sessions; applied to the Bolt project, where a follow-up migration also revokes the TRUNCATE, REFERENCES and TRIGGER privileges that Supabase's default grants give `authenticated`): table, RLS (public select, admin write), audit trigger, seed `notifications = false`; apply with the Supabase MCP; grant `select` to anon and authenticated and writes to authenticated only; verify with `execute_sql` that anon can read and cannot write, and run the security advisor;
 - [x] 2.2 `FeatureFlagService` (`getAll`, `setFlag`) and `featureFlags` store with `isEnabled(key)` that is false until loaded, when missing and on error; unit tests for fail-closed behaviour
 - [x] 2.3 Load the flags at app start; document the table in `docs/db.md` and the mechanism in `docs/features.md`
 - [x] 2.4 Admin dashboard "Feature flags" section with a switch per flag and last change shown; test that toggling calls `setFlag` and updates the display
