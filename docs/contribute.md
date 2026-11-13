@@ -31,6 +31,8 @@ The notes below apply to the mocked suite.
 - Use `test` from `e2e/fixtures/test.ts` and call `await backend({ tables, user })` before `page.goto()`.
 - `tables` supplies response data (RPCs as `rpc:<fn>`); unlisted tables and RPCs return `[]`. Only requests to endpoints the mock does not handle at all (e.g. a new auth or functions path) fail the test, so extend `mock-supabase.ts` for those. A test that never calls `backend()` also fails.
 - Writes mutate a per-test copy of `tables`: inserts, `PATCH` and `DELETE` (with `id=eq.` / `in.(…)` filters) are visible to later reads, and `mock.writes` records `method`, `table`, `body` and the raw `query`.
+- Name a spec `*.mobile.spec.ts` to run it in the 375px `mobile` project instead of desktop Chromium; keep those to smoke checks. `e2e/specs/a11y.spec.ts` runs axe (WCAG A/AA) on public pages: add new public routes to `e2e/fixtures/pages.ts` so they get heading, axe and overflow checks.
+- `failingFunctions: ['send-contact-email']` makes an edge function answer 500, to test failure paths.
 - Auth is mocked too. Pass `accounts` to seed users who can sign in; registration needs no setup (`backend()` alone is enough) and adds the new user to the mock. Assert on `mock.calls` (auth and edge-function requests, except the `GET /auth/v1/user` session lookup, which is not logged) or `mock.writes` (PostgREST writes).
 - Sign in as a role by passing `user` (`role: 'admin'`, or `managedTeams` for a team manager).
 - Prefer `getByRole` / `getByLabel`; use `data-testid` only when there is no accessible handle.

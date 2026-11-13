@@ -28,6 +28,8 @@ export interface MockData {
   accounts?: Account[];
   /** The only `token_hash` accepted when verifying a password-recovery link. */
   recoveryToken?: string;
+  /** Edge functions that answer 500 `{ error }`, e.g. `['send-contact-email']`. */
+  failingFunctions?: string[];
 }
 
 export interface ApiCall {
@@ -196,9 +198,13 @@ export async function mockSupabase(page: Page, data: MockData = {}): Promise<Sup
 
         case 'PUT /auth/v1/user':
           return current ? json(route, toAuthUser(current)) : authError(route, 401, 'bad_jwt', 'invalid JWT');
+      }
 
-        case 'POST /functions/v1/send-password-reset':
-          return json(route, { success: true });
+      const fn = path.match(/^\/functions\/v1\/([^/]+)$/)?.[1];
+      if (fn && method === 'POST') {
+        if (data.failingFunctions?.includes(fn)) return json(route, { error: `${fn} failed in e2e` }, 500);
+        if (fn === 'create-github-issue') return json(route, { issue_url: 'https://github.com/example/repo/issues/1' });
+        if (fn === 'send-password-reset' || fn === 'send-contact-email') return json(route, { success: true });
       }
     }
 
