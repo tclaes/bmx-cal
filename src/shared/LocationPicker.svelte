@@ -137,12 +137,12 @@
 
   .required {
     color: var(--color-error, #dc2626);
-    margin-left: 0.125rem;
+    margin-left: var(--spacing-xxs);
   }
 
   .location-select {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: var(--spacing-sm) var(--spacing-sm-plus);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm, 4px);
     font-size: var(--font-size-sm);

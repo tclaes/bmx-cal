@@ -255,7 +255,7 @@
 
   .team-select,
   .user-select {
-    padding: 0.4rem 0.75rem;
+    padding: var(--spacing-sm) var(--spacing-sm-plus);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm, 4px);
     font-size: var(--font-size-sm);
@@ -282,7 +282,7 @@
   }
 
   .tab-btn {
-    padding: 0.5rem 1rem;
+    padding: var(--spacing-sm) var(--spacing-md);
     border: none;
     border-bottom: 2px solid transparent;
     background: none;
@@ -348,7 +348,7 @@
   .item-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--spacing-xxs);
     min-width: 0;
   }
 

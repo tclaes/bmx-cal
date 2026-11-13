@@ -191,7 +191,7 @@
     letter-spacing: 0.08em;
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 0.125rem;
+    padding-block: var(--spacing-xxs);
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
     margin-block-end: var(--spacing-sm);

@@ -11,6 +11,10 @@ When adding new features:
 5. Run `npm run stylelint` to verify styles
 6. Run `npm test` to verify tests pass
 7. Keep files focused and under 300 lines when possible
+
+### Spacing tokens
+
+Every `margin*`, `padding*`, `gap`, `row-gap` and `column-gap` value uses the `--spacing-*` tokens from `src/styles/variables.css` (`--spacing-xxs` 2px up to `--spacing-3xl` 64px), or a `calc()` of them. `0`, `auto`, `inherit` and percentages are fine. Snap an off-scale value to the nearest token instead of adding a new one. `npm run stylelint` fails on any `px`, `rem` or `em` literal in these properties. When a literal really is needed (for example the visually-hidden `margin: -1px`), put `/* stylelint-disable-next-line declaration-property-value-disallowed-list -- <reason> */` above it.
 8. Make small, focused commits with descriptive messages
 
 ## End-to-end tests
