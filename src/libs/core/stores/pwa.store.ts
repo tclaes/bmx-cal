@@ -36,7 +36,8 @@ const memoryStorage = new Map<string, string>();
 
 function readStorage(key: string): string | null {
   try {
-    return localStorage.getItem(key) ?? memoryStorage.get(key) ?? null;
+    // Session memory first: it holds a dismissal whose localStorage write failed.
+    return memoryStorage.get(key) ?? localStorage.getItem(key);
   } catch (error) {
     console.warn(`[updates] Could not read "${key}" from localStorage; using session memory.`, error);
     return memoryStorage.get(key) ?? null;

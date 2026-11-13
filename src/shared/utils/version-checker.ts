@@ -22,7 +22,8 @@ export interface UpdateInput {
   dismissedVersion?: string | null;
 }
 
-const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
+// At most 9 digits per part, so every part is an exact JavaScript number (matches the DB check).
+const VERSION_PATTERN = /^\d{1,9}\.\d{1,9}\.\d{1,9}$/;
 
 export function isValidVersion(value: unknown): value is string {
   return typeof value === 'string' && VERSION_PATTERN.test(value);
@@ -59,7 +60,10 @@ export function compareVersions(v1: string, v2: string): number {
 export function isValidManifest(value: unknown): value is ReleaseManifest {
   if (!value || typeof value !== 'object') return false;
   const m = value as Record<string, unknown>;
-  return isValidVersion(m.version) && isValidVersion(m.minVersion);
+  return isValidVersion(m.version)
+    && isValidVersion(m.minVersion)
+    // A deployment can never require a version newer than itself; such a manifest is broken.
+    && compareVersions(m.minVersion, m.version) <= 0;
 }
 
 /**

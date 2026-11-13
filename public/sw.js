@@ -48,7 +48,9 @@ function cacheFirst(event) {
   return caches.match(request).then(cached => {
     if (cached) return cached;
     return fetch(request).then(response => {
-      event.waitUntil(putInCache(request, response));
+      // A missing asset gets the SPA fallback (index.html with status 200); never store that.
+      const isHtml = (response?.headers.get('content-type') || '').includes('text/html');
+      if (!isHtml) event.waitUntil(putInCache(request, response));
       return response;
     });
   });

@@ -1,11 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 const maybeSingle = vi.fn();
-vi.mock('@data', () => ({
-  supabase: {
-    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: () => maybeSingle() }) }) }),
-  },
-}));
+const query = {
+  from: vi.fn(),
+  select: vi.fn(),
+  eq: vi.fn(),
+  abortSignal: vi.fn(),
+};
+vi.mock('@data', () => {
+  const chain = {
+    select: (...args: unknown[]) => { query.select(...args); return chain; },
+    eq: (...args: unknown[]) => { query.eq(...args); return chain; },
+    abortSignal: (signal: AbortSignal) => { query.abortSignal(signal); return chain; },
+    maybeSingle: () => maybeSingle(query.abortSignal.mock.lastCall?.[0]),
+  };
+  return { supabase: { from: (table: string) => { query.from(table); return chain; } } };
+});
 
 import { ReleaseService } from '@core/services/release.service';
 
@@ -73,9 +83,20 @@ describe('ReleaseService.fetchManifest', () => {
 describe('ReleaseService.fetchOverride', () => {
   beforeEach(() => {
     maybeSingle.mockReset();
+    Object.values(query).forEach((fn) => fn.mockClear());
   });
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
+  });
+
+  it('queries the single policy row', async () => {
+    maybeSingle.mockResolvedValue({ data: null, error: null });
+    await ReleaseService.fetchOverride();
+    expect(query.from).toHaveBeenCalledWith('app_release_policy');
+    expect(query.select).toHaveBeenCalledWith('min_version, message');
+    expect(query.eq).toHaveBeenCalledWith('id', 1);
+    expect(query.abortSignal).toHaveBeenCalledWith(expect.any(AbortSignal));
   });
 
   it('maps the policy row', async () => {
@@ -90,11 +111,21 @@ describe('ReleaseService.fetchOverride', () => {
     expect(await ReleaseService.fetchOverride()).toBeNull();
   });
 
-  it('gives up after 3 seconds', async () => {
+  it('aborts the request after 3 seconds', async () => {
     vi.useFakeTimers();
-    maybeSingle.mockReturnValue(new Promise(() => {}));
+    // AbortSignal.timeout runs on Node's internal timers; route it through the fake clock.
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms: number) => {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(new DOMException('timed out', 'TimeoutError')), ms);
+      return controller.signal;
+    });
+    // Like supabase-js, resolve with an error once the signal aborts.
+    maybeSingle.mockImplementation((signal: AbortSignal) => new Promise((resolve) => {
+      signal.addEventListener('abort', () => resolve({ data: null, error: { message: 'AbortError' } }));
+    }));
     const result = ReleaseService.fetchOverride();
     await vi.advanceTimersByTimeAsync(3000);
     expect(await result).toBeNull();
+    expect(timeoutSpy).toHaveBeenCalledWith(3000);
   });
 });

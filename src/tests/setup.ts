@@ -34,7 +34,8 @@ if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.sho
     if (!this.hasAttribute('open')) return;
     this.removeAttribute('open');
     delete this.dataset.modal;
-    this.dispatchEvent(new Event('close'));
+    // Browsers queue the close event as a task after `open` is cleared.
+    setTimeout(() => this.dispatchEvent(new Event('close')), 0);
   };
 }
 

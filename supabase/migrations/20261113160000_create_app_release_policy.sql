@@ -12,7 +12,8 @@
 
 CREATE TABLE IF NOT EXISTS public.app_release_policy (
   id smallint PRIMARY KEY DEFAULT 1 CHECK (id = 1),
-  min_version text CHECK (min_version IS NULL OR min_version ~ '^\d+\.\d+\.\d+$'),
+  -- At most 9 digits per part, so the client compares every part exactly.
+  min_version text CHECK (min_version IS NULL OR min_version ~ '^\d{1,9}\.\d{1,9}\.\d{1,9}$'),
   message jsonb CHECK (message IS NULL OR jsonb_typeof(message) = 'object'),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

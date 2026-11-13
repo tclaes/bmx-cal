@@ -37,7 +37,7 @@ The first release under the new system is **1.0.0**. Every existing install (0.3
 ### 2. Build plugin in `vite.config.ts` (inline, no dependency)
 A small plugin:
 - `generateBundle` emits `version.json` (contents of `release.json` plus `builtAt`).
-- `writeBundle` replaces the placeholder `__APP_VERSION__` in `dist/sw.js` with the version. Each release therefore produces a byte-different `sw.js` with cache name `bmx-calendar-<version>`, and the hand-bumped name goes away.
+- `closeBundle` replaces the placeholder `__APP_VERSION__` in `dist/sw.js` with the version (and fails the build if the file or placeholder is missing). Each release therefore produces a byte-different `sw.js` with cache name `bmx-calendar-<version>`, and the hand-bumped name goes away.
 
 *Alternative:* `vite-plugin-pwa` / Workbox. That is more powerful, but it would replace the hand-written push handling in `sw.js` and add a dependency. Too large for this fix.
 

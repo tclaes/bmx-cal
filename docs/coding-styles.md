@@ -19,7 +19,7 @@ You do not need it for backend or tooling work: SQL and migrations, Supabase edg
 
 ### Prefer native HTML over hand-built behaviour
 
-When the platform has an element or API for something, use it instead of rebuilding it with `div`s and JavaScript. For example, the update prompts use `<dialog>`: `showModal()` provides the top layer, page inertness and focus handling, so no custom focus trap, `inert` toggling or extra z-index is needed.
+When the platform has an element or API for something, use it instead of rebuilding it with `div`s and JavaScript. For example, the mandatory update dialog (`UpdateRequired.svelte`) uses `<dialog>` with `showModal()`, which provides the top layer, page inertness and focus handling, so no custom focus trap, `inert` toggling or extra z-index is needed. The optional banner (`UpdatePrompt.svelte`) is a non-modal `<dialog open>`, so the app stays usable.
 
 ### Project conventions
 

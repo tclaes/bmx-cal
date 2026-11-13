@@ -8,16 +8,6 @@ export interface RawReleaseOverride {
   message: unknown;
 }
 
-function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('timeout')), ms);
-    Promise.resolve(promise).then(
-      (value) => { clearTimeout(timer); resolve(value); },
-      (error) => { clearTimeout(timer); reject(error); },
-    );
-  });
-}
-
 export class ReleaseService {
   /**
    * Fetch the published release information. Returns the parsed JSON, or null when it
@@ -46,14 +36,13 @@ export class ReleaseService {
   /** Fetch the admin override of the minimum version. Returns null on any error or timeout. */
   static async fetchOverride(): Promise<RawReleaseOverride | null> {
     try {
-      const { data, error } = await withTimeout(
-        supabase
-          .from('app_release_policy')
-          .select('min_version, message')
-          .eq('id', 1)
-          .maybeSingle(),
-        OVERRIDE_TIMEOUT_MS,
-      );
+      // Aborting (rather than only stopping to wait) also cancels the request itself.
+      const { data, error } = await supabase
+        .from('app_release_policy')
+        .select('min_version, message')
+        .eq('id', 1)
+        .abortSignal(AbortSignal.timeout(OVERRIDE_TIMEOUT_MS))
+        .maybeSingle();
       if (error || !data) return null;
       return { minVersion: data.min_version ?? null, message: data.message ?? null };
     } catch {

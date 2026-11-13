@@ -22,6 +22,12 @@ import {
 
 const manifest = (version: string, minVersion = '1.0.0') => ({ version, minVersion, notes: {} });
 
+// Restore spies and timers even when an assertion fails, so nothing leaks into later tests.
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
+
 beforeEach(() => {
   localStorage.clear();
   updateStore.reset();
@@ -126,10 +132,18 @@ describe('updateStore.dismiss', () => {
     await updateStore.check();
     expect(get(updateStore).state).toBe('none');
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('update_dismissed_version'), expect.any(Error));
+  });
 
-    getItem.mockRestore();
-    setItem.mockRestore();
-    warn.mockRestore();
+  it('prefers the session dismissal over an older stored value when saving fails', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    localStorage.setItem(DISMISSED_VERSION_KEY, '1.4.0');
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('quota'); });
+    fetchManifest.mockResolvedValue(manifest('1.5.0'));
+
+    await updateStore.check();
+    updateStore.dismiss();
+    await updateStore.check();
+    expect(get(updateStore).state).toBe('none');
   });
 
   it('cannot dismiss a mandatory update', async () => {
@@ -174,7 +188,6 @@ describe('updateStore.applyUpdate', () => {
     await updateStore.applyUpdate();
     expect(reload).toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('update failed'), expect.any(Error));
-    warn.mockRestore();
   });
 
   it('still reloads when the service worker update hangs', async () => {
@@ -189,8 +202,6 @@ describe('updateStore.applyUpdate', () => {
     await done;
     expect(reload).toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('took longer'));
-    warn.mockRestore();
-    vi.useRealTimers();
   });
 });
 

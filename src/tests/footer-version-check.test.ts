@@ -113,7 +113,7 @@ describe('Footer version check', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/failed|unable|could not/i)).toBeInTheDocument();
+      expect(screen.getByText('Failed to check for updates.')).toBeInTheDocument();
     }, { timeout: 3000 });
   });
 });

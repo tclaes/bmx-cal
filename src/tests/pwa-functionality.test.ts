@@ -211,6 +211,15 @@ describe('Service worker caching (public/sw.js)', () => {
     expect(cachesMock.open).toHaveBeenCalled();
   });
 
+  it('never caches the SPA fallback HTML for a missing asset', async () => {
+    const fallback = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
+    const { handlers } = loadWorker({ fetchImpl: async () => fallback });
+    const asset = fetchEvent('/assets/missing-abc.js');
+    handlers.fetch(asset);
+    expect(await asset.respondWith.mock.calls[0][0]).toBe(fallback);
+    expect(asset.waitUntil).not.toHaveBeenCalled();
+  });
+
   it('keeps the worker alive until the cache write finishes', async () => {
     const html = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
     const { handlers } = loadWorker({ fetchImpl: async () => html });

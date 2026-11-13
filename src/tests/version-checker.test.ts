@@ -48,6 +48,15 @@ describe('isValidVersion / isValidManifest', () => {
     expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0' })).toBe(true);
   });
 
+  it('rejects a manifest that requires a version newer than itself', () => {
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.5.0' })).toBe(false);
+  });
+
+  it('rejects version parts longer than 9 digits', () => {
+    expect(isValidVersion('1.2.123456789')).toBe(true);
+    expect(isValidVersion('1.2.1234567890')).toBe(false);
+  });
+
   it('rejects invalid manifests', () => {
     expect(isValidManifest(null)).toBe(false);
     expect(isValidManifest('<!doctype html>')).toBe(false);

@@ -37,8 +37,12 @@ function releaseManifest(): Plugin {
     },
     closeBundle() {
       const swPath = path.join(outDir, 'sw.js')
-      if (!fs.existsSync(swPath)) return
+      // Without a stamped sw.js every release would share one cache, so fail the build instead.
+      if (!fs.existsSync(swPath)) throw new Error(`release-manifest: ${swPath} not found`)
       const sw = fs.readFileSync(swPath, 'utf-8')
+      if (!sw.includes('__APP_VERSION__')) {
+        throw new Error('release-manifest: __APP_VERSION__ placeholder missing in sw.js')
+      }
       fs.writeFileSync(swPath, sw.split('__APP_VERSION__').join(readRelease().version))
     },
   }

@@ -135,7 +135,8 @@ describe('UpdateRequired (mandatory update)', () => {
     expect(cancel.defaultPrevented).toBe(true);
 
     dialog.close();
-    expect(dialog.open).toBe(true);
+    expect(dialog.open).toBe(false);
+    await waitFor(() => expect(dialog.open).toBe(true));
   });
 
   it('shows the override message in the user language', async () => {
