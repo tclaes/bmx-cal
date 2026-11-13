@@ -19,31 +19,36 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+// Returns the cache write so the fetch event can keep the worker alive until it finishes.
 function putInCache(request, response) {
-  if (!response || response.status !== 200 || response.type !== 'basic') return;
+  if (!response || response.status !== 200 || response.type !== 'basic') return Promise.resolve();
   const copy = response.clone();
-  caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+  return caches.open(CACHE_NAME)
+    .then(cache => cache.put(request, copy))
+    .catch(err => console.warn('Cache write failed:', err));
 }
 
 // Pages: network first, so a reload always loads the deployed release. Offline: cached shell.
-function networkFirstNavigation(request) {
+function networkFirstNavigation(event) {
+  const request = event.request;
   return fetch(request)
     .then(response => {
       // Only HTML can serve as the app shell; a direct visit to /sitemap.xml or /robots.txt
       // is a navigation too and must not replace it.
       const isHtml = (response?.headers.get('content-type') || '').includes('text/html');
-      if (response && response.ok && isHtml) putInCache(APP_SHELL, response);
+      if (response && response.ok && isHtml) event.waitUntil(putInCache(APP_SHELL, response));
       return response;
     })
     .catch(() => caches.match(APP_SHELL).then(cached => cached || Response.error()));
 }
 
 // Other files: cache first (hashed assets never change).
-function cacheFirst(request) {
+function cacheFirst(event) {
+  const request = event.request;
   return caches.match(request).then(cached => {
     if (cached) return cached;
     return fetch(request).then(response => {
-      putInCache(request, response);
+      event.waitUntil(putInCache(request, response));
       return response;
     });
   });
@@ -63,11 +68,11 @@ self.addEventListener('fetch', event => {
   }
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstNavigation(request));
+    event.respondWith(networkFirstNavigation(event));
     return;
   }
 
-  event.respondWith(cacheFirst(request));
+  event.respondWith(cacheFirst(event));
 });
 
 self.addEventListener('message', event => {

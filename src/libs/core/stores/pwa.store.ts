@@ -89,30 +89,38 @@ function createUpdateStore() {
     ]);
 
     if (!isValidManifest(manifest)) {
-      update((s) => ({ ...s, state: 'none', message: null, checking: false }));
+      // Keep the last known result: a transient network error must not close an open
+      // mandatory dialog. Before any successful check the state is still 'none'.
+      update((s) => ({ ...s, checking: false }));
       return 'error';
     }
 
     const overrideMin = override?.minVersion ?? null;
-    const state = resolveUpdateState({
+    const input = {
       running: APP_VERSION,
       deployed: manifest.version,
       publishedMin: manifest.minVersion,
       overrideMin,
-      dismissedVersion: readStorage(DISMISSED_VERSION_KEY),
-    });
+    };
+    // What is deployed, regardless of a dismissed banner: a manual check must not
+    // report "latest version" while a newer release exists.
+    const available = resolveUpdateState(input);
+    const state = resolveUpdateState({ ...input, dismissedVersion: readStorage(DISMISSED_VERSION_KEY) });
 
-    const message = state === 'mandatory' && isOverrideActive(manifest.minVersion, overrideMin)
+    const message = state === 'mandatory' && isOverrideActive(manifest.minVersion, overrideMin, manifest.version)
       ? toLocalizedText(override?.message)
       : null;
 
     set({ state, deployedVersion: manifest.version, message, checking: false });
-    return state;
+    return available;
   }
 
   return {
     subscribe,
-    /** Check the published release. Concurrent calls share one request. */
+    /**
+     * Check the published release. Concurrent calls share one request. Resolves to what is
+     * available (a dismissed banner still counts as 'optional'), or 'error' when the check failed.
+     */
     check(): Promise<UpdateCheckResult> {
       if (!inFlight) {
         inFlight = runCheck().finally(() => {

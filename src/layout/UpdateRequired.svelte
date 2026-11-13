@@ -6,7 +6,11 @@
   let updating = false;
 
   $: required = $updateStore.state === 'mandatory';
-  $: message = $updateStore.message?.[$locale] ?? null;
+  // Prefer the user's language; an admin may write the message in one language only,
+  // and any explanation beats the generic text.
+  $: message = $updateStore.message
+    ? $updateStore.message[$locale] ?? $updateStore.message.en ?? $updateStore.message.nl ?? $updateStore.message.fr ?? null
+    : null;
 
   // showModal() puts the notice in the top layer (above every z-index) and makes the rest
   // of the page inert, so the app cannot be used while an update is required.

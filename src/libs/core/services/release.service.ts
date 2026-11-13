@@ -21,7 +21,7 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
 export class ReleaseService {
   /**
    * Fetch the published release information. Returns the parsed JSON, or null when it
-   * cannot be fetched within 5 seconds or is not JSON (e.g. the SPA fallback answering with index.html).
+   * cannot be fetched within 5 seconds or does not parse as JSON (e.g. the SPA fallback's index.html).
    * Shape validation is up to the caller.
    */
   static async fetchManifest(): Promise<unknown | null> {
@@ -35,8 +35,8 @@ export class ReleaseService {
         signal: AbortSignal.timeout(MANIFEST_TIMEOUT_MS),
       });
       if (!response.ok) return null;
-      const contentType = response.headers.get('content-type') ?? '';
-      if (!contentType.includes('application/json')) return null;
+      // The SPA fallback answers unknown paths with index.html; parsing that throws,
+      // and the store validates the shape of whatever does parse.
       return await response.json();
     } catch {
       return null;

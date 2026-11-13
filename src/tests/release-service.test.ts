@@ -55,6 +55,11 @@ describe('ReleaseService.fetchManifest', () => {
     expect(await ReleaseService.fetchManifest()).toBeNull();
   });
 
+  it('accepts valid JSON regardless of the content-type header', async () => {
+    fetchMock.mockResolvedValue(response('{"version":"1.0.0","minVersion":"1.0.0"}', 'text/plain'));
+    expect(await ReleaseService.fetchManifest()).toEqual({ version: '1.0.0', minVersion: '1.0.0' });
+  });
+
   it('returns null on HTTP errors, network errors and invalid JSON', async () => {
     fetchMock.mockResolvedValueOnce(response('{}', 'application/json', false));
     expect(await ReleaseService.fetchManifest()).toBeNull();

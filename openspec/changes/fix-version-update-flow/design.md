@@ -44,7 +44,7 @@ A small plugin:
 ### 3. No caching of control files, independent of the host
 Freshness must not depend on host configuration, because we do not control Bolt's hosting. The client fetches `/version.json?ts=<now>` with `cache: 'no-store'`, and the service worker never intercepts `/version.json`. Netlify's default headers (`max-age=0, must-revalidate`) already prevent stale `index.html` and `sw.js`. We also add `public/_headers` with `Cache-Control: no-cache` for `/version.json`, `/sw.js` and `/index.html` as an extra safeguard. If the host ignores it, nothing breaks.
 
-The manifest is accepted only when the response has `content-type` `application/json` **and** passes the shape check. This way the SPA fallback (HTML with status 200) is never read as a release.
+The manifest is accepted only when the response parses as JSON **and** passes the shape check (`version` and `minVersion` are `x.y.z`). The SPA fallback (HTML with status 200) fails to parse, so it is never read as a release. The content-type header is deliberately not checked: it would only add a failure mode.
 
 ### 4. Service worker strategy
 - Navigation requests (`request.mode === 'navigate'`): **network-first**, falling back to the cached `/index.html` when offline.
@@ -56,12 +56,12 @@ Because navigations are network-first, "update" can simply be: `registration.upd
 
 ### 5. Decision function (pure)
 `resolveUpdateState({ running, deployed, publishedMin, overrideMin, dismissedVersion })` returns `'none' | 'optional' | 'mandatory'`:
-1. `effectiveMin = max(publishedMin, overrideMin ?? publishedMin)`
+1. `effectiveMin = overrideMin` when it is valid, above `publishedMin` and not above `deployed`; otherwise `publishedMin`
 2. `running < effectiveMin && deployed >= effectiveMin` → `mandatory`
 3. `running < deployed && dismissedVersion !== deployed` → `optional`
 4. otherwise `none`
 
-`compareVersions` stays, hardened against prerelease or garbage input (it compares numeric parts and treats non-numeric parts as 0). Invalid manifests are rejected by a shape check, and the result is then `none`.
+`compareVersions` stays, hardened against prerelease or garbage input (it compares numeric parts and treats non-numeric parts as 0). Invalid manifests are rejected by a shape check; the check then reports `error` and keeps the last known state.
 
 ### 6. Update service and store
 A new `release.service.ts` in `@core/services` has `fetchManifest()` and `fetchOverride()`. Both return `null` on error, and the override query is limited by a ~3 s timeout so it can never delay startup. `updateStore` (in `pwa.store.ts`) gains `state`, `deployedVersion`, `message` and `check()`. It triggers on load, on `visibilitychange` → visible (throttled to once per minute), and on a 30-minute interval. `dismiss()` writes `update_dismissed_version = deployed` to `localStorage`. Footer and ProfilePage call `check()` and read `state`.

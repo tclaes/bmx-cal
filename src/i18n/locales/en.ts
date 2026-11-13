@@ -292,6 +292,7 @@ export const en: Translations = {
     updateNow: 'Update Now',
     reload: 'Reload',
     dismiss: 'Dismiss',
+    actionsAvailable: 'Actions available.',
   },
   notFound: {
     title: '404 - Page Not Found',

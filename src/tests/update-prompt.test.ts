@@ -48,6 +48,30 @@ describe('UpdatePrompt (optional update)', () => {
     expect(screen.queryByText(/required/i)).not.toBeInTheDocument();
   });
 
+  it('announces the banner through a live region that exists before it appears', async () => {
+    const { container } = render(UpdatePrompt);
+    const region = container.querySelector('[aria-live="polite"]');
+    expect(region).toBeInTheDocument();
+    expect(region).toHaveTextContent('');
+
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    await updateStore.check();
+    await tick();
+    expect(region).toHaveTextContent('A new version is available. Actions available.');
+  });
+
+  it('uses ariaNotify instead of the live region when the browser has it', async () => {
+    const ariaNotify = vi.fn();
+    Object.defineProperty(document, 'ariaNotify', { configurable: true, value: ariaNotify });
+    const { container } = render(UpdatePrompt);
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    await updateStore.check();
+    await tick();
+    expect(ariaNotify).toHaveBeenCalledWith('A new version is available. Actions available.');
+    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent('');
+    Reflect.deleteProperty(document, 'ariaNotify');
+  });
+
   it('stays hidden after dismissing, also after another check', async () => {
     fetchManifest.mockResolvedValue(manifest('1.4.0'));
     render(UpdatePrompt);
@@ -123,6 +147,17 @@ describe('UpdateRequired (mandatory update)', () => {
     await tick();
 
     expect(screen.getByText('Belangrijke fix voor inschrijvingen')).toBeInTheDocument();
+  });
+
+  it('falls back to another language when the message lacks the user language', async () => {
+    locale.setLocale('fr');
+    fetchManifest.mockResolvedValue(manifest('1.4.0', '1.0.0'));
+    fetchOverride.mockResolvedValue({ minVersion: '1.4.0', message: { en: 'Important fix for registrations' } });
+    render(UpdateRequired);
+    await updateStore.check();
+    await tick();
+
+    expect(screen.getByText('Important fix for registrations')).toBeInTheDocument();
   });
 
   it('calls applyUpdate from its only button', async () => {

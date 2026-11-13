@@ -292,6 +292,7 @@ export const nl: Translations = {
     updateNow: 'Nu updaten',
     reload: 'Herladen',
     dismiss: 'Sluiten',
+    actionsAvailable: 'Acties beschikbaar.',
   },
   notFound: {
     title: '404 - Pagina niet gevonden',

@@ -179,7 +179,7 @@ describe('Service worker caching (public/sw.js)', () => {
   }
 
   function fetchEvent(path: string, mode = 'no-cors') {
-    const event = { request: { url: `https://bmxkalender.be${path}`, method: 'GET', mode }, respondWith: vi.fn() };
+    const event = { request: { url: `https://bmxkalender.be${path}`, method: 'GET', mode }, respondWith: vi.fn(), waitUntil: vi.fn() };
     return event;
   }
 
@@ -209,6 +209,15 @@ describe('Service worker caching (public/sw.js)', () => {
     handlers.fetch(page);
     await page.respondWith.mock.calls[0][0];
     expect(cachesMock.open).toHaveBeenCalled();
+  });
+
+  it('keeps the worker alive until the cache write finishes', async () => {
+    const html = { ok: true, status: 200, type: 'basic', headers: new Headers({ 'content-type': 'text/html' }), clone: () => ({}) };
+    const { handlers } = loadWorker({ fetchImpl: async () => html });
+    const page = fetchEvent('/', 'navigate');
+    handlers.fetch(page);
+    await page.respondWith.mock.calls[0][0];
+    expect(page.waitUntil).toHaveBeenCalledWith(expect.any(Promise));
   });
 
   it('falls back to the cached shell when offline', async () => {

@@ -18,21 +18,25 @@ Every deployment SHALL publish the deployed release's version, its minimum requi
 - **THEN** the version shown in the app and the published version are identical
 
 ### Requirement: Running app detects new releases
-The running app SHALL compare its own version with the published release information when it starts, when it returns to the foreground, and at least every 30 minutes while it is open. When the check fails (offline, network error, invalid response), the app SHALL keep working and SHALL NOT show any update prompt.
+The running app SHALL compare its own version with the published release information when it starts, when it returns to the foreground, and at least every 30 minutes while it is open. When the check fails (offline, network error, invalid response), the app SHALL keep working, SHALL NOT show a new update prompt, and SHALL keep the result of its last successful check.
 
 #### Scenario: Old client learns about a new release
 - **WHEN** a user runs 1.3.0 and 1.4.0 has been deployed, and the user brings the app back to the foreground
 - **THEN** the app detects that 1.4.0 is available without the user reloading first
 
 #### Scenario: Offline
-- **WHEN** the release information cannot be fetched
+- **WHEN** the release information cannot be fetched and no earlier check succeeded
 - **THEN** no update prompt is shown and the app stays usable
+
+#### Scenario: Transient failure during a mandatory update
+- **WHEN** a mandatory update is shown and a later check fails
+- **THEN** the mandatory update stays shown
 
 ### Requirement: Effective minimum version
 The effective minimum version SHALL be the highest of the minimum in the published release information and the admin override, if one is set. If the override cannot be read, the published minimum SHALL apply on its own.
 
 #### Scenario: Override raises the minimum
-- **WHEN** the published minimum is 1.2.0 and an admin sets the override to 1.4.0
+- **WHEN** the published minimum is 1.2.0, version 1.4.0 is deployed and an admin sets the override to 1.4.0
 - **THEN** clients below 1.4.0 are treated as needing a mandatory update
 
 #### Scenario: Override lower than published minimum
@@ -62,14 +66,18 @@ When the running version is below the effective minimum and the deployed version
 - **THEN** the notice shows that message in the user's language
 
 ### Requirement: No unresolvable mandatory update
-When the effective minimum is higher than the deployed version, the app SHALL NOT show the blocking notice, because updating cannot satisfy it. An optional update SHALL still be offered if one is available.
+An override higher than the deployed version SHALL be ignored, because updating cannot satisfy it; the published minimum SHALL still apply. An optional update SHALL still be offered if one is available.
 
 #### Scenario: Override set too high
 - **WHEN** an admin sets the override to 2.0.0 while 1.4.0 is deployed
 - **THEN** users on 1.4.0 are not blocked and see no mandatory notice
 
+#### Scenario: Override set too high during a crucial fix
+- **WHEN** 1.3.1 is deployed with minimum 1.3.1, an admin sets the override to 2.0.0, and the user runs 1.3.0
+- **THEN** the mandatory notice is still shown
+
 ### Requirement: Optional update
-When the running version is below the deployed version but meets the effective minimum, the app SHALL show a dismissible banner with a reload action. Optional updates SHALL NOT be presented as critical.
+When the running version is below the deployed version and no mandatory notice applies, the app SHALL show a dismissible banner with a reload action. Optional updates SHALL NOT be presented as critical.
 
 #### Scenario: Feature release
 - **WHEN** the user runs 1.3.0, 1.4.0 is deployed with minimum 1.0.0, and the app checks for updates
@@ -102,7 +110,15 @@ Choosing to update (from the banner, the blocking notice or the manual check) SH
 - **THEN** the PWA runs the new version after the reload, not a cached old one
 
 ### Requirement: Manual update check
-The footer and the profile page SHALL show the running version and let the user check for updates. A check SHALL lead to the same result as an automatic check: a mandatory notice, an optional banner, or a "you have the latest version" message.
+The footer and the profile page SHALL show the running version and let the user check for updates. A check SHALL lead to the same result as an automatic check: a mandatory notice, an optional banner, or a "you have the latest version" message. A failed check SHALL show a localised "check failed" message. A dismissed banner SHALL NOT make a manual check report the latest version while a newer version is deployed.
+
+#### Scenario: Manual check fails
+- **WHEN** the user taps the version in the footer while offline
+- **THEN** a "check failed" message is shown
+
+#### Scenario: Manual check after dismissing
+- **WHEN** the user dismissed the banner for 1.4.0 and taps the version in the footer
+- **THEN** an "update available" message is shown, not "latest version"
 
 #### Scenario: Manual check when up to date
 - **WHEN** the user runs the deployed version and taps the version in the footer

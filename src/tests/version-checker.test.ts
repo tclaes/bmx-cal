@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   compareVersions,
+  shouldShowReleaseNotes,
+  toLocalizedText,
   isValidManifest,
   isValidVersion,
   isOverrideActive,
@@ -18,6 +20,10 @@ describe('compareVersions', () => {
     expect(compareVersions('1.0', '1.0.0')).toBe(0);
   });
 
+  it('treats a part with a suffix as 0, not as its numeric prefix', () => {
+    expect(compareVersions('1.2.3-beta', '1.2.3')).toBe(-1);
+  });
+
   it('treats non-numeric parts as 0 instead of NaN', () => {
     expect(compareVersions('1.x.0', '1.0.0')).toBe(0);
     expect(compareVersions('abc', '0.0.1')).toBe(-1);
@@ -32,6 +38,11 @@ describe('isValidVersion / isValidManifest', () => {
     expect(isValidVersion(null)).toBe(false);
   });
 
+  it('does not reject a manifest over its notes, which the decision never reads', () => {
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: null })).toBe(true);
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: ['x'] })).toBe(true);
+  });
+
   it('accepts a complete manifest', () => {
     expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: { nl: 'x' } })).toBe(true);
     expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0' })).toBe(true);
@@ -42,7 +53,6 @@ describe('isValidVersion / isValidManifest', () => {
     expect(isValidManifest('<!doctype html>')).toBe(false);
     expect(isValidManifest({ version: '1.4.0' })).toBe(false);
     expect(isValidManifest({ version: 'latest', minVersion: '1.0.0' })).toBe(false);
-    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: null })).toBe(false);
   });
 });
 
@@ -76,6 +86,12 @@ describe('resolveUpdateState', () => {
     expect(resolveUpdateState({
       running: '1.3.0', deployed: '1.4.0', publishedMin: '1.0.0', overrideMin: '1.2.0',
     })).toBe('optional');
+  });
+
+  it('override higher than deployed does not weaken a published mandatory minimum', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.3.1', publishedMin: '1.3.1', overrideMin: '2.0.0',
+    })).toBe('mandatory');
   });
 
   it('override higher than deployed → never blocks', () => {
@@ -114,8 +130,46 @@ describe('resolveUpdateState', () => {
 
 describe('isOverrideActive', () => {
   it('is true only when the override raises the minimum', () => {
-    expect(isOverrideActive('1.0.0', '1.2.0')).toBe(true);
-    expect(isOverrideActive('1.2.0', '1.0.0')).toBe(false);
-    expect(isOverrideActive('1.2.0', null)).toBe(false);
+    expect(isOverrideActive('1.0.0', '1.2.0', '1.4.0')).toBe(true);
+    expect(isOverrideActive('1.2.0', '1.0.0', '1.4.0')).toBe(false);
+    expect(isOverrideActive('1.2.0', null, '1.4.0')).toBe(false);
+  });
+
+  it('ignores an override above the deployed version', () => {
+    expect(isOverrideActive('1.0.0', '2.0.0', '1.4.0')).toBe(false);
+    expect(isOverrideActive('1.0.0', '1.4.0', '1.4.0')).toBe(true);
+  });
+});
+
+describe('shouldShowReleaseNotes', () => {
+  it('never shows notes on a first visit', () => {
+    expect(shouldShowReleaseNotes(null, '1.4.0', 'Nieuw')).toBe(false);
+  });
+
+  it('does not show empty notes', () => {
+    expect(shouldShowReleaseNotes('1.3.0', '1.4.0', undefined)).toBe(false);
+    expect(shouldShowReleaseNotes('1.3.0', '1.4.0', '   ')).toBe(false);
+  });
+
+  it('shows notes after updating from an older version', () => {
+    expect(shouldShowReleaseNotes('1.3.0', '1.4.0', 'Nieuw')).toBe(true);
+  });
+
+  it('does not show notes again for the same or an older version', () => {
+    expect(shouldShowReleaseNotes('1.4.0', '1.4.0', 'Nieuw')).toBe(false);
+    expect(shouldShowReleaseNotes('1.5.0', '1.4.0', 'Nieuw')).toBe(false);
+  });
+});
+
+describe('toLocalizedText', () => {
+  it('keeps only non-blank strings for supported locales', () => {
+    expect(toLocalizedText({ nl: 'Fix', fr: '  ', en: 42, de: 'Hallo' })).toEqual({ nl: 'Fix' });
+  });
+
+  it('returns null for anything that is not a usable object', () => {
+    expect(toLocalizedText(null)).toBeNull();
+    expect(toLocalizedText('Fix')).toBeNull();
+    expect(toLocalizedText(['Fix'])).toBeNull();
+    expect(toLocalizedText({ nl: '' })).toBeNull();
   });
 });

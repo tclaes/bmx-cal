@@ -3,6 +3,26 @@
   import { t } from '../i18n';
 
   let updating = false;
+  let announcement = '';
+
+  $: visible = $updateStore.state === 'optional';
+  $: announce(visible);
+
+  // Screen readers do not reliably announce a region that is inserted together with its text,
+  // so use ariaNotify() where available and otherwise a live region that is always in the page.
+  function announce(show: boolean) {
+    if (!show) {
+      announcement = '';
+      return;
+    }
+    const text = `${$t.pwa.newVersion} ${$t.pwa.actionsAvailable}`;
+    const doc = document as Document & { ariaNotify?: (message: string) => void };
+    if (typeof doc.ariaNotify === 'function') {
+      doc.ariaNotify(text);
+    } else {
+      announcement = text;
+    }
+  }
 
   async function reload() {
     updating = true;
@@ -10,8 +30,10 @@
   }
 </script>
 
-{#if $updateStore.state === 'optional'}
-  <!-- Non-modal dialog: announced to assistive tech, but the app stays usable. -->
+<div class="visually-hidden" aria-live="polite">{announcement}</div>
+
+{#if visible}
+  <!-- Non-modal dialog: the app stays usable. Announced via the live region above. -->
   <dialog open class="update-banner" aria-labelledby="update-banner-text">
     <span id="update-banner-text" class="update-text">{$t.pwa.newVersion}</span>
     <button class="update-btn" on:click={reload} disabled={updating}>
@@ -24,10 +46,19 @@
 {/if}
 
 <style>
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .update-banner {
     position: fixed;
     inset: auto;
-    top: var(--spacing-md);
+    bottom: var(--spacing-lg);
     left: 50%;
     margin: 0;
     color: var(--color-text-primary);
@@ -42,13 +73,13 @@
     box-shadow: var(--shadow-lg);
     padding: var(--spacing-sm) var(--spacing-md);
     white-space: nowrap;
-    animation: slide-down 0.2s ease;
+    animation: slide-up 0.2s ease;
   }
 
-  @keyframes slide-down {
+  @keyframes slide-up {
     from {
       opacity: 0;
-      transform: translateX(-50%) translateY(-12px);
+      transform: translateX(-50%) translateY(12px);
     }
 
     to {
@@ -96,7 +127,7 @@
 
   @media (max-width: 767px) {
     .update-banner {
-      top: var(--spacing-sm);
+      bottom: var(--spacing-md);
       left: var(--spacing-md);
       right: var(--spacing-md);
       width: auto;
@@ -104,10 +135,10 @@
       white-space: normal;
     }
 
-    @keyframes slide-down {
+    @keyframes slide-up {
       from {
         opacity: 0;
-        transform: translateY(-12px);
+        transform: translateY(12px);
       }
 
       to {

@@ -53,6 +53,15 @@ describe('updateStore.check', () => {
     expect(get(updateStore).state).toBe('none');
   });
 
+  it('keeps an open mandatory update when a later check fails', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.3.1', '1.3.1'));
+    await updateStore.check();
+    fetchManifest.mockResolvedValue(null);
+
+    expect(await updateStore.check()).toBe('error');
+    expect(get(updateStore).state).toBe('mandatory');
+  });
+
   it('SPA fallback HTML (rejected by the service as null or a string) → none', async () => {
     fetchManifest.mockResolvedValue('<!doctype html><html></html>');
     expect(await updateStore.check()).toBe('error');
@@ -87,7 +96,17 @@ describe('updateStore.dismiss', () => {
     expect(get(updateStore).state).toBe('none');
     expect(localStorage.getItem(DISMISSED_VERSION_KEY)).toBe('1.4.0');
 
-    expect(await updateStore.check()).toBe('none');
+    await updateStore.check();
+    expect(get(updateStore).state).toBe('none');
+  });
+
+  it('still reports an available update to a manual check after dismissing', async () => {
+    fetchManifest.mockResolvedValue(manifest('1.4.0'));
+    await updateStore.check();
+    updateStore.dismiss();
+
+    expect(await updateStore.check()).toBe('optional');
+    expect(get(updateStore).state).toBe('none');
   });
 
   it('shows the banner again for a newer release', async () => {
@@ -104,7 +123,8 @@ describe('updateStore.dismiss', () => {
 
     await updateStore.check();
     updateStore.dismiss();
-    expect(await updateStore.check()).toBe('none');
+    await updateStore.check();
+    expect(get(updateStore).state).toBe('none');
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('update_dismissed_version'), expect.any(Error));
 
     getItem.mockRestore();

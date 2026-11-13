@@ -6,7 +6,6 @@ export type LocalizedText = Partial<Record<'nl' | 'fr' | 'en', string>>;
 export interface ReleaseManifest {
   version: string;
   minVersion: string;
-  notes?: LocalizedText;
 }
 
 /** Admin override stored in Supabase (app_release_policy). */
@@ -32,12 +31,12 @@ export function isValidVersion(value: unknown): value is string {
 /**
  * Compare two x.y.z version strings.
  * Returns 1 if v1 > v2, -1 if v1 < v2, 0 if equal.
- * Non-numeric parts (e.g. a prerelease suffix) count as 0.
+ * A part that is not a whole number (e.g. "3-beta") counts as 0.
  */
 export function compareVersions(v1: string, v2: string): number {
   const toParts = (v: string) => v.split('.').map((p) => {
-    const n = Number.parseInt(p, 10);
-    return Number.isFinite(n) ? n : 0;
+    const n = Number(p);
+    return Number.isInteger(n) ? n : 0;
   });
   const parts1 = toParts(v1);
   const parts2 = toParts(v2);
@@ -53,17 +52,29 @@ export function compareVersions(v1: string, v2: string): number {
   return 0;
 }
 
+/**
+ * Only the fields the update decision uses are validated. Release notes are read from the
+ * bundle (RELEASE_NOTES), not from the manifest, so a malformed notes field cannot disable updates.
+ */
 export function isValidManifest(value: unknown): value is ReleaseManifest {
   if (!value || typeof value !== 'object') return false;
   const m = value as Record<string, unknown>;
-  if (!isValidVersion(m.version) || !isValidVersion(m.minVersion)) return false;
-  if (m.notes !== undefined && (m.notes === null || typeof m.notes !== 'object')) return false;
-  return true;
+  return isValidVersion(m.version) && isValidVersion(m.minVersion);
 }
 
-/** True when the admin override raises the minimum above the published one. */
-export function isOverrideActive(publishedMin: string, overrideMin: string | null | undefined): overrideMin is string {
-  return isValidVersion(overrideMin) && compareVersions(overrideMin, publishedMin) > 0;
+/**
+ * True when the admin override raises the minimum above the published one. An override above
+ * the deployed version is ignored entirely: updating could not satisfy it, and it must not
+ * weaken the published minimum.
+ */
+export function isOverrideActive(
+  publishedMin: string,
+  overrideMin: string | null | undefined,
+  deployed: string,
+): overrideMin is string {
+  return isValidVersion(overrideMin)
+    && compareVersions(overrideMin, publishedMin) > 0
+    && compareVersions(overrideMin, deployed) <= 0;
 }
 
 /**
@@ -74,7 +85,7 @@ export function isOverrideActive(publishedMin: string, overrideMin: string | nul
 export function resolveUpdateState(input: UpdateInput): UpdateState {
   const { running, deployed, publishedMin, overrideMin, dismissedVersion } = input;
 
-  const effectiveMin = isOverrideActive(publishedMin, overrideMin) ? overrideMin : publishedMin;
+  const effectiveMin = isOverrideActive(publishedMin, overrideMin, deployed) ? overrideMin : publishedMin;
 
   const belowMin = compareVersions(running, effectiveMin) < 0;
   const deployedSatisfiesMin = compareVersions(deployed, effectiveMin) >= 0;

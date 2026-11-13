@@ -290,6 +290,7 @@ export interface Translations {
     updateNow: string;
     reload: string;
     dismiss: string;
+    actionsAvailable: string;
   };
   notFound: {
     title: string;

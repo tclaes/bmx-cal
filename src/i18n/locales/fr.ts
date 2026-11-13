@@ -292,6 +292,7 @@ export const fr: Translations = {
     updateNow: 'Mettre à jour maintenant',
     reload: 'Recharger',
     dismiss: 'Ignorer',
+    actionsAvailable: 'Actions disponibles.',
   },
   notFound: {
     title: '404 - Page introuvable',
