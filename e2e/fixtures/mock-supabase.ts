@@ -17,7 +17,10 @@ export interface Account extends SessionUser {
 }
 
 export interface MockData {
-  /** PostgREST tables keyed by name (RPCs as `rpc:<fn>`). Unlisted ones return []. */
+  /**
+   * PostgREST tables keyed by name (RPCs as `rpc:<fn>`). Unlisted ones return [].
+   * Writes mutate a per-test copy, so a later read sees inserts, updates and deletes.
+   */
   tables?: Record<string, unknown[]>;
   /** Already signed in when the page loads. */
   user?: SessionUser | null;
@@ -37,8 +40,8 @@ export interface ApiCall {
 export interface SupabaseMock {
   /** Every request that hit a Supabase endpoint nobody handled. */
   unmocked: string[];
-  /** Mutating PostgREST calls, for payload assertions. */
-  writes: { method: string; table: string; body: unknown }[];
+  /** Mutating PostgREST calls, for payload assertions. `query` is the raw filter string, e.g. `?id=eq.1`. */
+  writes: { method: string; table: string; body: unknown; query: string }[];
   /** Auth and edge-function calls, for payload assertions. */
   calls: ApiCall[];
 }
@@ -80,6 +83,19 @@ const json = (route: Route, body: unknown, status = 200) =>
 const authError = (route: Route, status: number, code: string, msg: string) =>
   json(route, { code: status, error_code: code, msg, error_description: msg }, status);
 
+/** Matches rows against PostgREST `col=eq.value` and `col=in.(a,b)` filters. */
+function rowMatcher(params: URLSearchParams) {
+  const filters = [...params.entries()].flatMap(([column, raw]) => {
+    if (raw.startsWith('eq.')) return [(row: Record<string, unknown>) => String(row[column]) === raw.slice(3)];
+    if (raw.startsWith('in.(')) {
+      const values = raw.slice(4, -1).split(',');
+      return [(row: Record<string, unknown>) => values.includes(String(row[column]))];
+    }
+    return [];
+  });
+  return (row: Record<string, unknown>) => filters.every((matches) => matches(row));
+}
+
 function readBody(req: Request): unknown {
   try {
     return req.postDataJSON();
@@ -91,6 +107,8 @@ function readBody(req: Request): unknown {
 export async function mockSupabase(page: Page, data: MockData = {}): Promise<SupabaseMock> {
   const mock: SupabaseMock = { unmocked: [], writes: [], calls: [] };
   const accounts = [...(data.accounts ?? [])];
+  const tables = structuredClone(data.tables ?? {}) as Record<string, Record<string, unknown>[]>;
+  let nextRowId = 1;
   const recoveryToken = data.recoveryToken ?? 'valid-token';
   let current: SessionUser | null = data.user ?? null;
 
@@ -185,27 +203,44 @@ export async function mockSupabase(page: Page, data: MockData = {}): Promise<Sup
     }
 
     const rpc = path.match(/^\/rest\/v1\/rpc\/([^/]+)$/);
-    if (rpc) return json(route, data.tables?.[`rpc:${rpc[1]}`] ?? []);
+    if (rpc) return json(route, tables[`rpc:${rpc[1]}`] ?? []);
 
     const rest = path.match(/^\/rest\/v1\/([^/]+)$/);
     if (rest) {
       const table = rest[1];
-      if (method !== 'GET' && method !== 'HEAD') {
-        const body = readBody(req);
-        mock.writes.push({ method, table, body });
-        // `.insert(...).select().single()` expects the created row back.
-        const wantsObject = (req.headers()['accept'] ?? '').includes('vnd.pgrst.object');
-        if (method === 'POST' && wantsObject) {
-          return json(route, { id: `new-${table}-${mock.writes.length}`, created_at: '2025-01-01T00:00:00Z', ...(body as object) }, 201);
-        }
-        return json(route, [], method === 'POST' ? 201 : 200);
-      }
-      let rows = data.tables?.[table] ?? [];
-      if (table === 'team_managers' && current) {
-        rows = (current.managedTeams ?? []).map((team) => ({ team }));
-      }
       const wantsObject = (req.headers()['accept'] ?? '').includes('vnd.pgrst.object');
-      return json(route, wantsObject ? (rows[0] ?? null) : rows);
+      const respond = (rows: unknown[], status = 200) => json(route, wantsObject ? (rows[0] ?? null) : rows, status);
+
+      if (method === 'GET' || method === 'HEAD') {
+        let rows = (tables[table] ?? []).filter(rowMatcher(url.searchParams));
+        if (table === 'team_managers' && current) {
+          rows = (current.managedTeams ?? []).map((team) => ({ team }));
+        }
+        return respond(rows);
+      }
+
+      const body = readBody(req);
+      mock.writes.push({ method, table, body, query: url.search });
+      const stored = (tables[table] ??= []);
+      const matches = rowMatcher(url.searchParams);
+      const returning = (req.headers()['prefer'] ?? '').includes('return=representation');
+      let affected: Record<string, unknown>[] = [];
+
+      if (method === 'POST') {
+        const items = (Array.isArray(body) ? body : [body]) as Record<string, unknown>[];
+        affected = items.map((item) => ({
+          id: `new-${table}-${nextRowId++}`,
+          created_at: '2025-01-01T00:00:00Z',
+          ...item,
+        }));
+        stored.push(...affected);
+      } else if (method === 'PATCH') {
+        affected = stored.filter(matches).map((row) => Object.assign(row, body));
+      } else if (method === 'DELETE') {
+        affected = stored.filter(matches);
+        tables[table] = stored.filter((row) => !affected.includes(row));
+      }
+      return returning ? respond(affected, method === 'POST' ? 201 : 200) : json(route, [], method === 'POST' ? 201 : 200);
     }
 
     mock.unmocked.push(`${method} ${path}${url.search}`);
