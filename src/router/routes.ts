@@ -3,7 +3,6 @@ import CalendarView from '@features/calendar/CalendarView.svelte';
 import AdminDashboard from '@features/admin/AdminDashboard.svelte';
 import Login from '@features/admin/Login.svelte';
 import MyEventsPage from '@features/my-events/MyEventsPage.svelte';
-import MyEventsDemoPage from '@features/my-events/MyEventsDemoPage.svelte';
 import RegisterPage from '@features/auth/RegisterPage.svelte';
 import LoginPage from '@features/auth/LoginPage.svelte';
 import ForgotPasswordPage from '@features/auth/ForgotPasswordPage.svelte';
@@ -54,8 +53,6 @@ export const routes: RouteDefinition[] = [
   {
     path: '/my-events',
     component: MyEventsPage,
-    access: 'authenticated',
-    fallback: MyEventsDemoPage,
     meta: {
       title: 'Create my BMX calendar - BMX Calendar',
       description:

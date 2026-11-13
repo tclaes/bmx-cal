@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
   import { EventsService } from '@core/services';
   import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
@@ -7,7 +7,7 @@
   import { RaceRow, TypeChip } from '@ui';
   import { navigate } from '../../router';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
-  import { authStore } from '@core/stores';
+  import { authStore, featureEnabled } from '@core/stores';
 
   import { PushService } from '@core/services';
   import SaveCalendarModal from './SaveCalendarModal.svelte';
@@ -64,16 +64,30 @@
     }
   }
 
+  // The notification block is behind the `notifications` flag. The flag may load after
+  // this page mounts, so the push check runs once, as soon as the block is allowed.
+  const notificationsFlag = featureEnabled('notifications');
+  let pushChecked = false;
+
+  $: showNotifications = $notificationsFlag && isLoggedIn;
+  $: if (showNotifications && !pushChecked) {
+    pushChecked = true;
+    checkPush();
+  }
+
+  async function checkPush() {
+    try {
+      pushSupported = PushService.isSupported();
+      pushEnabled = pushSupported && await PushService.isSubscribed();
+    } catch {
+      pushEnabled = false;
+    }
+  }
+
   onMount(async () => {
     try {
       events = await EventsService.getAllEvents();
       await loadUserSelections();
-
-      if ($authStore.user) {
-        pushSupported = PushService.isSupported();
-        pushEnabled = pushSupported && await PushService.isSubscribed();
-
-      }
     } catch (e) {
       error = e instanceof Error ? e.message : $t.myEvents.failedToLoad;
     } finally {
@@ -96,14 +110,53 @@
     }
   }
 
+  // Clearing is undoable for a few seconds instead of asking for confirmation.
+  const UNDO_MS = 6000;
+  let clearedIds: string[] = [];
+  let undoVisible = false;
+  let undoButton: HTMLButtonElement | undefined;
+  let undoTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function hideUndo() {
+    clearTimeout(undoTimer);
+    undoVisible = false;
+    clearedIds = [];
+  }
+
   async function handleClearAll() {
+    const ids = Array.from($selectedEventIds);
     try {
       await clearAllSelections();
       error = '';
+      clearedIds = ids;
+      undoVisible = true;
+      clearTimeout(undoTimer);
+      undoTimer = setTimeout(hideUndo, UNDO_MS);
+      // The clear button is gone now; keep keyboard focus on the way back
+      await tick();
+      undoButton?.focus();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to clear selections';
     }
   }
+
+  async function handleUndo() {
+    const wanted = new Set(clearedIds);
+    hideUndo();
+    try {
+      // Restore exactly the cleared selection, also when races were picked in the meantime.
+      const current = $selectedEventIds;
+      const toRemove = Array.from(current).filter(id => !wanted.has(id));
+      const toAdd = Array.from(wanted).filter(id => !current.has(id));
+      if (toRemove.length > 0) await deselectEventsByType(toRemove);
+      if (toAdd.length > 0) await selectEventsByType(toAdd);
+      error = '';
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to restore selections';
+    }
+  }
+
+  onDestroy(() => clearTimeout(undoTimer));
 
   function handleSaveCalendar() {
     if ($selectedCount === 0) {
@@ -158,6 +211,7 @@
   }
 
   function exportToCalendar() {
+    if (!isLoggedIn) return;
     if ($selectedCount === 0) {
       error = $t.myEvents.selectAtLeastOne;
       return;
@@ -182,28 +236,53 @@
 
 <div class="my-events-page">
   <div class="header">
-    <div>
-      <h1>{$t.myEvents.title}</h1>
-      <p class="subtitle">{$t.myEvents.subtitle}</p>
-    </div>
-
-    {#if $selectedCount > 0}
-      <div class="header-actions">
-        <span class="count">{interpolate($t.myEvents.selected, { count: $selectedCount })}</span>
-        <Button variant="secondary" size="sm" on:click={handleClearAll}>
-          {$t.myEvents.clearAll}
-        </Button>
-        {#if isLoggedIn}
-          <Button variant="secondary" on:click={handleSaveCalendar}>
-            {$t.myEvents.saveCalendar}
-          </Button>
-        {/if}
-        <Button on:click={exportToCalendar} disabled={exporting}>
-          {exporting ? $t.myEvents.exporting : $t.myEvents.exportToCalendar}
-        </Button>
-      </div>
-    {/if}
+    <h1>{$t.myEvents.title}</h1>
+    <p class="subtitle">{$t.myEvents.subtitle}</p>
   </div>
+
+  {#if $selectedCount > 0}
+    <div class="selection">
+      <div class="top">
+        <span class="count">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" />
+          </svg>
+          {interpolate($t.myEvents.selected, { count: $selectedCount })}
+        </span>
+        <button type="button" class="clear" on:click={handleClearAll}>{$t.myEvents.clearSelection}</button>
+      </div>
+
+      {#if isLoggedIn}
+        <div class="actions">
+          <div class="act act-export">
+            <Button fullWidth on:click={exportToCalendar} disabled={exporting}>
+              {exporting ? $t.myEvents.exporting : $t.myEvents.exportToCalendar}
+            </Button>
+          </div>
+          <div class="act act-save">
+            <Button variant="ghost" fullWidth on:click={handleSaveCalendar}>
+              {$t.myEvents.saveCalendar}
+            </Button>
+          </div>
+        </div>
+      {:else}
+        <div class="actions account">
+          <p class="reason">{$t.myEvents.accountReason}</p>
+          <div class="act">
+            <Button fullWidth on:click={() => navigate('/register')}>{$t.myEvents.createAccountToExport}</Button>
+          </div>
+          <a class="signin" href="/login" on:click|preventDefault={() => navigate('/login')}>{$t.nav.signIn}</a>
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  {#if undoVisible}
+    <div class="undo" role="status">
+      <span>{clearedIds.length === 1 ? $t.myEvents.selectionClearedOne : interpolate($t.myEvents.selectionCleared, { count: clearedIds.length })}</span>
+      <button type="button" class="undo-btn" bind:this={undoButton} on:click={handleUndo}>{$t.myEvents.undo}</button>
+    </div>
+  {/if}
 
   {#if isLoggedIn}
     <SavedCalendarsList
@@ -212,7 +291,7 @@
     />
   {/if}
 
-  {#if isLoggedIn && !loading}
+  {#if showNotifications && !loading}
     <div class="notif-section">
       <h2 class="notif-title">{$t.myEvents.notifTitle}</h2>
       <p class="notif-description">{$t.myEvents.notifDescription}</p>
@@ -307,19 +386,14 @@
   }
 
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-xl);
-    margin-bottom: var(--spacing-lg);
-    flex-wrap: wrap;
+    margin-block-end: var(--spacing-lg);
   }
 
   h1 {
     font-family: var(--font-family-heading);
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
-    margin: 0 0 var(--spacing-sm) 0;
+    margin: 0 0 var(--spacing-xs);
     color: var(--color-text-primary);
   }
 
@@ -328,19 +402,131 @@
     margin: 0;
   }
 
-  .header-actions {
+  /* Selection bar: count and clear on one bar, then two equal actions */
+  .selection {
     display: flex;
+    flex-direction: column;
     gap: var(--spacing-md);
+    margin-block-end: var(--spacing-lg);
+  }
+
+  .top {
+    display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    min-block-size: calc(var(--touch-target-min) + var(--spacing-sm));
+    padding-inline: var(--spacing-md) var(--spacing-xs);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--border-radius-md);
   }
 
   .count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: var(--color-bg-secondary);
+  }
+
+  .count svg {
+    color: var(--color-accent);
+  }
+
+  .clear,
+  .signin {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--touch-target-min);
+    padding-inline: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .clear:hover,
+  .signin:hover {
+    color: var(--color-text-primary);
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm-plus);
+  }
+
+  .actions.account {
+    justify-items: stretch;
+  }
+
+  .reason {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .signin {
+    justify-self: center;
+  }
+
+  /* In the flow, where the selection bar was, so it is never hidden behind a banner */
+  .undo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-block-end: var(--spacing-lg);
+    min-block-size: calc(var(--touch-target-min) + var(--spacing-sm));
+    padding: 0 var(--spacing-xs) 0 var(--spacing-md);
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+  }
+
+  .undo-btn {
+    min-block-size: var(--touch-target-min);
+    padding-inline: var(--spacing-md);
+    color: var(--color-primary-hover);
+    font-weight: var(--font-weight-semibold);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  @media (min-width: 768px) {
+    .selection {
+      flex-flow: row wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+      padding-inline-end: var(--spacing-sm);
+      background-color: var(--color-bg-secondary);
+      border-radius: var(--border-radius-md);
+    }
+
+    .top {
+      background-color: transparent;
+    }
+
+    /* Equal columns: both actions are as wide as the wider one */
+    .actions {
+      grid-template-columns: repeat(2, 1fr);
+      inline-size: max-content;
+      max-inline-size: 100%;
+      align-items: center;
+    }
+
+    .act-save {
+      order: -1;
+    }
+
+    .actions.account {
+      grid-template-columns: 1fr auto auto;
+    }
   }
 
   .loading-container {
@@ -428,22 +614,6 @@
   }
 
   @media (max-width: 640px) {
-    .header {
-      flex-direction: column;
-      gap: var(--spacing-md);
-    }
-
-    .header-actions {
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .count {
-      order: -1;
-      width: 100%;
-      text-align: center;
-    }
-
     .type-selector {
       flex-direction: column;
       align-items: flex-start;

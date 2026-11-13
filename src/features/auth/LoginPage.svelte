@@ -2,7 +2,7 @@
   import { Card, Input, Button, Alert } from '@ui';
   import { toUserMessage } from '@shared/utils';
   import { AuthService } from '@core/services';
-  import { authStore } from '@core/stores';
+  import { authStore, adoptLocalSelections } from '@core/stores';
   import { navigate } from '../../router';
   import { t } from '../../i18n';
 
@@ -24,6 +24,7 @@
       await AuthService.login(email, password);
       const user = await AuthService.getCurrentUser();
       authStore.setUser(user);
+      await adoptLocalSelections();
       navigate('/my-events');
     } catch (err) {
       error = toUserMessage(err, 'Login failed');

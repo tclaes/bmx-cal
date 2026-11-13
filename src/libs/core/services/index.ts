@@ -10,3 +10,4 @@ export { PushService } from './push.service';
 export { notificationPreferenceService } from './notification-preference.service';
 export type { NotificationPreference } from './notification-preference.service';
 export { NewsService } from './news.service';
+export { FeatureFlagService } from './feature-flag.service';
