@@ -16,7 +16,15 @@ export default defineConfig({
     serviceWorkers: 'block',
     reducedMotion: 'reduce',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', testIgnore: /\.mobile\.spec\.ts$/, use: { ...devices['Desktop Chrome'] } },
+    // Narrow-viewport smoke checks only (*.mobile.spec.ts), Chromium-based so CI needs no extra browser.
+    {
+      name: 'mobile',
+      testMatch: /\.mobile\.spec\.ts$/,
+      use: { ...devices['Pixel 7'], viewport: { width: 375, height: 812 } },
+    },
+  ],
   webServer: {
     command: `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,

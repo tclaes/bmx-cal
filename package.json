@@ -28,6 +28,7 @@
     "test:e2e:mock:ui": "playwright test -c playwright.mock.config.ts --ui"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.65.0",
     "@softarc/eslint-plugin-sheriff": "^0.19.6",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
