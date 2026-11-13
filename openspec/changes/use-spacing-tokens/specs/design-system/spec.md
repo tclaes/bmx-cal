@@ -3,11 +3,11 @@
 ## ADDED Requirements
 
 ### Requirement: Spacing uses design tokens
-All `margin`, `padding`, `gap`, `row-gap` and `column-gap` declarations in application styles SHALL use the `--spacing-*` tokens defined in `src/styles/variables.css`.
+All `margin`, `padding`, `gap`, `row-gap` and `column-gap` declarations (including the legacy `grid-*gap` aliases) in application styles SHALL use the `--spacing-*` tokens defined in `src/styles/variables.css`.
 
 #### Scenario: Component styles use tokens
 - **WHEN** a `.svelte` `<style>` block or a `.css` file under `src/` declares margin, padding or gap
-- **THEN** every non-zero length is `var(--spacing-*)` or a `calc()` expression composed of such tokens
+- **THEN** every non-zero length is `var(--spacing-*)` or a `calc()` expression with no hard-coded lengths, which may combine spacing tokens with other design tokens (for example `calc(var(--touch-target-min) + var(--spacing-sm))`)
 
 #### Scenario: Permitted literals
 - **WHEN** a spacing declaration uses `0`, `auto`, `inherit`, `initial`, `unset` or a percentage
@@ -18,7 +18,7 @@ All `margin`, `padding`, `gap`, `row-gap` and `column-gap` declarations in appli
 - **THEN** every margin, padding and gap that used 16px reflects the new value without further edits
 
 ### Requirement: Spacing regression prevention
-The lint step that runs in CI SHALL fail when a spacing declaration introduces a hard-coded `px`, `rem` or `em` length.
+The lint step that runs in CI SHALL fail when a spacing declaration introduces a hard-coded `px`, `rem` or `em` length, in any letter case.
 
 #### Scenario: Hard-coded value added
 - **WHEN** a contributor adds `padding: 10px` or `padding: var(--spacing-sm) 0.75rem` to a component

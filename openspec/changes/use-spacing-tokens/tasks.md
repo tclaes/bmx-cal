@@ -3,7 +3,7 @@
 ## 1. Decision and inventory
 
 - [x] 1.1 Decide scale approach (snap, no new tokens) and record it in `design.md`.
-- [x] 1.2 Inventory literals with `grep -rnE "(margin|padding|gap)[a-z-]*:.*[0-9]+(px|rem|em)" src` (30 declarations in 17 files) and map each to a token in `design.md`.
+- [x] 1.2 Inventory literals with `grep -rnE "(margin|padding|gap)[a-z-]*:.*[0-9]+(px|rem|em)" src` (31 matches: 30 declarations in 17 files, plus the inline `.sr-only` style in `LoadingSpinner.svelte`) and map each to a token in `design.md`.
 
 ## 2. Migration
 
