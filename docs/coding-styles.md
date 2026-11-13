@@ -34,4 +34,5 @@ The skill lives in the project at `.claude/skills/modern-web-guidance/`, so ever
 
 - Source: [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) (`skills/modern-web-guidance`), copied on 2026-11-13 from skill version `2026_11_09-5bcc021b`. Do not edit it by hand.
 - It searches and retrieves guides through the CLI (`npx -y modern-web-guidance@latest search|retrieve …`), so it needs network access. `.claude/settings.json` allowlists exactly that command (`Bash(npx -y modern-web-guidance@latest:*)`); never widen it to a bare `npx *`.
-- To update it, reinstall from the source (for example `npx skills add GoogleChrome/modern-web-guidance`), then copy the folder over `.claude/skills/modern-web-guidance/` and update the version above.
+- Only `SKILL.md` is kept in the repo. The guides are always fetched through the CLI (latest version), so the upstream `guides/` folder is not needed and is left out on purpose.
+- To update it, reinstall from the source (for example `npx skills add GoogleChrome/modern-web-guidance`), copy only its `SKILL.md` over `.claude/skills/modern-web-guidance/SKILL.md` and update the version above.
