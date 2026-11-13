@@ -1,4 +1,6 @@
+import type { AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@data';
+import { selectionService } from './selection.service';
 import type { AdminUser, Team } from '@types';
 
 async function fetchUserTeams(userId: string): Promise<{ allTeams: Team[]; managedTeams: Team[] }> {
@@ -56,10 +58,21 @@ export class AuthService {
     return user?.role === 'admin' || (user?.managedTeams?.length ?? 0) > 0;
   }
 
-  static onAuthStateChange(callback: (user: AdminUser | null) => void) {
-    return supabase.auth.onAuthStateChange((_event, session) => {
+  static onAuthStateChange(callback: (user: AdminUser | null, event: AuthChangeEvent) => void) {
+    return supabase.auth.onAuthStateChange((event, session) => {
+      // Every way a session can end (logout, account deletion, expiry, another tab) must
+      // drop the cached selection, so the next person to sign in on this browser does not
+      // inherit it. Races selected while signed out are written after this point.
+      if (event === 'SIGNED_OUT') {
+        try {
+          selectionService.clearLocalSelections();
+        } catch (err) {
+          // Storage can be unavailable (private mode, blocked); the auth state must still propagate.
+          console.error('Clearing the cached selection failed', err);
+        }
+      }
       (async () => {
-        callback(session?.user ? await this.toAdminUser(session.user) : null);
+        callback(session?.user ? await this.toAdminUser(session.user) : null, event);
       })();
     });
   }

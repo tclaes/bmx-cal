@@ -16,6 +16,7 @@
 | `sync_logs` | Cron job sync history |
 | `bug_reports` | User-submitted bug reports with optional GitHub issue link |
 | `app_release_policy` | Single row (`id = 1`) with an optional admin override of the minimum app version (`min_version`) and an optional localised `message`. See `docs/releases.md` |
+| `feature_flags` | Named on/off switches (e.g. `notifications`), readable by everyone, changeable by admins, off by default; `updated_at`/`updated_by` are set by a trigger |
 
 ### Row Level Security (RLS)
 
