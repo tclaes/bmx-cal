@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  // Hermetic specs (mocked Supabase) run via playwright.mock.config.ts.
+  testIgnore: ['**/e2e/specs/**'],
   globalSetup: './e2e/global-setup.ts',
   fullyParallel: false,
   workers: 1,

@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "preview:build": "vite build && vite preview --port 4173 --strictPort",
-    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json && tsc -p e2e/tsconfig.json",
     "sheriff": "sheriff verify && eslint src",
     "stylelint": "stylelint \"src/**/*.{css,svelte}\"",
     "stylelint:fix": "stylelint \"src/**/*.{css,svelte}\" --fix",
@@ -23,7 +23,9 @@
     "test-env:stop": "tsx scripts/test-env/start.ts stop",
     "test-env:seed-users": "tsx scripts/test-env/seed-users.ts",
     "test-env:login": "tsx scripts/test-env/login.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:mock": "playwright test -c playwright.mock.config.ts",
+    "test:e2e:mock:ui": "playwright test -c playwright.mock.config.ts --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
