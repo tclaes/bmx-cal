@@ -23,6 +23,6 @@ The action block at the top of the personal calendar has uneven spacing (a full-
 
 ## Impact
 
-- `src/features/my-events/*` (MyEventsPage; MyEventsDemoPage and `my-events-demo.test.ts` removed), `src/router/routes.ts` (no access rule, no fallback), `src/features/admin/AdminDashboard.svelte` (flags section), new `src/libs/core/services/feature-flag.service.ts` and `src/libs/core/stores/feature-flags.store.ts`, new migration `supabase/migrations/…_create_feature_flags.sql`, `docs/db.md`, `docs/features.md`, `src/i18n/locales/{nl,fr,en}.ts` and `types.ts`.
-- Database: one new table with RLS; applied through the Supabase MCP `apply_migration` tool as documented in `docs/db.md`.
+- `src/features/my-events/*` (MyEventsPage; MyEventsDemoPage and `my-events-demo.test.ts` removed), `src/router/routes.ts` (no access rule, no fallback), `src/features/admin/AdminDashboard.svelte` (flags section), new `src/libs/core/services/feature-flag.service.ts` and `src/libs/core/stores/feature-flags.store.ts`, new migrations `supabase/migrations/20261113120000_create_feature_flags.sql` and `20261113120100_harden_feature_flags_grants.sql` (the second revokes `TRUNCATE`, `REFERENCES` and `TRIGGER` that Supabase's default grants give `authenticated`; `TRUNCATE` bypasses RLS), `docs/db.md`, `docs/features.md`, `src/i18n/locales/{nl,fr,en}.ts` and `types.ts`.
+- Database: one new table with RLS and a follow-up grants migration; applied through the Supabase MCP `apply_migration` tool as documented in `docs/db.md`.
 - Tests for the bar, undo, signed-out actions, the flag store (fail closed) and the admin toggle; `my-events-demo.test.ts` is deleted. Must pass the CI gate (tests, build, `npm run sheriff`).

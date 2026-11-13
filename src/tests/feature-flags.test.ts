@@ -41,6 +41,16 @@ describe('feature flags store', () => {
     expect(get(featureFlagsStore).loaded).toBe(true);
   });
 
+  it('keeps everything off and records the error when reading fails', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    svc.getAll.mockRejectedValue(new Error('relation "feature_flags" does not exist'));
+    await featureFlagsStore.load();
+    expect(get(featureFlagsStore).error).toContain('does not exist');
+    expect(isFeatureEnabled('notifications')).toBe(false);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
   it('shows the stored row after an admin change', async () => {
     svc.getAll.mockResolvedValue([row('notifications', false)]);
     await featureFlagsStore.load();
@@ -71,6 +81,16 @@ describe('FeatureFlagsPanel', () => {
     await fireEvent.click(sw);
     await waitFor(() => expect(sw).toHaveAttribute('aria-checked', 'true'));
     expect(svc.setFlag).toHaveBeenCalledWith('notifications', true);
+  });
+
+  it('tells an admin when the flags could not be read instead of claiming there are none', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    svc.getAll.mockRejectedValue(new Error('404'));
+    await featureFlagsStore.load();
+    render(FeatureFlagsPanel);
+    expect(screen.getByRole('alert')).toHaveTextContent('Could not read the feature flags');
+    expect(screen.queryByText('No feature flags found.')).not.toBeInTheDocument();
+    spy.mockRestore();
   });
 
   it('shows an error when the change is rejected and keeps the state', async () => {

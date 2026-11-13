@@ -4,11 +4,13 @@ import type { FeatureFlag } from '@types';
 
 interface FeatureFlagsState {
   loaded: boolean;
+  /** Set when the flags could not be read; every feature stays off. */
+  error: string | null;
   flags: Record<string, FeatureFlag>;
 }
 
 function createFeatureFlagsStore() {
-  const { subscribe, set, update } = writable<FeatureFlagsState>({ loaded: false, flags: {} });
+  const { subscribe, set, update } = writable<FeatureFlagsState>({ loaded: false, error: null, flags: {} });
 
   return {
     subscribe,
@@ -16,9 +18,10 @@ function createFeatureFlagsStore() {
     load: async () => {
       try {
         const list = await FeatureFlagService.getAll();
-        set({ loaded: true, flags: Object.fromEntries(list.map(f => [f.key, f])) });
-      } catch {
-        set({ loaded: true, flags: {} });
+        set({ loaded: true, error: null, flags: Object.fromEntries(list.map(f => [f.key, f])) });
+      } catch (err) {
+        console.error('Failed to load feature flags', err);
+        set({ loaded: true, error: err instanceof Error ? err.message : 'Failed to load feature flags', flags: {} });
       }
     },
     /** Admin action: stores the change, then reflects the stored row. */

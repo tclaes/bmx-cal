@@ -22,7 +22,7 @@
 - [x] 4.3 Signed-out visitors: remove `access` and `fallback` from the `/my-events` route; show the account action and sign-in link instead of export and save; test that export and save are not rendered and the account action opens `/register`
 - [x] 4.4 Delete `MyEventsDemoPage.svelte` and `my-events-demo.test.ts`; fix remaining references (`grep -rn "MyEventsDemo\|myEventsDemo" src` is empty)
 - [x] 4.5 Clear with 6 second undo toast restoring the exact previous selection; tests with fake timers for clear, undo and expiry
-- [x] 4.6 Spacing on tokens, all controls at least 44px; `grep -nE "#[0-9a-fA-F]{3,8}|white" src/features/my-events` has no hits
+- [x] 4.6 Spacing on tokens, all controls at least 44px; `grep -nE "#[0-9a-fA-F]{3,8}\b|\bwhite\b" src/features/my-events | grep -v white-space` has no hits
 
 ## 5. Verification
 

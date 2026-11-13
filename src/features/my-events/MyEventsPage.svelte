@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
   import { EventsService } from '@core/services';
   import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
@@ -114,6 +114,7 @@
   const UNDO_MS = 6000;
   let clearedIds: string[] = [];
   let undoVisible = false;
+  let undoButton: HTMLButtonElement | undefined;
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
 
   function hideUndo() {
@@ -131,16 +132,24 @@
       undoVisible = true;
       clearTimeout(undoTimer);
       undoTimer = setTimeout(hideUndo, UNDO_MS);
+      // The clear button is gone now; keep keyboard focus on the way back
+      await tick();
+      undoButton?.focus();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to clear selections';
     }
   }
 
   async function handleUndo() {
-    const ids = clearedIds;
+    const wanted = new Set(clearedIds);
     hideUndo();
     try {
-      await selectEventsByType(ids);
+      // Restore exactly the cleared selection, also when races were picked in the meantime.
+      const current = $selectedEventIds;
+      const toRemove = Array.from(current).filter(id => !wanted.has(id));
+      const toAdd = Array.from(wanted).filter(id => !current.has(id));
+      if (toRemove.length > 0) await deselectEventsByType(toRemove);
+      if (toAdd.length > 0) await selectEventsByType(toAdd);
       error = '';
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to restore selections';
@@ -268,6 +277,13 @@
     </div>
   {/if}
 
+  {#if undoVisible}
+    <div class="undo" role="status">
+      <span>{clearedIds.length === 1 ? $t.myEvents.selectionClearedOne : interpolate($t.myEvents.selectionCleared, { count: clearedIds.length })}</span>
+      <button type="button" class="undo-btn" bind:this={undoButton} on:click={handleUndo}>{$t.myEvents.undo}</button>
+    </div>
+  {/if}
+
   {#if isLoggedIn}
     <SavedCalendarsList
       refreshTrigger={savedCalendarsRefresh}
@@ -354,13 +370,6 @@
     </div>
   {/if}
 </div>
-
-{#if undoVisible}
-  <div class="undo" role="status">
-    <span>{clearedIds.length === 1 ? $t.myEvents.selectionClearedOne : interpolate($t.myEvents.selectionCleared, { count: clearedIds.length })}</span>
-    <button type="button" class="undo-btn" on:click={handleUndo}>{$t.myEvents.undo}</button>
-  </div>
-{/if}
 
 <SaveCalendarModal
   open={showSaveModal}
@@ -462,24 +471,18 @@
     justify-self: center;
   }
 
+  /* In the flow, where the selection bar was, so it is never hidden behind a banner */
   .undo {
-    position: fixed;
-
-    /* Above the update banner, which sits at the same bottom spot */
-    inset-block-end: calc(var(--spacing-lg) + var(--touch-target-min) + var(--spacing-xl));
-    inset-inline: var(--spacing-md);
-    margin-inline: auto;
-    inline-size: fit-content;
-    max-inline-size: calc(100% - 2 * var(--spacing-md));
-    z-index: 1000;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--spacing-md);
-    padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-md);
+    margin-block-end: var(--spacing-lg);
+    min-block-size: calc(var(--touch-target-min) + var(--spacing-sm));
+    padding: 0 var(--spacing-xs) 0 var(--spacing-md);
     background-color: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-lg);
     color: var(--color-text-primary);
     font-size: var(--font-size-sm);
   }

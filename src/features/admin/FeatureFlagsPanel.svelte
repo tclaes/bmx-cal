@@ -35,6 +35,8 @@
 
   {#if !$featureFlagsStore.loaded}
     <p class="empty">Loading…</p>
+  {:else if $featureFlagsStore.error}
+    <Alert type="danger" message="Could not read the feature flags ({$featureFlagsStore.error}). Has the feature_flags migration been applied?" />
   {:else if flags.length === 0}
     <p class="empty">No feature flags found.</p>
   {:else}

@@ -15,6 +15,7 @@ vi.mock('@core/services', async (orig) => {
     EventsService: { getAllEvents: vi.fn(async () => events.list) },
     PushService: push,
     FeatureFlagService: flagsSvc,
+    CalendarService: { getUserCalendars: vi.fn(async () => []), getCalendarEventIds: vi.fn(async () => []) },
   };
 });
 
@@ -126,7 +127,8 @@ describe('MyEventsPage notifications flag', () => {
     signIn();
     render(MyEventsPage);
     expect(await screen.findByText('Deadline meldingen')).toBeInTheDocument();
-    expect(push.isSupported).toHaveBeenCalled();
+    expect(push.isSupported).toHaveBeenCalledTimes(1);
+    expect(push.isSubscribed).toHaveBeenCalledTimes(1);
   });
 
   it('never shows the block to signed-out visitors, even with the flag on', async () => {
@@ -205,6 +207,24 @@ describe('MyEventsPage clear with undo', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
     await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2', '3']));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('moves focus to the undo button after clearing', async () => {
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    const undo = await screen.findByRole('button', { name: 'Ongedaan maken' });
+    await waitFor(() => expect(undo).toHaveFocus());
+  });
+
+  it('restores exactly the cleared selection even when another race was picked meanwhile', async () => {
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+    selectedEventIds.set(new Set(['4']));
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+    await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2', '3']));
   });
 
   it('removes the message after 6 seconds and keeps the selection empty', async () => {

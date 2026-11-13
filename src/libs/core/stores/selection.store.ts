@@ -55,6 +55,25 @@ export async function toggleEventSelection(eventId: string) {
   });
 }
 
+/**
+ * After signing in or up: races selected while signed out join the account instead of
+ * being replaced by the account's (possibly empty) remote selection.
+ */
+export async function adoptLocalSelections() {
+  const local = selectionService.getLocalSelections();
+  if (local.length === 0) return;
+  try {
+    const remote = new Set(await selectionService.getRemoteSelections());
+    const missing = local.filter(id => !remote.has(id));
+    await Promise.all(missing.map(id => selectionService.addRemoteSelection(id)));
+    const merged = Array.from(new Set([...remote, ...local]));
+    selectionService.saveLocalSelections(merged);
+    selectedEventIds.set(new Set(merged));
+  } catch {
+    // Keep the local selection; the next load syncs it.
+  }
+}
+
 export async function clearAllSelections() {
   selectionService.clearLocalSelections();
   if (await isLoggedIn()) {
