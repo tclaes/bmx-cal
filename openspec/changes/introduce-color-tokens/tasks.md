@@ -16,7 +16,7 @@
 ## 4. Enforcement
 - [x] 4.1 Add `color-no-hex`, `function-disallowed-list`, named-color rule and `colors.css` override to `.stylelintrc.json`
 - [x] 4.2 `npm run stylelint` passes
-- [ ] 4.3 Make the CI check required on `master` (stylelint already runs in CI; branch protection is set in GitHub)
+- [x] 4.3 Require the CI "Test" job (which runs `npm run stylelint`) on `master` via branch protection
 
 ## 5. Docs & verification
 - [x] 5.1 Document the rule in `docs/contribute.md` and `docs/coding-styles.md`
