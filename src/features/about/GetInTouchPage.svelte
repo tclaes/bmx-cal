@@ -306,7 +306,7 @@
   textarea:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
   }
 
   textarea {

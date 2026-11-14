@@ -10,10 +10,10 @@ export interface RegistrationStatus {
 }
 
 const STATUS = {
-  closed: { label: 'Registration Closed', color: '#6b7280', state: 'closed' },
-  opensSoon: { label: 'Registration Opens Soon', color: '#b45309', state: 'soon' },
-  open: { label: 'Registration Open', color: '#047857', state: 'open' },
-  registerNow: { label: 'Register Now', color: '#1d4ed8', state: 'register' },
+  closed: { label: 'Registration Closed', color: 'var(--color-status-closed)', state: 'closed' },
+  opensSoon: { label: 'Registration Opens Soon', color: 'var(--color-status-opens-soon)', state: 'soon' },
+  open: { label: 'Registration Open', color: 'var(--color-status-open)', state: 'open' },
+  registerNow: { label: 'Register Now', color: 'var(--color-status-register-now)', state: 'register' },
 } as const;
 
 function parseLocalDate(dateStr: string): Date {

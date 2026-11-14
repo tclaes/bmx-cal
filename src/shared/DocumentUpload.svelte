@@ -977,7 +977,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: var(--color-warning, #f59e0b);
+    background: var(--color-warning);
     color: var(--color-text-on-accent);
     font-size: 12px;
     font-weight: bold;

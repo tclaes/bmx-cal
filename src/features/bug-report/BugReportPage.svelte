@@ -211,7 +211,7 @@
   }
 
   .required {
-    color: var(--color-error, #dc2626);
+    color: var(--color-error);
   }
 
   .optional {
@@ -319,7 +319,7 @@
   .success-icon {
     width: 56px;
     height: 56px;
-    color: var(--color-success, #16a34a);
+    color: var(--color-success);
   }
 
   .success-icon svg {

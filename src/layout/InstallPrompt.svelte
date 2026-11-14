@@ -106,7 +106,7 @@
   .install-prompt-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgb(0 0 0 / 50%);
+    background-color: var(--color-overlay);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -130,7 +130,7 @@
     max-width: 500px;
     background-color: var(--color-bg-primary);
     border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-    box-shadow: 0 -4px 20px rgb(0 0 0 / 20%);
+    box-shadow: 0 -4px 20px color-mix(in srgb, var(--color-shadow) 20%, transparent);
     animation: slide-up 0.3s ease-out;
     margin: 0 var(--spacing-md) 0 var(--spacing-md);
   }
@@ -182,7 +182,7 @@
     height: 80px;
     border-radius: var(--border-radius-lg);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 10%, transparent);
   }
 
 

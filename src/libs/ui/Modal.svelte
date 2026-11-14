@@ -121,7 +121,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgb(0 0 0 / 50%);
+    background-color: var(--color-overlay);
     display: flex;
     align-items: center;
     justify-content: center;

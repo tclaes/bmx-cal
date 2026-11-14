@@ -227,7 +227,7 @@
   }
 
   .toc a:hover {
-    color: var(--color-primary-dark, #1d4ed8);
+    color: var(--color-primary-dark);
   }
 
   section h2 {
@@ -292,7 +292,7 @@
   }
 
   .links-list a:hover {
-    color: var(--color-primary-dark, #1d4ed8);
+    color: var(--color-primary-dark);
   }
 
   .related-section h2 {
@@ -322,7 +322,7 @@
 
   .related-card:hover {
     border-color: var(--color-primary);
-    box-shadow: 0 2px 8px rgb(37 99 235 / 8%);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 8%, transparent);
   }
 
   .related-card strong {

@@ -56,7 +56,7 @@ When the platform has an element or API for something, use it instead of rebuild
 
 ### Project conventions
 
-- Colours, spacing, radii, shadows and z-indexes come from tokens in `src/styles/variables.css`. Do not hardcode values in components.
+- Colours come from `var(--color-*)` tokens in `src/styles/colors.css` (never hex, `rgb()`, `hsl()` or named colors in components). Spacing, radii, shadows and z-indexes come from tokens in `src/styles/variables.css`. Do not hardcode values in components.
 - Touch targets are at least 44px (`--touch-target-min`). Mobile comes first.
 - All user-facing text goes through i18n (`nl`, `fr`, `en`).
 - Module boundaries are enforced by Sheriff; see `docs/architecture.md` and `docs/contribute.md`.
