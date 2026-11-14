@@ -21,6 +21,7 @@ describe('color tokens', () => {
     "const c = 'rgb(0 0 0)';",
     "const c = 'rgba(0, 0, 0, 0.5)';",
     "const c = 'hsl(10 20% 30%)';",
+    "const c = 'hsla(10, 20%, 30%, 0.5)';",
     "const c = 'hwb(10 20% 30%)';",
     "const c = 'lab(50% 10 10)';",
     "const c = 'lch(50% 10 10)';",
