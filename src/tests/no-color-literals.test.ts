@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 const SRC = join(__dirname, '..');
 // Keep the function list in sync with `function-disallowed-list` in .stylelintrc.json.
-const COLOR_LITERAL = /(^|[^&\w])#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/;
+const COLOR_LITERAL = /(^|[^&\w])#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i;
 
 function collectTsFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -28,6 +28,9 @@ describe('color tokens', () => {
     "const c = 'oklab(50% 0.1 0.1)';",
     "const c = 'oklch(60% 0.1 200)';",
     "const c = 'color(display-p3 1 0 0)';",
+    "const c = 'RGB(0 0 0)';",
+    "const c = 'Color(display-p3 1 0 0)';",
+    "const c = '#FFF';",
   ])('flags %s', (line) => {
     expect(COLOR_LITERAL.test(line)).toBe(true);
   });
