@@ -81,7 +81,11 @@ export const adoptLocalSelections = () => serialized(async () => {
   try {
     const remote = new Set(await selectionService.getRemoteSelections());
     const missing = local.filter(id => !remote.has(id));
-    await Promise.all(missing.map(id => selectionService.addRemoteSelection(id)));
+    // Wait for every insert, also after one fails, so no insert is still running once the
+    // next queued write (for example a clear) starts.
+    const results = await Promise.allSettled(missing.map(id => selectionService.addRemoteSelection(id)));
+    const failure = results.find(r => r.status === 'rejected');
+    if (failure) throw (failure as PromiseRejectedResult).reason;
     const merged = Array.from(new Set([...remote, ...local]));
     selectionService.saveLocalSelections(merged);
     selectedEventIds.set(new Set(merged));

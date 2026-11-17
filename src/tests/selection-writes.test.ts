@@ -9,14 +9,20 @@ const db = vi.hoisted(() => ({
   failFor: new Set<string>(),
   /** When set, upserts wait for this promise before answering. */
   hold: null as Promise<void> | null,
+  /** Per-race holds: an upsert for that race waits for its promise. */
+  holdFor: new Map<string, Promise<void>>(),
+  remote: [] as string[],
 }));
 
 vi.mock('@data', () => ({
   supabase: {
     auth: { getUser: vi.fn(async () => ({ data: { user: db.user } })) },
     from: vi.fn(() => ({
+      select: async () => ({ data: db.remote.map(event_id => ({ event_id })), error: null }),
       upsert: async (row: { event_id: string }, options: unknown) => {
         if (db.hold) await db.hold;
+        const held = db.holdFor.get(row.event_id);
+        if (held) await held;
         db.calls.push({ op: 'upsert', eventId: row.event_id, options });
         return { error: db.failFor.has(row.event_id) ? { message: `insert ${row.event_id} denied` } : null };
       },
@@ -30,7 +36,7 @@ vi.mock('@data', () => ({
   },
 }));
 
-import { selectEventsByType, deselectEventsByType, toggleEventSelection, clearAllSelections, selectedEventIds } from '@core/stores';
+import { selectEventsByType, deselectEventsByType, toggleEventSelection, clearAllSelections, adoptLocalSelections, selectedEventIds } from '@core/stores';
 import { selectionService } from '@core/services';
 
 function setSelection(ids: string[]) {
@@ -45,6 +51,8 @@ beforeEach(() => {
   db.calls = [];
   db.failFor = new Set();
   db.hold = null;
+  db.holdFor = new Map();
+  db.remote = [];
   localStorage.clear();
   setSelection([]);
 });
@@ -93,6 +101,25 @@ describe('selection writes', () => {
     expect(db.calls.map(c => c.op)).toEqual(['upsert', 'delete']);
     expect(storeIds()).toEqual([]);
     expect(localIds()).toEqual([]);
+  });
+
+  it('merging signed-out picks waits for every insert, also after one fails, before a queued clear runs', async () => {
+    setSelection(['a', 'b']);
+    db.failFor.add('a');
+    let releaseB!: () => void;
+    db.holdFor.set('b', new Promise<void>(r => { releaseB = r; }));
+
+    const adopting = adoptLocalSelections();
+    const clearing = clearAllSelections();
+    await new Promise(r => setTimeout(r, 0));
+    // 'a' was rejected, but 'b' is still being written: the clear must not have started.
+    expect(db.calls.map(c => c.op)).toEqual(['upsert']);
+
+    releaseB();
+    await adopting;
+    await clearing;
+    expect(db.calls.map(c => `${c.op}:${c.eventId ?? 'all'}`)).toEqual(['upsert:a', 'upsert:b', 'delete:all']);
+    expect(storeIds()).toEqual([]);
   });
 
   it('a failed write does not block later writes', async () => {
