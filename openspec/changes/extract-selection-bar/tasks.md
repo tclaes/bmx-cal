@@ -10,7 +10,7 @@
 ## 2. Fix the card layout
 
 - [x] 2.1 In `SelectionBar.svelte`, make `.selection` the card on all widths (`--color-bg-secondary`, `--border-radius-md`, `padding: var(--spacing-md)`, column flex with `gap: var(--spacing-md)`). Drop `.top`'s own background, padding and extra min-height, and remove the `row wrap` desktop override. Verify `npm run stylelint` passes and no hardcoded colours or spacing are added.
-- [x] 2.2 Keep `.actions` as one column below 768px and two equal `max-content` columns from 768px with "save calendar" first. Keep `1fr auto auto` for the signed-out variant. In the Browser pane at 1280px and 375px, signed in and signed out, verify the count row is on top, the actions are below it, and the gap to the left and bottom card edges matches the top padding (right gap at least that padding; desktop signed-in buttons stay content-width). Take screenshots as proof.
+- [x] 2.2 Keep `.actions` as one column below 768px and two equal `max-content` columns from 768px with "save calendar" first. Keep `1fr auto auto` for the signed-out variant. The save-first order on wide screens is visual only (CSS `order`); the DOM keeps export first for mobile, accepted for focus order (see design.md, Layout). In the Browser pane at 1280px and 375px, signed in and signed out, verify the count row is on top, the actions are below it, and the gap to the left and bottom card edges matches the top padding (right gap at least that padding; desktop signed-in buttons stay content-width). Take screenshots as proof.
 - [x] 2.3 Verify every control in the bar still measures at least 44px tall (computed `block-size` via the Browser pane's JavaScript tool) at both widths.
 
 ## 3. Integration checks

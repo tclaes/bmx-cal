@@ -5,7 +5,7 @@
 ### Requirement: Selection bar and actions
 When at least one race is selected, the page SHALL show one selection bar with the number of selected races and a control to clear the selection, followed by the actions. For signed-in users the actions SHALL be an accent export action and an outlined "save calendar" action of equal height and width, stacked at full width on narrow screens and side by side on wide screens. The "save calendar" action SHALL NOT be shown to signed-out visitors.
 
-The bar SHALL be a single card on every screen width. The count and the clear control form the top row and the actions sit in a row below it. Every row SHALL be inside the card's inner padding, which SHALL be the same on all four sides, so no control touches the card's edge. On wide screens the signed-in actions keep the width of their content instead of stretching across the card.
+The bar SHALL be a single card on every screen width. The count and the clear control form the top row and the actions sit in a row below it. Every row SHALL be inside the card's inner padding, which SHALL be the same on all four sides (the medium spacing token, 16px), so no control or its touch target reaches into that padding. On wide screens the signed-in actions keep the width of their content instead of stretching across the card.
 
 #### Scenario: Signed-in with a selection
 - **WHEN** a signed-in user has 23 races selected

@@ -28,18 +28,18 @@ Existing coverage: `src/tests/my-events-page.test.ts` has the "selection bar" an
 
 ### Component API
 - Props: `isLoggedIn: boolean`, `exporting: boolean`.
-- Events: `export` and `save` (the page keeps `exportToCalendar` and `handleSaveCalendar`), plus `error` with a message string (the page shows it in its existing error container).
+- Events: `export` and `save` (the page keeps `exportToCalendar` and `handleSaveCalendar`), plus `error`. Its detail is a message string the page shows in its existing error container, or `''` after a successful clear or undo, which clears an earlier error. The page sets its `error` to whatever the event carries.
 - The component reads `selectedCount` and `selectedEventIds` itself and calls `clearAllSelections`, `selectEventsByType` and `deselectEventsByType` for clear and undo, as the page does today. The "create account" button and the "sign in" link call `navigate` directly.
 
 *Alternative:* pass the count and callbacks in as props and keep the stores in the page. Rejected because undo needs the live selection at undo time to compute the diff, and passing that through adds wiring without making testing easier, since the store is already mocked in tests.
 
 ### Undo message lives in the component
-The component renders the bar when `$selectedCount > 0` and the undo message when it is visible, both at the same spot in the flow. Focus moves to the undo button after `tick()`, and the timer is cleared in `onDestroy`. This keeps the "clear → undo" behaviour in one place (user decision).
+The component renders the bar when `$selectedCount > 0` and the undo message when it is visible, both at the same spot in the flow. Focus moves to the undo button after `tick()`, and back to the clear control after undo, so keyboard users never lose focus. Undo always runs both the remove and the add step, so a failed remove still brings the cleared races back, and any failure is reported through `error`. The timer is cleared in `onDestroy`. This keeps the "clear → undo" behaviour in one place (user decision).
 
 ### Layout
 - `.selection` is the card on every width: `background-color: var(--color-bg-secondary)`, `border-radius: var(--border-radius-md)`, `padding: var(--spacing-md)`, `display: flex; flex-direction: column; gap: var(--spacing-md)`.
 - `.top` loses its own background, padding and the extra min-height. It is a flex row with `justify-content: space-between`. The clear button keeps its 44px touch target.
-- `.actions` is a one-column grid below 768px. From 768px it has two equal columns with `inline-size: max-content; max-inline-size: 100%`, left-aligned, and "save calendar" comes first via `order: -1` as it does today. The signed-out variant keeps `1fr auto auto` from 768px.
+- `.actions` is a one-column grid below 768px. From 768px it has two equal columns with `inline-size: max-content; max-inline-size: 100%`, left-aligned, and "save calendar" comes first via `order: -1` as it does today. The DOM keeps export first, so on wide screens the visual order differs from the tab and reading order. This is accepted on purpose: on mobile (the priority) the DOM order is the visual order with the primary export action first, and the existing page used the same reorder. The signed-out variant keeps `1fr auto auto` from 768px.
 - `.selection` no longer has a desktop override that switches to `row wrap`. This removes the wrap that caused the bug. It was a two-row layout by user choice.
 - Only existing spacing and colour tokens from `src/styles/variables.css` are used.
 

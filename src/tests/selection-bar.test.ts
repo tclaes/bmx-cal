@@ -24,7 +24,7 @@ vi.mock('@core/stores', async (orig) => {
 });
 
 import SelectionBar from '../features/my-events/SelectionBar.svelte';
-import { selectedEventIds } from '@core/stores';
+import { selectedEventIds, clearAllSelections, deselectEventsByType } from '@core/stores';
 import { locale } from '../i18n';
 
 beforeEach(() => {
@@ -88,20 +88,61 @@ describe('SelectionBar', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
+  it('moves focus back to the clear control after undo', async () => {
+    selectedEventIds.set(new Set(['1', '2']));
+    render(SelectionBar, { isLoggedIn: true });
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await fireEvent.click(await screen.findByRole('button', { name: 'Ongedaan maken' }));
+    const clear = await screen.findByRole('button', { name: 'Selectie wissen' });
+    await waitFor(() => expect(clear).toHaveFocus());
+  });
+
   it('removes the undo message after 6 seconds', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    // The clock only moves when the test moves it, so slow runs cannot fire the timer early.
+    vi.useFakeTimers();
     try {
       selectedEventIds.set(new Set(['1']));
       render(SelectionBar, { isLoggedIn: false });
       await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
-      await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('1 evenement gewist'));
-      vi.advanceTimersByTime(5900);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(screen.getByRole('status')).toHaveTextContent('1 evenement gewist');
+      await vi.advanceTimersByTimeAsync(5900);
       expect(screen.getByRole('status')).toBeInTheDocument();
-      vi.advanceTimersByTime(200);
-      await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+      await vi.advanceTimersByTimeAsync(200);
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
       expect(get(selectedEventIds).size).toBe(0);
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('emits the error and shows no undo message when clearing fails', async () => {
+    vi.mocked(clearAllSelections).mockRejectedValueOnce(new Error('clear failed'));
+    selectedEventIds.set(new Set(['1', '2']));
+    const { component } = render(SelectionBar, { isLoggedIn: true });
+    const onError = vi.fn();
+    component.$on('error', (e: CustomEvent<string>) => onError(e.detail));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(onError).toHaveBeenCalledWith('clear failed'));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(get(selectedEventIds).size).toBe(2);
+  });
+
+  it('still restores the cleared races when removing a newer pick fails, and emits the error', async () => {
+    selectedEventIds.set(new Set(['1', '2']));
+    const { component } = render(SelectionBar, { isLoggedIn: true });
+    const onError = vi.fn();
+    component.$on('error', (e: CustomEvent<string>) => onError(e.detail));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+    selectedEventIds.set(new Set(['4']));
+    vi.mocked(deselectEventsByType).mockRejectedValueOnce(new Error('remove failed'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+
+    await waitFor(() => expect(onError).toHaveBeenLastCalledWith('remove failed'));
+    expect([...get(selectedEventIds)].sort()).toEqual(['1', '2', '4']);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

@@ -16,6 +16,7 @@
   let clearedIds: string[] = [];
   let undoVisible = false;
   let undoButton: HTMLButtonElement | undefined;
+  let clearButton: HTMLButtonElement | undefined;
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
 
   function hideUndo() {
@@ -44,17 +45,22 @@
   async function handleUndo() {
     const wanted = new Set(clearedIds);
     hideUndo();
-    try {
-      // Restore exactly the cleared selection, also when races were picked in the meantime.
-      const current = $selectedEventIds;
-      const toRemove = Array.from(current).filter(id => !wanted.has(id));
-      const toAdd = Array.from(wanted).filter(id => !current.has(id));
-      if (toRemove.length > 0) await deselectEventsByType(toRemove);
-      if (toAdd.length > 0) await selectEventsByType(toAdd);
-      dispatch('error', '');
-    } catch (e) {
-      dispatch('error', e instanceof Error ? e.message : 'Failed to restore selections');
+    // Restore exactly the cleared selection, also when races were picked in the meantime.
+    // Both steps always run, so a failed removal never keeps the cleared races from coming back.
+    const current = $selectedEventIds;
+    const toRemove = Array.from(current).filter(id => !wanted.has(id));
+    const toAdd = Array.from(wanted).filter(id => !current.has(id));
+    let failure: unknown;
+    if (toRemove.length > 0) {
+      try { await deselectEventsByType(toRemove); } catch (e) { failure = e; }
     }
+    if (toAdd.length > 0) {
+      try { await selectEventsByType(toAdd); } catch (e) { failure ??= e; }
+    }
+    dispatch('error', failure === undefined ? '' : failure instanceof Error ? failure.message : 'Failed to restore selections');
+    // The undo button is gone now; keep keyboard focus on the clear control that came back
+    await tick();
+    clearButton?.focus();
   }
 
   onDestroy(() => clearTimeout(undoTimer));
@@ -69,7 +75,7 @@
         </svg>
         {interpolate($t.myEvents.selected, { count: $selectedCount })}
       </span>
-      <button type="button" class="clear" on:click={handleClearAll}>{$t.myEvents.clearSelection}</button>
+      <button type="button" class="clear" bind:this={clearButton} on:click={handleClearAll}>{$t.myEvents.clearSelection}</button>
     </div>
 
     {#if isLoggedIn}
@@ -146,11 +152,6 @@
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
-  }
-
-  /* Keep the touch target, but line the text up with the card's inner edge */
-  .clear {
-    margin-inline-end: calc(-1 * var(--spacing-sm));
   }
 
   .clear:hover,
