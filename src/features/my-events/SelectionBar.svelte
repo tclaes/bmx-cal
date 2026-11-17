@@ -25,9 +25,13 @@
   let latestClear: Promise<unknown> = Promise.resolve();
 
   async function newerClearSucceeded(started: number, succeeded: number): Promise<boolean> {
-    if (clearsStarted === started) return false;
     // Store writes run in order, so once the latest clear settles every earlier one has too.
-    await latestClear;
+    // Keep waiting while more clears start, so a later clear is never overtaken by the restore.
+    let seen = started;
+    while (clearsStarted !== seen) {
+      seen = clearsStarted;
+      await latestClear;
+    }
     return clearsSucceeded !== succeeded;
   }
 

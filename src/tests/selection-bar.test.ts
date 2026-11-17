@@ -153,6 +153,50 @@ describe('SelectionBar', () => {
     await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']));
   });
 
+  it('waits for a second newer clear that starts while undo waits on a first one that fails', async () => {
+    selectedEventIds.set(new Set(['1', '2']));
+    render(SelectionBar, { isLoggedIn: true });
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+
+    selectedEventIds.set(new Set(['4']));
+    let finishRemoval!: () => void;
+    vi.mocked(deselectEventsByType).mockImplementationOnce(
+      (ids: string[]) => new Promise<void>((resolve) => {
+        finishRemoval = () => {
+          selectedEventIds.update(s => { const n = new Set(s); ids.forEach(i => n.delete(i)); return n; });
+          resolve();
+        };
+      }),
+    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+
+    // First newer clear: held open, will fail.
+    let failFirst!: () => void;
+    vi.mocked(clearAllSelections).mockImplementationOnce(
+      () => new Promise<void>((_, reject) => { failFirst = () => reject(new Error('network down')); }),
+    );
+    await fireEvent.click(await screen.findByRole('button', { name: 'Selectie wissen' }));
+    finishRemoval();
+
+    // While undo waits on the first clear, the user picks a race and clears again: held, will succeed.
+    selectedEventIds.set(new Set(['5']));
+    let finishSecond!: () => void;
+    vi.mocked(clearAllSelections).mockImplementationOnce(
+      () => new Promise<void>((resolve) => { finishSecond = () => { selectedEventIds.set(new Set()); resolve(); }; }),
+    );
+    await fireEvent.click(await screen.findByRole('button', { name: 'Selectie wissen' }));
+
+    failFirst();
+    await new Promise(r => setTimeout(r, 0));
+    expect(vi.mocked(selectEventsByType)).not.toHaveBeenCalled(); // still waiting for the second clear
+    finishSecond();
+    await new Promise(r => setTimeout(r, 0));
+
+    expect(vi.mocked(selectEventsByType)).not.toHaveBeenCalled();
+    expect(get(selectedEventIds).size).toBe(0);
+  });
+
   it('removes the undo message after 6 seconds', async () => {
     // The clock only moves when the test moves it, so slow runs cannot fire the timer early.
     vi.useFakeTimers();
