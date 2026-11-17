@@ -18,6 +18,8 @@
 - [x] 3.1 Translate the clear and restore failure messages (`myEvents.clearFailed`, `myEvents.restoreFailed` in nl, fr and en) and emit them instead of raw or English error text. Verify with the error-path tests in `src/tests/selection-bar.test.ts`.
 - [x] 3.2 When restoring fails, show the same undo again for 6 seconds with focus on it, and let a newer clear cancel an undo that is still running. Verify with the "restoring fails", "retry" and "clears again while undo is still running" tests.
 
+- [x] 3.3 Make `clearAllSelections` all-or-nothing: clear the account first and throw on a Supabase error, then clear this device. Verify with `src/tests/selection-clear.test.ts`, which fails against the old store.
+
 ## 4. Integration checks
 
 - [x] 4.1 Run `npm test`, `npm run check`, `npm run sheriff` and `npm run stylelint`, and verify all pass.

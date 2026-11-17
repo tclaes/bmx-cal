@@ -74,11 +74,15 @@ export async function adoptLocalSelections() {
   }
 }
 
+/**
+ * Clears the account first and only then this device, so a failed clear (it throws)
+ * leaves the selection exactly as it was everywhere.
+ */
 export async function clearAllSelections() {
-  selectionService.clearLocalSelections();
   if (await isLoggedIn()) {
     await selectionService.clearRemoteSelections();
   }
+  selectionService.clearLocalSelections();
   selectedEventIds.set(new Set());
 }
 

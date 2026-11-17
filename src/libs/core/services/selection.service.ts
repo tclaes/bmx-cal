@@ -50,10 +50,11 @@ export const selectionService = {
   async clearRemoteSelections(): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase
+    const { error } = await supabase
       .from('user_event_selections')
       .delete()
       .eq('user_id', user.id);
+    if (error) throw error;
   },
 
   getSelections(): string[] {

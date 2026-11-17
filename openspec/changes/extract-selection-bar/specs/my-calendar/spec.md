@@ -32,7 +32,7 @@ The bar SHALL be a single card on every screen width. The count and the clear co
 - **THEN** the reason text, the create-account action and the sign-in link sit below the count row inside the same padded card
 
 ### Requirement: Clear selection with undo
-Clearing the selection SHALL remove all selected races at once without a confirmation dialog and SHALL show a message with the number of cleared races and an undo action for 6 seconds. Undo SHALL restore exactly the cleared selection. If clearing or restoring fails, the page SHALL show a translated error; a failed restore SHALL offer the same undo again for another 6 seconds so no cleared race is lost.
+Clearing the selection SHALL remove all selected races at once without a confirmation dialog and SHALL show a message with the number of cleared races and an undo action for 6 seconds. Undo SHALL restore exactly the cleared selection. If clearing or restoring fails, the page SHALL show a translated error; a failed restore SHALL offer the same undo again for another 6 seconds so the user can retry within that window.
 
 #### Scenario: Clear and undo
 - **WHEN** the user clears 23 selected races and taps undo within 6 seconds
@@ -56,7 +56,7 @@ Clearing the selection SHALL remove all selected races at once without a confirm
 
 #### Scenario: Clearing fails
 - **WHEN** clearing the selection fails
-- **THEN** the selection is unchanged, a translated error is shown and no undo message appears
+- **THEN** the selection is unchanged on this device and in the account, a translated error is shown and no undo message appears
 
 #### Scenario: Restoring fails
 - **WHEN** the user taps undo and restoring the races fails
