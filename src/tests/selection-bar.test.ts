@@ -127,6 +127,32 @@ describe('SelectionBar', () => {
     expect(vi.mocked(selectEventsByType)).not.toHaveBeenCalledWith(expect.arrayContaining(['1', '2']));
   });
 
+  it('still restores the cleared races when a newer clear fails while undo is running', async () => {
+    selectedEventIds.set(new Set(['1', '2']));
+    render(SelectionBar, { isLoggedIn: true });
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+
+    selectedEventIds.set(new Set(['4']));
+    let finishRemoval!: () => void;
+    vi.mocked(deselectEventsByType).mockImplementationOnce(
+      (ids: string[]) => new Promise<void>((resolve) => {
+        finishRemoval = () => {
+          selectedEventIds.update(s => { const n = new Set(s); ids.forEach(i => n.delete(i)); return n; });
+          resolve();
+        };
+      }),
+    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+
+    // The newer clear fails and changes nothing, so it must not cancel the undo.
+    vi.mocked(clearAllSelections).mockRejectedValueOnce(new Error('network down'));
+    await fireEvent.click(await screen.findByRole('button', { name: 'Selectie wissen' }));
+    finishRemoval();
+
+    await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']));
+  });
+
   it('removes the undo message after 6 seconds', async () => {
     // The clock only moves when the test moves it, so slow runs cannot fire the timer early.
     vi.useFakeTimers();

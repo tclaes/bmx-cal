@@ -19,6 +19,8 @@
 - [x] 3.2 When restoring fails, show the same undo again for 6 seconds with focus on it, and let a newer clear cancel an undo that is still running. Verify with the "restoring fails", "retry" and "clears again while undo is still running" tests.
 
 - [x] 3.3 Make `clearAllSelections` all-or-nothing: clear the account first and throw on a Supabase error, then clear this device. Verify with `src/tests/selection-clear.test.ts`, which fails against the old store.
+- [x] 3.4 Run selection writes through one ordered queue, throw on Supabase errors for add and remove (upsert with `ignoreDuplicates` for adds), and put this device back for races the account did not get. Verify with `src/tests/selection-writes.test.ts`.
+- [x] 3.5 Let only a successful newer clear cancel a running undo, and catch a failed clear when loading a saved calendar. Verify with the "newer clear fails" test in `selection-bar.test.ts` and the "loading a saved calendar" tests in `my-events-page.test.ts`.
 
 ## 4. Integration checks
 

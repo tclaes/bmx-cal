@@ -120,9 +120,20 @@
   }
 
   async function handleLoadCalendar(eventIds: string[]) {
-    await clearAllSelections();
-    for (const id of eventIds) {
-      await toggleEventSelection(id);
+    try {
+      await clearAllSelections();
+    } catch {
+      // Clearing is all-or-nothing, so the current selection is still intact.
+      error = $t.myEvents.clearFailed;
+      return;
+    }
+    try {
+      for (const id of eventIds) {
+        await toggleEventSelection(id);
+      }
+      error = '';
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to update selection';
     }
   }
 

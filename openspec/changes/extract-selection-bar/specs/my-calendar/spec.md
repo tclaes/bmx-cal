@@ -65,3 +65,11 @@ Clearing the selection SHALL remove all selected races at once without a confirm
 #### Scenario: Cleared again during undo
 - **WHEN** the user clears the selection again while an undo is still being applied
 - **THEN** the newer clear wins and the earlier cleared races are not added back
+
+#### Scenario: Newer clear fails during undo
+- **WHEN** the user clears again while an undo is still being applied and that clear fails
+- **THEN** the selection is unchanged by the failed clear and the undo still restores the cleared races
+
+#### Scenario: Account rejects a change
+- **WHEN** the account rejects saving or removing a race (on select, deselect, clear or undo)
+- **THEN** this device keeps showing what the account has and an error is shown

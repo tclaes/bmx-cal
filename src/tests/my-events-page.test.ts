@@ -42,7 +42,8 @@ vi.mock('@core/stores', async (orig) => {
 });
 
 import MyEventsPage from '../features/my-events/MyEventsPage.svelte';
-import { selectedEventIds, authStore, featureFlagsStore } from '@core/stores';
+import { selectedEventIds, authStore, featureFlagsStore, clearAllSelections, toggleEventSelection } from '@core/stores';
+import { CalendarService } from '@core/services';
 import { locale } from '../i18n';
 
 const type = (name: string, color = '#ff0000') => ({ id: name, name, color_code: color });
@@ -242,5 +243,31 @@ describe('MyEventsPage clear with undo', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('MyEventsPage loading a saved calendar', () => {
+  beforeEach(() => {
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    selectedEventIds.set(new Set(['1', '2']));
+    vi.mocked(CalendarService.getUserCalendars).mockResolvedValueOnce([
+      { id: 'c1', name: 'Zomer', event_count: 1, created_at: '2099-01-01' },
+    ] as any);
+    vi.mocked(CalendarService.getCalendarEventIds).mockResolvedValueOnce(['3']);
+  });
+
+  it('shows a translated error and keeps the current selection when clearing fails', async () => {
+    vi.mocked(clearAllSelections).mockRejectedValueOnce(new Error('network down'));
+    render(MyEventsPage);
+    await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
+    expect(await screen.findByText('Selectie wissen mislukt')).toBeInTheDocument();
+    expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
+    expect(toggleEventSelection).not.toHaveBeenCalledWith('3');
+  });
+
+  it('replaces the selection with the saved calendar when clearing works', async () => {
+    render(MyEventsPage);
+    await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
+    await waitFor(() => expect([...get(selectedEventIds)]).toEqual(['3']));
   });
 });

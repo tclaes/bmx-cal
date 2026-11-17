@@ -28,5 +28,6 @@ None.
 - New `src/features/my-events/SelectionBar.svelte` (name settled in design).
 - `src/tests/my-events-page.test.ts`: the selection-bar and undo tests keep passing. New component-level tests are added for the bar.
 - `src/i18n/types.ts` and the nl, fr and en locales: two new keys, `myEvents.clearFailed` and `myEvents.restoreFailed`.
-- `src/libs/core/stores/selection.store.ts` and `selection.service.ts`: clearing the selection is all-or-nothing (account first, then this device; a Supabase error now throws).
+- `src/libs/core/stores/selection.store.ts` and `selection.service.ts`: selection writes run in order, throw when Supabase rejects them, and leave this device as it was for races the account did not get; clearing is all-or-nothing (account first, then this device).
+- `MyEventsPage.svelte`: loading a saved calendar shows the translated clear error and keeps the current selection when clearing fails.
 - No changes to the database or edge functions.

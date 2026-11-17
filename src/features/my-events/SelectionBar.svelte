@@ -18,8 +18,18 @@
   let undoButton: HTMLButtonElement | undefined;
   let clearButton: HTMLButtonElement | undefined;
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
-  // Bumped by every clear, so an undo still waiting on the store can tell a newer clear happened.
-  let clearGeneration = 0;
+  // Lets an undo that is still writing tell whether a newer clear happened, and whether it
+  // succeeded: only a successful newer clear cancels the undo.
+  let clearsStarted = 0;
+  let clearsSucceeded = 0;
+  let latestClear: Promise<unknown> = Promise.resolve();
+
+  async function newerClearSucceeded(started: number, succeeded: number): Promise<boolean> {
+    if (clearsStarted === started) return false;
+    // Store writes run in order, so once the latest clear settles every earlier one has too.
+    await latestClear;
+    return clearsSucceeded !== succeeded;
+  }
 
   function hideUndo() {
     clearTimeout(undoTimer);
@@ -39,13 +49,16 @@
 
   async function handleClearAll() {
     const ids = Array.from($selectedEventIds);
-    clearGeneration += 1;
+    clearsStarted += 1;
+    const clearing = clearAllSelections();
+    latestClear = clearing.catch(() => undefined);
     try {
-      await clearAllSelections();
+      await clearing;
     } catch {
       dispatch('error', $t.myEvents.clearFailed);
       return;
     }
+    clearsSucceeded += 1;
     dispatch('error', '');
     // The clear button is gone now; keep keyboard focus on the way back
     await showUndo(ids);
@@ -54,10 +67,11 @@
   async function handleUndo() {
     const cleared = clearedIds;
     const wanted = new Set(cleared);
-    const generation = clearGeneration;
+    const started = clearsStarted;
+    const succeeded = clearsSucceeded;
     hideUndo();
     // Restore exactly the cleared selection, also when races were picked in the meantime.
-    // Both steps always run, so a failed removal never keeps the cleared races from coming back.
+    // A failed removal does not stop the cleared races from coming back.
     const current = $selectedEventIds;
     const toRemove = Array.from(current).filter(id => !wanted.has(id));
     const toAdd = Array.from(wanted).filter(id => !current.has(id));
@@ -65,12 +79,12 @@
     if (toRemove.length > 0) {
       try { await deselectEventsByType(toRemove); } catch { failed = true; }
     }
-    // The user cleared again while the removal was pending: that newer clear wins.
-    if (generation !== clearGeneration) return;
+    // The user cleared again while the removal was pending: a successful newer clear wins.
+    if (await newerClearSucceeded(started, succeeded)) return;
     if (toAdd.length > 0) {
       try { await selectEventsByType(toAdd); } catch { failed = true; }
     }
-    if (generation !== clearGeneration) return;
+    if (await newerClearSucceeded(started, succeeded)) return;
 
     if (failed) {
       // Keep the way back open: offer the same undo again so the user can retry.

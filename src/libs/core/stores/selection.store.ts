@@ -1,4 +1,4 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { selectionService } from '@core/services';
 import { supabase } from '@data';
 
@@ -31,16 +31,32 @@ export async function loadUserSelections() {
   }
 }
 
-export async function toggleEventSelection(eventId: string) {
+// Selection writes run one at a time, in the order they were started, so a newer clear
+// can never be overtaken by an older select or deselect that was still writing.
+let writeQueue: Promise<unknown> = Promise.resolve();
+
+function serialized<T>(write: () => Promise<T>): Promise<T> {
+  const run = writeQueue.then(write, write);
+  writeQueue = run.catch(() => undefined);
+  return run;
+}
+
+export const toggleEventSelection = (eventId: string) => serialized(async () => {
   const loggedIn = await isLoggedIn();
 
   const isSelected = selectionService.toggleSelection(eventId);
 
   if (loggedIn) {
-    if (isSelected) {
-      await selectionService.addRemoteSelection(eventId);
-    } else {
-      await selectionService.removeRemoteSelection(eventId);
+    try {
+      if (isSelected) {
+        await selectionService.addRemoteSelection(eventId);
+      } else {
+        await selectionService.removeRemoteSelection(eventId);
+      }
+    } catch (e) {
+      // The account did not change, so this device should not either.
+      selectionService.toggleSelection(eventId);
+      throw e;
     }
   }
 
@@ -53,13 +69,13 @@ export async function toggleEventSelection(eventId: string) {
     }
     return newIds;
   });
-}
+});
 
 /**
  * After signing in or up: races selected while signed out join the account instead of
  * being replaced by the account's (possibly empty) remote selection.
  */
-export async function adoptLocalSelections() {
+export const adoptLocalSelections = () => serialized(async () => {
   const local = selectionService.getLocalSelections();
   if (local.length === 0) return;
   try {
@@ -72,22 +88,28 @@ export async function adoptLocalSelections() {
   } catch {
     // Keep the local selection; the next load syncs it.
   }
-}
+});
 
 /**
  * Clears the account first and only then this device, so a failed clear (it throws)
  * leaves the selection exactly as it was everywhere.
  */
-export async function clearAllSelections() {
+export const clearAllSelections = () => serialized(async () => {
   if (await isLoggedIn()) {
     await selectionService.clearRemoteSelections();
   }
   selectionService.clearLocalSelections();
   selectedEventIds.set(new Set());
-}
+});
 
+/**
+ * Updates this device right away, then the account. Races whose account write fails are
+ * put back on this device as they were, and the first failure is thrown, so this device
+ * never shows a change the account did not get.
+ */
 async function mutateByType(eventIds: string[], mode: 'add' | 'remove') {
   const loggedIn = await isLoggedIn();
+  const before = get(selectedEventIds);
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
@@ -96,18 +118,27 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove') {
     return newIds;
   });
 
-  if (loggedIn) {
-    const remoteFn = mode === 'add'
-      ? selectionService.addRemoteSelection
-      : selectionService.removeRemoteSelection;
-    await Promise.all(eventIds.map(id => remoteFn.call(selectionService, id)));
-  }
+  if (!loggedIn) return;
+  const remoteFn = mode === 'add'
+    ? selectionService.addRemoteSelection
+    : selectionService.removeRemoteSelection;
+  const results = await Promise.allSettled(eventIds.map(id => remoteFn.call(selectionService, id)));
+  const failedIds = eventIds.filter((_, i) => results[i].status === 'rejected');
+  if (failedIds.length === 0) return;
+
+  selectedEventIds.update(ids => {
+    const newIds = new Set(ids);
+    failedIds.forEach(id => before.has(id) ? newIds.add(id) : newIds.delete(id));
+    selectionService.saveLocalSelections(Array.from(newIds));
+    return newIds;
+  });
+  throw (results.find(r => r.status === 'rejected') as PromiseRejectedResult).reason;
 }
 
-export async function selectEventsByType(eventIds: string[]) {
-  await mutateByType(eventIds, 'add');
+export function selectEventsByType(eventIds: string[]) {
+  return serialized(() => mutateByType(eventIds, 'add'));
 }
 
-export async function deselectEventsByType(eventIds: string[]) {
-  await mutateByType(eventIds, 'remove');
+export function deselectEventsByType(eventIds: string[]) {
+  return serialized(() => mutateByType(eventIds, 'remove'));
 }
