@@ -205,6 +205,8 @@ export const en: Translations = {
     selectAtLeastOne: 'Please select at least one event',
     selectAtLeastOneSave: 'Please select at least one event before saving',
     exportFailed: 'Export failed',
+    clearFailed: 'Failed to clear the selection',
+    restoreFailed: 'Failed to restore the selection. Please try again.',
     notifTitle: 'Deadline notifications',
     notifDescription: 'Select races in your calendar to receive registration deadline reminders. You\'ll get a push notification 7 days and 1 day before the deadline.',
     notifEnablePush: 'Enable notifications',

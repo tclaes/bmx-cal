@@ -13,10 +13,15 @@
 - [x] 2.2 Keep `.actions` as one column below 768px and two equal `max-content` columns from 768px with "save calendar" first. Keep `1fr auto auto` for the signed-out variant. The save-first order on wide screens is visual only (CSS `order`); the DOM keeps export first for mobile, accepted for focus order (see design.md, Layout). In the Browser pane at 1280px and 375px, signed in and signed out, verify the count row is on top, the actions are below it, and the gap to the left and bottom card edges matches the top padding (right gap at least that padding; desktop signed-in buttons stay content-width). Take screenshots as proof.
 - [x] 2.3 Verify every control in the bar still measures at least 44px tall (computed `block-size` via the Browser pane's JavaScript tool) at both widths.
 
-## 3. Integration checks
+## 3. Review follow-ups
 
-- [x] 3.1 Run `npm test`, `npm run check`, `npm run sheriff` and `npm run stylelint`, and verify all pass.
-- [x] 3.2 Run `npm run test:e2e:mock -- e2e/specs/my-events.spec.ts e2e/specs/a11y.spec.ts` and verify the export, account prompt, clear/undo, save-calendar and axe checks pass without selector changes.
+- [x] 3.1 Translate the clear and restore failure messages (`myEvents.clearFailed`, `myEvents.restoreFailed` in nl, fr and en) and emit them instead of raw or English error text. Verify with the error-path tests in `src/tests/selection-bar.test.ts`.
+- [x] 3.2 When restoring fails, show the same undo again for 6 seconds with focus on it, and let a newer clear cancel an undo that is still running. Verify with the "restoring fails", "retry" and "clears again while undo is still running" tests.
+
+## 4. Integration checks
+
+- [x] 4.1 Run `npm test`, `npm run check`, `npm run sheriff` and `npm run stylelint`, and verify all pass.
+- [x] 4.2 Run `npm run test:e2e:mock -- e2e/specs/my-events.spec.ts e2e/specs/a11y.spec.ts` and verify the export, account prompt, clear/undo, save-calendar and axe checks pass without selector changes.
 
 ## Workflow follow-up
 

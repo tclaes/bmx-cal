@@ -203,6 +203,8 @@ export interface Translations {
     selectAtLeastOne: string;
     selectAtLeastOneSave: string;
     exportFailed: string;
+    clearFailed: string;
+    restoreFailed: string;
     notifTitle: string;
     notifDescription: string;
     notifEnablePush: string;

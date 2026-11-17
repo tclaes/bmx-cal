@@ -9,7 +9,8 @@ On wide screens the selection bar on "My calendar" has uneven padding. The card 
 - Extract the selection bar into its own component in `src/features/my-events/`. It covers the count, the "clear selection" control, the signed-in actions (save calendar, export) and the signed-out account prompt.
 - Move the clear-with-undo message and its 6-second timer into the same component. The page keeps data loading, export and the save-calendar modal.
 - Fix the layout. On every width the bar is one card with the same padding on all sides. The count and clear control form the top row, and the actions sit in a second row inside the padding. On wide screens the two signed-in actions sit side by side with equal width ("save calendar" first, export second). On narrow screens they stack at full width.
-- Keep the visible behaviour otherwise the same: text, i18n keys, touch targets, undo semantics and keyboard focus on undo.
+- Keep the visible behaviour otherwise the same: text, touch targets, undo semantics and keyboard focus on undo.
+- Harden clear and undo (from review): translated error messages for a failed clear or restore, undo offered again when restoring fails, focus back on the clear control after undo, and a newer clear cancels an undo that is still running.
 
 ## Capabilities
 
@@ -26,4 +27,5 @@ None.
 - `src/features/my-events/MyEventsPage.svelte`: selection markup, styles and clear/undo state removed. It renders the new component.
 - New `src/features/my-events/SelectionBar.svelte` (name settled in design).
 - `src/tests/my-events-page.test.ts`: the selection-bar and undo tests keep passing. New component-level tests are added for the bar.
-- No changes to stores, services, i18n strings, database or edge functions.
+- `src/i18n/types.ts` and the nl, fr and en locales: two new keys, `myEvents.clearFailed` and `myEvents.restoreFailed`.
+- No changes to stores, services, database or edge functions.

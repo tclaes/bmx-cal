@@ -30,3 +30,38 @@ The bar SHALL be a single card on every screen width. The count and the clear co
 #### Scenario: Signed-out layout
 - **WHEN** a signed-out visitor with races selected views the page at any width
 - **THEN** the reason text, the create-account action and the sign-in link sit below the count row inside the same padded card
+
+### Requirement: Clear selection with undo
+Clearing the selection SHALL remove all selected races at once without a confirmation dialog and SHALL show a message with the number of cleared races and an undo action for 6 seconds. Undo SHALL restore exactly the cleared selection. If clearing or restoring fails, the page SHALL show a translated error; a failed restore SHALL offer the same undo again for another 6 seconds so no cleared race is lost.
+
+#### Scenario: Clear and undo
+- **WHEN** the user clears 23 selected races and taps undo within 6 seconds
+- **THEN** the same 23 races are selected again and the message disappears
+
+#### Scenario: Selection changed meanwhile
+- **WHEN** the user picks another race during the 6 seconds and then taps undo
+- **THEN** the selection is exactly the one from before clearing
+
+#### Scenario: Keyboard focus
+- **WHEN** the selection is cleared
+- **THEN** keyboard focus moves to the undo action
+
+#### Scenario: Focus after undo
+- **WHEN** the user taps undo and the races are restored
+- **THEN** keyboard focus moves to the clear control
+
+#### Scenario: Undo expires
+- **WHEN** 6 seconds pass without undo
+- **THEN** the message disappears and the selection stays empty
+
+#### Scenario: Clearing fails
+- **WHEN** clearing the selection fails
+- **THEN** the selection is unchanged, a translated error is shown and no undo message appears
+
+#### Scenario: Restoring fails
+- **WHEN** the user taps undo and restoring the races fails
+- **THEN** a translated error asks to try again, the undo message with the same count is shown again for 6 seconds with keyboard focus on it, and tapping undo again restores exactly the cleared selection
+
+#### Scenario: Cleared again during undo
+- **WHEN** the user clears the selection again while an undo is still being applied
+- **THEN** the newer clear wins and the earlier cleared races are not added back

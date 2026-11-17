@@ -146,20 +146,20 @@ describe('SelectionBar', () => {
     }
   });
 
-  it('emits the error and shows no undo message when clearing fails', async () => {
-    vi.mocked(clearAllSelections).mockRejectedValueOnce(new Error('clear failed'));
+  it('emits a translated error and shows no undo message when clearing fails', async () => {
+    vi.mocked(clearAllSelections).mockRejectedValueOnce(new Error('network down'));
     selectedEventIds.set(new Set(['1', '2']));
     const { component } = render(SelectionBar, { isLoggedIn: true });
     const onError = vi.fn();
     component.$on('error', (e: CustomEvent<string>) => onError(e.detail));
 
     await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
-    await waitFor(() => expect(onError).toHaveBeenCalledWith('clear failed'));
+    await waitFor(() => expect(onError).toHaveBeenCalledWith('Selectie wissen mislukt'));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(get(selectedEventIds).size).toBe(2);
   });
 
-  it('still restores the cleared races when removing a newer pick fails, and emits the error', async () => {
+  it('still restores the cleared races when removing a newer pick fails, and offers undo again', async () => {
     selectedEventIds.set(new Set(['1', '2']));
     const { component } = render(SelectionBar, { isLoggedIn: true });
     const onError = vi.fn();
@@ -168,11 +168,39 @@ describe('SelectionBar', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
     await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
     selectedEventIds.set(new Set(['4']));
-    vi.mocked(deselectEventsByType).mockRejectedValueOnce(new Error('remove failed'));
+    vi.mocked(deselectEventsByType).mockRejectedValueOnce(new Error('network down'));
     await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
 
-    await waitFor(() => expect(onError).toHaveBeenLastCalledWith('remove failed'));
+    await waitFor(() => expect(onError).toHaveBeenLastCalledWith('Selectie herstellen mislukt. Probeer opnieuw.'));
     expect([...get(selectedEventIds)].sort()).toEqual(['1', '2', '4']);
+    expect(screen.getByRole('status')).toHaveTextContent('2 evenementen gewist');
+
+    // Retrying finishes the job: the newer pick is removed and the error is cleared.
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+    await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']));
+    expect(onError).toHaveBeenLastCalledWith('');
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('keeps undo available when restoring fails, so nothing is lost', async () => {
+    selectedEventIds.set(new Set(['1', '2', '3']));
+    const { component } = render(SelectionBar, { isLoggedIn: true });
+    const onError = vi.fn();
+    component.$on('error', (e: CustomEvent<string>) => onError(e.detail));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+    vi.mocked(selectEventsByType).mockRejectedValueOnce(new Error('network down'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+
+    await waitFor(() => expect(onError).toHaveBeenLastCalledWith('Selectie herstellen mislukt. Probeer opnieuw.'));
+    expect(get(selectedEventIds).size).toBe(0);
+    const undo = screen.getByRole('button', { name: 'Ongedaan maken' });
+    expect(screen.getByRole('status')).toHaveTextContent('3 evenementen gewist');
+    await waitFor(() => expect(undo).toHaveFocus());
+
+    await fireEvent.click(undo);
+    await waitFor(() => expect([...get(selectedEventIds)].sort()).toEqual(['1', '2', '3']));
+    expect(onError).toHaveBeenLastCalledWith('');
   });
 });

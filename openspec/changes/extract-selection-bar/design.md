@@ -28,13 +28,13 @@ Existing coverage: `src/tests/my-events-page.test.ts` has the "selection bar" an
 
 ### Component API
 - Props: `isLoggedIn: boolean`, `exporting: boolean`.
-- Events: `export` and `save` (the page keeps `exportToCalendar` and `handleSaveCalendar`), plus `error`. Its detail is a message string the page shows in its existing error container, or `''` after a successful clear or undo, which clears an earlier error. The page sets its `error` to whatever the event carries.
+- Events: `export` and `save` (the page keeps `exportToCalendar` and `handleSaveCalendar`), plus `error`. Its detail is a translated message string the page shows in its existing error container, or `''` after a successful clear or undo, which clears an earlier error. The page sets its `error` to whatever the event carries.
 - The component reads `selectedCount` and `selectedEventIds` itself and calls `clearAllSelections`, `selectEventsByType` and `deselectEventsByType` for clear and undo, as the page does today. The "create account" button and the "sign in" link call `navigate` directly.
 
 *Alternative:* pass the count and callbacks in as props and keep the stores in the page. Rejected because undo needs the live selection at undo time to compute the diff, and passing that through adds wiring without making testing easier, since the store is already mocked in tests.
 
 ### Undo message lives in the component
-The component renders the bar when `$selectedCount > 0` and the undo message when it is visible, both at the same spot in the flow. Focus moves to the undo button after `tick()`, and back to the clear control after undo, so keyboard users never lose focus. Undo always runs both the remove and the add step, so a failed remove still brings the cleared races back, and any failure is reported through `error`. The timer is cleared in `onDestroy`. This keeps the "clear → undo" behaviour in one place (user decision).
+The component renders the bar when `$selectedCount > 0` and the undo message when it is visible, both at the same spot in the flow. Focus moves to the undo button after `tick()`, and back to the clear control after undo, so keyboard users never lose focus. Undo always runs both the remove and the add step, so a failed remove still brings the cleared races back. If either step fails, the component emits the translated `myEvents.restoreFailed` message and shows the same undo again for 6 seconds, so the user can retry without losing races. A failed clear emits `myEvents.clearFailed`. Every clear bumps a generation counter; an undo that is still waiting on the store stops when a newer clear happened, so it never re-adds races the user just cleared. The timer is cleared in `onDestroy`. This keeps the "clear → undo" behaviour in one place (user decision).
 
 ### Layout
 - `.selection` is the card on every width: `background-color: var(--color-bg-secondary)`, `border-radius: var(--border-radius-md)`, `padding: var(--spacing-md)`, `display: flex; flex-direction: column; gap: var(--spacing-md)`.

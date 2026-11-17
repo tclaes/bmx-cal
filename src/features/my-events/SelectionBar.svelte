@@ -21,14 +21,20 @@
   // Bumped by every clear, so an undo still waiting on the store can tell a newer clear happened.
   let clearGeneration = 0;
 
-  function messageOf(e: unknown, fallback: string): string {
-    return e instanceof Error ? e.message : fallback;
-  }
-
   function hideUndo() {
     clearTimeout(undoTimer);
     undoVisible = false;
     clearedIds = [];
+  }
+
+  /** Offers undo for `ids` for UNDO_MS and moves keyboard focus to it. */
+  async function showUndo(ids: string[]) {
+    clearedIds = ids;
+    undoVisible = true;
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(hideUndo, UNDO_MS);
+    await tick();
+    undoButton?.focus();
   }
 
   async function handleClearAll() {
@@ -36,21 +42,18 @@
     clearGeneration += 1;
     try {
       await clearAllSelections();
-      dispatch('error', '');
-      clearedIds = ids;
-      undoVisible = true;
-      clearTimeout(undoTimer);
-      undoTimer = setTimeout(hideUndo, UNDO_MS);
-      // The clear button is gone now; keep keyboard focus on the way back
-      await tick();
-      undoButton?.focus();
-    } catch (e) {
-      dispatch('error', messageOf(e, 'Failed to clear selections'));
+    } catch {
+      dispatch('error', $t.myEvents.clearFailed);
+      return;
     }
+    dispatch('error', '');
+    // The clear button is gone now; keep keyboard focus on the way back
+    await showUndo(ids);
   }
 
   async function handleUndo() {
-    const wanted = new Set(clearedIds);
+    const cleared = clearedIds;
+    const wanted = new Set(cleared);
     const generation = clearGeneration;
     hideUndo();
     // Restore exactly the cleared selection, also when races were picked in the meantime.
@@ -58,16 +61,24 @@
     const current = $selectedEventIds;
     const toRemove = Array.from(current).filter(id => !wanted.has(id));
     const toAdd = Array.from(wanted).filter(id => !current.has(id));
-    let failure: unknown;
+    let failed = false;
     if (toRemove.length > 0) {
-      try { await deselectEventsByType(toRemove); } catch (e) { failure = e; }
+      try { await deselectEventsByType(toRemove); } catch { failed = true; }
     }
     // The user cleared again while the removal was pending: that newer clear wins.
     if (generation !== clearGeneration) return;
     if (toAdd.length > 0) {
-      try { await selectEventsByType(toAdd); } catch (e) { failure ??= e; }
+      try { await selectEventsByType(toAdd); } catch { failed = true; }
     }
-    dispatch('error', failure === undefined ? '' : messageOf(failure, 'Failed to restore selections'));
+    if (generation !== clearGeneration) return;
+
+    if (failed) {
+      // Keep the way back open: offer the same undo again so the user can retry.
+      dispatch('error', $t.myEvents.restoreFailed);
+      await showUndo(cleared);
+      return;
+    }
+    dispatch('error', '');
     // The undo button is gone now; keep keyboard focus on the clear control that came back
     await tick();
     clearButton?.focus();
