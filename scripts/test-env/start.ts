@@ -24,7 +24,7 @@ async function main() {
   assertLocal(env.apiUrl);
   await seedUsers(env);
   writeEnvFile(env);
-  console.log(`\nLocal test environment ready. Env written to ${ENV_FILE}\nRun the app: npm run dev:e2e`);
+  console.log(`\nLocal test environment ready. Env written to ${ENV_FILE}\nRun the app: npm run dev`);
 }
 
 main().catch((e) => { console.error(`\n${e.message ?? e}`); process.exit(1); });

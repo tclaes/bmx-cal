@@ -7,7 +7,8 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx scripts/test-env/dev.ts",
+    "dev:remote": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "preview:build": "vite build && vite preview --port 4173 --strictPort",
@@ -17,7 +18,7 @@
     "stylelint:fix": "stylelint \"src/**/*.{css,svelte}\" --fix",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev:e2e": "vite --mode e2e --port 5173 --strictPort",
+    "dev:e2e": "npm run dev",
     "test-env:start": "tsx scripts/test-env/start.ts",
     "test-env:reset": "tsx scripts/test-env/start.ts reset",
     "test-env:stop": "tsx scripts/test-env/start.ts stop",

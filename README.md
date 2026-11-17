@@ -18,7 +18,7 @@ The app needs a Supabase backend. The easiest way is the disposable local stack 
 ```sh
 npm ci                    # installs everything, including the Supabase CLI and tsx
 npm run test-env:start    # starts local Supabase, applies migrations and seed, creates test users
-npm run dev:e2e           # serves the app at http://localhost:5173
+npm run dev               # serves the app at http://localhost:5173 against the local stack
 ```
 
 ### Test accounts
@@ -51,7 +51,8 @@ More detail: [docs/test-env.md](docs/test-env.md).
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Vite dev server against the Supabase project configured in `.env` (see `.env.example`) |
+| `npm run dev` | Vite dev server against the local stack (needs `npm run test-env:start` first; refuses to start otherwise) |
+| `npm run dev:remote` | Vite dev server against the Supabase project configured in `.env` (see `.env.example`) |
 | `npm run preview` | Preview the production build |
 | `npm run stylelint:fix` | Auto-fix stylelint issues |
 | `npm run test:watch` | Run Vitest in watch mode |
