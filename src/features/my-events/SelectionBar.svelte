@@ -19,6 +19,10 @@
   let clearButton: HTMLButtonElement | undefined;
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
 
+  function messageOf(e: unknown, fallback: string): string {
+    return e instanceof Error ? e.message : fallback;
+  }
+
   function hideUndo() {
     clearTimeout(undoTimer);
     undoVisible = false;
@@ -38,7 +42,7 @@
       await tick();
       undoButton?.focus();
     } catch (e) {
-      dispatch('error', e instanceof Error ? e.message : 'Failed to clear selections');
+      dispatch('error', messageOf(e, 'Failed to clear selections'));
     }
   }
 
@@ -57,7 +61,7 @@
     if (toAdd.length > 0) {
       try { await selectEventsByType(toAdd); } catch (e) { failure ??= e; }
     }
-    dispatch('error', failure === undefined ? '' : failure instanceof Error ? failure.message : 'Failed to restore selections');
+    dispatch('error', failure === undefined ? '' : messageOf(failure, 'Failed to restore selections'));
     // The undo button is gone now; keep keyboard focus on the clear control that came back
     await tick();
     clearButton?.focus();
