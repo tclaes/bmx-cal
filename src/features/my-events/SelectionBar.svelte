@@ -18,6 +18,8 @@
   let undoButton: HTMLButtonElement | undefined;
   let clearButton: HTMLButtonElement | undefined;
   let undoTimer: ReturnType<typeof setTimeout> | undefined;
+  // Bumped by every clear, so an undo still waiting on the store can tell a newer clear happened.
+  let clearGeneration = 0;
 
   function messageOf(e: unknown, fallback: string): string {
     return e instanceof Error ? e.message : fallback;
@@ -31,6 +33,7 @@
 
   async function handleClearAll() {
     const ids = Array.from($selectedEventIds);
+    clearGeneration += 1;
     try {
       await clearAllSelections();
       dispatch('error', '');
@@ -48,6 +51,7 @@
 
   async function handleUndo() {
     const wanted = new Set(clearedIds);
+    const generation = clearGeneration;
     hideUndo();
     // Restore exactly the cleared selection, also when races were picked in the meantime.
     // Both steps always run, so a failed removal never keeps the cleared races from coming back.
@@ -58,6 +62,8 @@
     if (toRemove.length > 0) {
       try { await deselectEventsByType(toRemove); } catch (e) { failure = e; }
     }
+    // The user cleared again while the removal was pending: that newer clear wins.
+    if (generation !== clearGeneration) return;
     if (toAdd.length > 0) {
       try { await selectEventsByType(toAdd); } catch (e) { failure ??= e; }
     }

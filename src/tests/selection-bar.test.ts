@@ -24,12 +24,13 @@ vi.mock('@core/stores', async (orig) => {
 });
 
 import SelectionBar from '../features/my-events/SelectionBar.svelte';
-import { selectedEventIds, clearAllSelections, deselectEventsByType } from '@core/stores';
+import { selectedEventIds, clearAllSelections, deselectEventsByType, selectEventsByType } from '@core/stores';
 import { locale } from '../i18n';
 
 beforeEach(() => {
   locale.setLocale('nl');
   nav.mockClear();
+  vi.mocked(selectEventsByType).mockClear();
   selectedEventIds.set(new Set());
 });
 
@@ -95,6 +96,35 @@ describe('SelectionBar', () => {
     await fireEvent.click(await screen.findByRole('button', { name: 'Ongedaan maken' }));
     const clear = await screen.findByRole('button', { name: 'Selectie wissen' });
     await waitFor(() => expect(clear).toHaveFocus());
+  });
+
+  it('does not re-add cleared races when the user clears again while undo is still running', async () => {
+    selectedEventIds.set(new Set(['1', '2']));
+    render(SelectionBar, { isLoggedIn: true });
+    await fireEvent.click(screen.getByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+
+    // A newer pick makes undo remove it first; hold that removal open.
+    selectedEventIds.set(new Set(['4']));
+    let finishRemoval!: () => void;
+    vi.mocked(deselectEventsByType).mockImplementationOnce(
+      (ids: string[]) => new Promise<void>((resolve) => {
+        finishRemoval = () => {
+          selectedEventIds.update(s => { const n = new Set(s); ids.forEach(i => n.delete(i)); return n; });
+          resolve();
+        };
+      }),
+    );
+    await fireEvent.click(screen.getByRole('button', { name: 'Ongedaan maken' }));
+
+    // The bar is back (race 4 is still selected); clear again before the removal finishes.
+    await fireEvent.click(await screen.findByRole('button', { name: 'Selectie wissen' }));
+    await waitFor(() => expect(get(selectedEventIds).size).toBe(0));
+    finishRemoval();
+
+    await new Promise(r => setTimeout(r, 0));
+    expect(get(selectedEventIds).size).toBe(0);
+    expect(vi.mocked(selectEventsByType)).not.toHaveBeenCalledWith(expect.arrayContaining(['1', '2']));
   });
 
   it('removes the undo message after 6 seconds', async () => {
