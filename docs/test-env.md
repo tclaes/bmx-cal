@@ -14,7 +14,8 @@ Docker running. Everything else is installed by `npm ci` (Supabase CLI, Playwrig
 | `npm run test-env:reset` | Resets the database to the seeded state and re-creates the users |
 | `npm run test-env:stop` | Stops the stack and discards its data |
 | `npm run test-env:login [-- role]` | Writes a fresh signed-in session per role to `e2e/.auth/<role>.json` (optionally prints a `localStorage` snippet for `role`) |
-| `npm run dev:e2e` | Runs the app (port 5173) against the local stack |
+| `npm run dev` | Runs the app (port 5173) against the local stack. Refuses to start if `.env.e2e.local` is missing or points at a non-local host, so it never falls back to the production values in `.env`. `npm run dev:e2e` is an alias |
+| `npm run dev:remote` | Plain Vite against the Supabase project in `.env` (not the local stack) |
 | `npm run test:e2e` | Runs the Playwright smoke suite (starts the app itself, refreshes sessions first) |
 
 ### Test users
@@ -29,7 +30,7 @@ Password for all: `Test-password-123`.
 
 ### Getting a logged-in browser (agents)
 
-1. `npm run test-env:start`, then `npm run dev:e2e`.
+1. `npm run test-env:start`, then `npm run dev`.
 2. `npm run test-env:login -- admin`.
 3. Playwright: use `storageState: 'e2e/.auth/admin.json'`. Any other browser tool: open `http://localhost:5173`, run the printed `localStorage.setItem(...)` line, reload.
 

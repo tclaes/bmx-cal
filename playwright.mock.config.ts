@@ -26,7 +26,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run dev -- --port ${PORT} --strictPort`,
+    command: `npm run dev:remote -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     // Never attach to an existing server: it would not have the dummy Supabase env.
     reuseExistingServer: false,
