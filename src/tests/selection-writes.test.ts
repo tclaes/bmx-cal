@@ -256,6 +256,18 @@ describe('selection writes', () => {
     expect(db.calls).toEqual([]);
   });
 
+  it('a signed-in write fails when the account lookup returns no user (no error), and changes nothing', async () => {
+    setSelection(['a']);
+    db.user = null; // the app still has u1 signed in, but Supabase has no session (expired)
+    await expect(toggleEventSelection('b')).rejects.toBeInstanceOf(AccountChangedError);
+    await expect(selectEventsByType(['b'])).rejects.toBeInstanceOf(AccountChangedError);
+    await expect(clearAllSelections()).rejects.toBeInstanceOf(AccountChangedError);
+    await expect(replaceSelection(['x'])).rejects.toBeInstanceOf(AccountChangedError);
+    expect(storeIds()).toEqual(['a']);
+    expect(localIds()).toEqual(['a']);
+    expect(db.calls).toEqual([]);
+  });
+
   it('a toggle that fails after the queue timeout does not undo a newer toggle of the same race', async () => {
     vi.useFakeTimers();
     try {
