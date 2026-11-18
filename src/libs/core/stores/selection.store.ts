@@ -11,9 +11,10 @@ export const selectedCount = derived(
   $selectedEventIds => $selectedEventIds.size
 );
 
-async function isLoggedIn(): Promise<boolean> {
+/** The id of the user Supabase has a session for, or null. */
+async function sessionUserId(): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser();
-  return !!user;
+  return user?.id ?? null;
 }
 
 // A load applies only if it is still the latest one for the account it started for. A slow load
@@ -30,7 +31,11 @@ export async function loadUserSelections(): Promise<void> {
   const finishOutdated = () => (load === latestLoad ? loadUserSelections() : undefined);
 
   try {
-    if (await isLoggedIn()) {
+    // Like the writes, a load follows the account the app knows (`owner`), not the raw session:
+    // a session can exist a moment before the app publishes the sign-in, and until then the
+    // device's own selection is what is shown. The account is read only when the session
+    // belongs to that same account.
+    if (owner && (await sessionUserId()) === owner) {
       const eventIds = await selectionService.getRemoteSelections();
       if (outdated()) return finishOutdated();
       claimAll(); // the shown selection now comes from the account: no earlier write owns a race

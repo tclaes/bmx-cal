@@ -400,6 +400,26 @@ describe('selection writes', () => {
     expect(localIds()).toEqual(['from-B']);
   });
 
+  it('a load follows the app account: a session without an app account keeps the device selection', async () => {
+    authStore.setUser(null); // the app has not published the sign-in yet...
+    db.user = { id: 'u1' }; // ...but Supabase already has a session
+    db.remote = ['from-account'];
+    setSelection(['mine']);
+    await loadUserSelections();
+    expect(storeIds()).toEqual(['mine']); // not replaced by the account's selection
+    expect(localIds()).toEqual(['mine']);
+  });
+
+  it('a load follows the app account: a session for another user keeps the device selection', async () => {
+    authStore.setUser({ id: 'A' } as any);
+    db.user = { id: 'B' };
+    db.remote = ['from-B'];
+    setSelection(['mine']);
+    await loadUserSelections();
+    expect(storeIds()).toEqual(['mine']);
+    expect(localIds()).toEqual(['mine']);
+  });
+
   it('a load that finishes after a newer load started is dropped', async () => {
     signIn('A');
     db.remote = ['old'];
