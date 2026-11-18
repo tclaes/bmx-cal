@@ -205,6 +205,8 @@ export const fr: Translations = {
     selectAtLeastOne: 'Veuillez sélectionner au moins un événement',
     selectAtLeastOneSave: 'Veuillez sélectionner au moins un événement avant d\'enregistrer',
     exportFailed: 'Échec de l\'exportation',
+    clearFailed: 'Échec de l\'effacement de la sélection',
+    restoreFailed: 'Échec de la restauration de la sélection. Réessayez.',
     notifTitle: 'Notifications de deadline',
     notifDescription: 'Sélectionnez des courses dans votre calendrier pour recevoir des rappels de deadline d\'inscription. Vous recevrez une notification push 7 jours et 1 jour avant la deadline.',
     notifEnablePush: 'Activer les notifications',

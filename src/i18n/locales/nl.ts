@@ -205,6 +205,8 @@ export const nl: Translations = {
     selectAtLeastOne: 'Selecteer minimaal één evenement',
     selectAtLeastOneSave: 'Selecteer minimaal één evenement voor het opslaan',
     exportFailed: 'Exporteren mislukt',
+    clearFailed: 'Selectie wissen mislukt',
+    restoreFailed: 'Selectie herstellen mislukt. Probeer opnieuw.',
     notifTitle: 'Deadline meldingen',
     notifDescription: 'Selecteer wedstrijden in je kalender om herinneringen voor inschrijvingsdeadlines te ontvangen. Je krijgt een pushmelding 7 dagen en 1 dag voor de deadline.',
     notifEnablePush: 'Meldingen inschakelen',
