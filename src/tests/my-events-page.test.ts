@@ -38,11 +38,13 @@ vi.mock('@core/stores', async (orig) => {
     selectEventsByType: vi.fn(async (ids: string[]) => selected.update(s => new Set([...s, ...ids]))),
     deselectEventsByType: vi.fn(async (ids: string[]) => selected.update(s => { const n = new Set(s); ids.forEach(i => n.delete(i)); return n; })),
     clearAllSelections: vi.fn(async () => selected.set(new Set())),
+    replaceSelection: vi.fn(async (ids: string[]) => selected.set(new Set(ids))),
   };
 });
 
 import MyEventsPage from '../features/my-events/MyEventsPage.svelte';
-import { selectedEventIds, authStore, featureFlagsStore } from '@core/stores';
+import { selectedEventIds, authStore, featureFlagsStore, replaceSelection, selectEventsByType } from '@core/stores';
+import { CalendarService } from '@core/services';
 import { locale } from '../i18n';
 
 const type = (name: string, color = '#ff0000') => ({ id: name, name, color_code: color });
@@ -242,5 +244,46 @@ describe('MyEventsPage clear with undo', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('MyEventsPage loading a saved calendar', () => {
+  beforeEach(() => {
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    selectedEventIds.set(new Set(['1', '2']));
+    vi.mocked(CalendarService.getUserCalendars).mockResolvedValueOnce([
+      { id: 'c1', name: 'Zomer', event_count: 1, created_at: '2099-01-01' },
+    ] as any);
+    vi.mocked(CalendarService.getCalendarEventIds).mockResolvedValueOnce(['3']);
+  });
+
+  it('shows a translated error and keeps the current selection when loading fails', async () => {
+    vi.mocked(replaceSelection).mockRejectedValueOnce(new Error('network down'));
+    render(MyEventsPage);
+    await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
+    expect(await screen.findByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).toBeInTheDocument();
+    expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
+  });
+
+  it('replaces the selection with the saved calendar in one write', async () => {
+    render(MyEventsPage);
+    await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
+    await waitFor(() => expect([...get(selectedEventIds)]).toEqual(['3']));
+    expect(replaceSelection).toHaveBeenCalledWith(['3']);
+  });
+});
+
+describe('MyEventsPage selection write failures', () => {
+  beforeEach(() => {
+    authStore.setUser(null);
+    selectedEventIds.set(new Set());
+  });
+
+  it('shows a translated error when selecting a whole type fails', async () => {
+    vi.mocked(selectEventsByType).mockRejectedValueOnce(new Error('denied'));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getByRole('button', { name: /^CV/ }));
+    expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
   });
 });

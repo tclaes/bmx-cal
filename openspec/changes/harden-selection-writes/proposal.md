@@ -1,0 +1,34 @@
+# Proposal
+
+## Why
+
+The selection store hides failures and lets writes overlap. `selectionService` ignores the `{ error }` Supabase returns for add, remove and clear, so a write the database rejects looks like a success. `clearAllSelections` empties this device before the account delete. Writes run concurrently, so a clear can be overtaken by an older select that is still writing. Undo in the selection bar (change `extract-selection-bar`) can only promise an exact restore if the store reports failures and keeps writes in order.
+
+## What Changes
+
+- Selection writes (toggle, select by type, deselect by type, clear, replace, adopt after sign-in) run one at a time through a queue, in the order they were started. A write stuck for 15 seconds stops holding up the writes after it.
+- A queued write only runs for the account it was started for; after an account switch it rejects and touches nothing.
+- Add, remove and clear throw when Supabase rejects them. Adds use `upsert` with `ignoreDuplicates`, because `(user_id, event_id)` is unique.
+- Select and deselect put this device back for every race the account did not accept. Clear and replace write the account first, so a failure leaves this device untouched. Adopting signed-out picks after sign-in waits for every insert and keeps the local selection on failure.
+- New `replaceSelection` makes loading a saved calendar all-or-nothing.
+- Every caller catches a rejected write and shows a translated message: race list, race detail, My Events race toggles and type chips, and loading a saved calendar.
+
+## Capabilities
+
+### New Capabilities
+
+None.
+
+### Modified Capabilities
+
+- `my-calendar`: clearing fails without changing this device or the account; rejected changes are shown; loading a saved calendar is all-or-nothing.
+- `calendar-overview`: a rejected save from the hero or a row shows a translated error and keeps the list.
+- `event-detail`: a rejected save on the detail page shows a translated error.
+
+## Impact
+
+- `src/libs/core/stores/selection.store.ts`, `src/libs/core/stores/index.ts` (exports `replaceSelection`), `src/libs/core/services/selection.service.ts`.
+- `src/features/calendar/EventList.svelte`, `src/features/calendar/EventDetailPage.svelte`, `src/features/my-events/MyEventsPage.svelte`.
+- i18n: `calendar.saveFailed` and `myEvents.loadCalendarFailed` in nl, fr and en.
+- Tests: new `selection-writes.test.ts` and `selection-clear.test.ts`; additions to `calendar-screens.test.ts`, `event-detail.test.ts` and `my-events-page.test.ts`.
+- Depends on `extract-selection-bar` (stacked PR). No database or edge function changes.
