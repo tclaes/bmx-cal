@@ -10,7 +10,7 @@ On wide screens the selection bar on "My calendar" has uneven padding. The card 
 - Move the clear-with-undo message and its 6-second timer into the same component. The page keeps data loading, export and the save-calendar modal.
 - Fix the layout. On every width the bar is one card with the same padding on all sides. The count and clear control form the top row, and the actions sit in a second row inside the padding. On wide screens the two signed-in actions sit side by side with equal width ("save calendar" first, export second). On narrow screens they stack at full width.
 - Keep the visible behaviour otherwise the same: text, touch targets, undo semantics and keyboard focus on undo.
-- Harden clear and undo (from review): translated error messages for a failed clear or restore, undo offered again when restoring fails, focus back on the clear control after undo, and a newer clear cancels an undo that is still running.
+- Harden clear and undo (from review): translated error messages for a failed clear or restore, undo offered again when restoring fails, focus back on the clear control after undo, and only a successful newer clear cancels an undo that is still running.
 
 ## Capabilities
 
@@ -28,8 +28,4 @@ None.
 - New `src/features/my-events/SelectionBar.svelte` (name settled in design).
 - `src/tests/my-events-page.test.ts`: the selection-bar and undo tests keep passing. New component-level tests are added for the bar.
 - `src/i18n/types.ts` and the nl, fr and en locales: two new keys, `myEvents.clearFailed` and `myEvents.restoreFailed`.
-- `src/libs/core/stores/selection.store.ts` and `selection.service.ts`: selection writes run in order, throw when Supabase rejects them, and leave this device as it was for races the account did not get; clearing is all-or-nothing (account first, then this device).
-- `MyEventsPage.svelte`: loading a saved calendar replaces the selection all-or-nothing (`replaceSelection`) and shows a translated error on failure; type chips and race toggles show `calendar.saveFailed`.
-- `src/features/calendar/EventList.svelte` and `EventDetailPage.svelte`: a rejected save shows `calendar.saveFailed` instead of an unhandled rejection.
-- i18n: `calendar.saveFailed` and `myEvents.loadCalendarFailed` in nl, fr and en.
-- No changes to the database or edge functions.
+- No changes to stores, services, the database or edge functions. Making selection writes report failures and run in order is a separate change, `harden-selection-writes`.

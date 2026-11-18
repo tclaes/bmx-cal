@@ -13,16 +13,6 @@
   let event: EventWithDetails | null = null;
   let loading = true;
   let error = '';
-  let saveError = '';
-
-  async function save(eventId: string) {
-    try {
-      await toggleEventSelection(eventId);
-      saveError = '';
-    } catch {
-      saveError = $t.calendar.saveFailed;
-    }
-  }
   let editing = false;
   let requestedId = '';
 
@@ -158,14 +148,11 @@
         </section>
       {/if}
 
-      {#if saveError}
-        <Alert type="danger" message={saveError} />
-      {/if}
       <div class="actions">
         {#if view.ongoing && event.livestream_url}
           <a class="secondary" href={event.livestream_url} target="_blank" rel="noopener noreferrer">{$t.calendar.watchLivestream}</a>
         {/if}
-        <button type="button" class="secondary" aria-pressed={saved} on:click={() => event && save(event.id)}>
+        <button type="button" class="secondary" aria-pressed={saved} on:click={() => event && toggleEventSelection(event.id)}>
           {saved ? $t.calendar.saved : $t.calendar.save}
         </button>
         {#if canEdit}

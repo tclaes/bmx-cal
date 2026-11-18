@@ -18,10 +18,7 @@
 - [x] 3.1 Translate the clear and restore failure messages (`myEvents.clearFailed`, `myEvents.restoreFailed` in nl, fr and en) and emit them instead of raw or English error text. Verify with the error-path tests in `src/tests/selection-bar.test.ts`.
 - [x] 3.2 When restoring fails, show the same undo again for 6 seconds with focus on it, and let a newer clear cancel an undo that is still running. Verify with the "restoring fails", "retry" and "clears again while undo is still running" tests.
 
-- [x] 3.3 Make `clearAllSelections` all-or-nothing: clear the account first and throw on a Supabase error, then clear this device. Verify with `src/tests/selection-clear.test.ts`, which fails against the old store.
-- [x] 3.4 Run selection writes through one ordered queue, throw on Supabase errors for add and remove (upsert with `ignoreDuplicates` for adds), and put this device back for races the account did not get. Verify with `src/tests/selection-writes.test.ts`.
-- [x] 3.5 Let only a successful newer clear cancel a running undo, and catch a failed clear when loading a saved calendar. Verify with the "newer clear fails" test in `selection-bar.test.ts` and the "loading a saved calendar" tests in `my-events-page.test.ts`.
-- [x] 3.6 Catch rejected selection writes in every caller (race list, race detail, type chips, race toggles) with translated messages; add `replaceSelection` so loading a saved calendar is all-or-nothing; guard queued writes against an account switch and let a stuck write time out after 15 seconds. Verify with `selection-writes.test.ts`, `calendar-screens.test.ts`, `event-detail.test.ts` and `my-events-page.test.ts`.
+- [x] 3.3 Let only a successful newer clear cancel a running undo, also when more clears start while it waits. Verify with the "newer clear fails" and "second newer clear" tests in `selection-bar.test.ts`.
 
 ## 4. Integration checks
 

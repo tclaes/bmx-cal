@@ -35,29 +35,25 @@ export const selectionService = {
   async addRemoteSelection(eventId: string): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    // (user_id, event_id) is unique: re-adding a race that is already saved is not an error.
-    const { error } = await supabase
+    await supabase
       .from('user_event_selections')
-      .upsert({ user_id: user.id, event_id: eventId }, { onConflict: 'user_id,event_id', ignoreDuplicates: true });
-    if (error) throw error;
+      .insert({ user_id: user.id, event_id: eventId });
   },
 
   async removeRemoteSelection(eventId: string): Promise<void> {
-    const { error } = await supabase
+    await supabase
       .from('user_event_selections')
       .delete()
       .eq('event_id', eventId);
-    if (error) throw error;
   },
 
   async clearRemoteSelections(): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { error } = await supabase
+    await supabase
       .from('user_event_selections')
       .delete()
       .eq('user_id', user.id);
-    if (error) throw error;
   },
 
   getSelections(): string[] {
