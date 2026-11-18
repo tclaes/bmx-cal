@@ -110,6 +110,33 @@ describe('EventDetailPage', () => {
     }
   });
 
+  it('does not show a failure from the previous race while the next race is still loading', async () => {
+    eventsStore.setEvents([ev('1')]); // race 2 is not cached: the page keeps race 1 while it loads
+    routeParams.set({ id: '1' });
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    const getRemote = vi.spyOn(selectionService, 'getRemoteSelections').mockResolvedValue([]);
+    let rejectSave!: (e: Error) => void;
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection')
+      .mockImplementationOnce(() => new Promise<void>((_, reject) => { rejectSave = reject; }));
+    let finishLoad!: (e: EventWithDetails) => void;
+    getEventById.mockImplementationOnce(() => new Promise((resolve) => { finishLoad = resolve; }));
+    try {
+      render(EventDetailPage);
+      await fireEvent.click(await screen.findByRole('button', { name: 'Wedstrijd bewaren' }));
+      routeParams.set({ id: '2' });
+      rejectSave(new Error('denied')); // race 2 is still loading
+      await new Promise(r => setTimeout(r, 0));
+      finishLoad(ev('2'));
+      expect(await screen.findByRole('heading', { name: 'Race 2' })).toBeInTheDocument();
+      expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+      getUser.mockRestore();
+      getRemote.mockRestore();
+    }
+  });
+
   it('shows not found with a link back', async () => {
     getEventById.mockResolvedValue(null);
     routeParams.set({ id: 'nope' });

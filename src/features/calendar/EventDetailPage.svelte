@@ -24,8 +24,10 @@
   async function save(eventId: string) {
     const attempt = ++saveCounter;
     const owner = $authStore.user?.id ?? null;
+    // Compare with the requested race, not the shown one: while another race is still loading
+    // the page keeps showing the previous race, and its late result must not land on the new one.
     const current = () =>
-      attempt === saveCounter && eventId === event?.id && owner === ($authStore.user?.id ?? null);
+      attempt === saveCounter && eventId === requestedId && owner === ($authStore.user?.id ?? null);
     try {
       await toggleEventSelection(eventId);
       if (current()) saveError = '';
