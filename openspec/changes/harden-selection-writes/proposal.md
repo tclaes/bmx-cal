@@ -29,6 +29,6 @@ None.
 
 - `src/libs/core/stores/selection.store.ts`, `src/libs/core/stores/index.ts` (exports `replaceSelection`), `src/libs/core/services/selection.service.ts`.
 - `src/features/calendar/EventList.svelte`, `src/features/calendar/EventDetailPage.svelte`, `src/features/my-events/MyEventsPage.svelte`.
-- i18n: `calendar.saveFailed` and `myEvents.loadCalendarFailed` in nl, fr and en.
+- i18n: `calendar.selectionUpdateFailed` and `myEvents.loadCalendarFailed` in nl, fr and en.
 - Tests: new `selection-writes.test.ts` and `selection-clear.test.ts`; additions to `calendar-screens.test.ts`, `event-detail.test.ts` and `my-events-page.test.ts`.
 - Depends on `extract-selection-bar` (stacked PR). No database or edge function changes.

@@ -43,7 +43,7 @@ vi.mock('@core/stores', async (orig) => {
 });
 
 import MyEventsPage from '../features/my-events/MyEventsPage.svelte';
-import { selectedEventIds, authStore, featureFlagsStore, replaceSelection, selectEventsByType } from '@core/stores';
+import { selectedEventIds, authStore, featureFlagsStore, replaceSelection, selectEventsByType, toggleEventSelection } from '@core/stores';
 import { CalendarService } from '@core/services';
 import { locale } from '../i18n';
 
@@ -284,6 +284,24 @@ describe('MyEventsPage selection write failures', () => {
     render(MyEventsPage);
     await screen.findByText('Race 1');
     await fireEvent.click(screen.getByRole('button', { name: /^CV/ }));
-    expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
+    expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+    // The message sits above the list; the races stay visible so the user can retry.
+    expect(screen.getByText('Race 1')).toBeInTheDocument();
+  });
+
+  it('an older change that finishes late does not hide the failure of a newer one', async () => {
+    let finishFirst!: () => void;
+    vi.mocked(toggleEventSelection)
+      .mockImplementationOnce(() => new Promise<void>((resolve) => { finishFirst = resolve; }))
+      .mockRejectedValueOnce(new Error('denied'));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    const stars = screen.getAllByRole('button', { name: 'Wedstrijd bewaren' });
+    await fireEvent.click(stars[0]);
+    await fireEvent.click(stars[1]);
+    expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+    finishFirst();
+    await new Promise(r => setTimeout(r, 0));
+    expect(screen.getByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
   });
 });

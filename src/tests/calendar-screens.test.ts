@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/svelte';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import type { EventWithDetails } from '@types';
 
@@ -17,7 +17,7 @@ import CalendarHero from '../features/calendar/CalendarHero.svelte';
 import EventFilters from '../features/calendar/EventFilters.svelte';
 import EventList from '../features/calendar/EventList.svelte';
 import Navigation from '../layout/Navigation.svelte';
-import { eventsStore, filtersStore } from '@core/stores';
+import { eventsStore, filtersStore, authStore } from '@core/stores';
 import { selectionService } from '@core/services';
 import { locale } from '../i18n';
 
@@ -104,10 +104,15 @@ describe('EventList', () => {
       render(EventList);
       const race2 = (await screen.findByRole('link', { name: 'Race 2' })).closest('article')!;
       await fireEvent.click(within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' }));
-      expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
+      expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Race 2' })).toBeInTheDocument();
+
+      // Signing in as someone else clears a message that belonged to the previous account.
+      authStore.setUser({ id: 'other', email: 'o@x.y', role: 'user', managedTeams: [] } as any);
+      await waitFor(() => expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument());
     } finally {
       spy.mockRestore();
+      authStore.setUser(null);
     }
   });
 

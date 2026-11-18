@@ -15,12 +15,17 @@
   let error = '';
   let saveError = '';
 
+  // Only the latest save may set or clear the message, so an older save that finishes
+  // late never hides the result of a newer one.
+  let saveAttempt = 0;
+
   async function save(eventId: string) {
+    const attempt = ++saveAttempt;
     try {
       await toggleEventSelection(eventId);
-      saveError = '';
+      if (attempt === saveAttempt) saveError = '';
     } catch {
-      saveError = $t.calendar.saveFailed;
+      if (attempt === saveAttempt) saveError = $t.calendar.selectionUpdateFailed;
     }
   }
   let editing = false;
@@ -34,6 +39,7 @@
 
   async function load(eventId: string) {
     error = '';
+    saveError = '';
     const cached = $eventsStore.events.find(e => e.id === eventId);
     if (cached) {
       event = cached;

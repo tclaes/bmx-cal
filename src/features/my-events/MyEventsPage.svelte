@@ -4,7 +4,7 @@
   import { EventsService } from '@core/services';
   import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
   import Button from '@ui/Button.svelte';
-  import { RaceRow, TypeChip } from '@ui';
+  import { RaceRow, TypeChip, Alert } from '@ui';
   import { navigate } from '../../router';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
   import { authStore, featureEnabled } from '@core/stores';
@@ -57,17 +57,28 @@
     return ids.some(id => selected.has(id)) && !isTypeFullySelected(ids, selected);
   }
 
-  async function handleTypeToggle(ids: string[]) {
+  // A selection change the account rejects is shown above the list, which stays visible.
+  // Only the latest change may set or clear the message, so an older change that finishes
+  // late never hides the result of a newer one.
+  let selectionError = '';
+  let selectionAttempt = 0;
+
+  async function runSelectionWrite(write: () => Promise<unknown>, failMessage: string) {
+    const attempt = ++selectionAttempt;
     try {
-      if (isTypeFullySelected(ids, $selectedEventIds)) {
-        await deselectEventsByType(ids);
-      } else {
-        await selectEventsByType(ids);
-      }
-      error = '';
+      await write();
+      if (attempt === selectionAttempt) selectionError = '';
     } catch {
-      error = $t.calendar.saveFailed;
+      if (attempt === selectionAttempt) selectionError = failMessage;
     }
+  }
+
+  function handleTypeToggle(ids: string[]) {
+    const fully = isTypeFullySelected(ids, $selectedEventIds);
+    return runSelectionWrite(
+      () => (fully ? deselectEventsByType(ids) : selectEventsByType(ids)),
+      $t.calendar.selectionUpdateFailed,
+    );
   }
 
   // The notification block is behind the `notifications` flag. The flag may load after
@@ -107,13 +118,8 @@
     navigate(href);
   }
 
-  async function handleToggle(eventId: string) {
-    try {
-      await toggleEventSelection(eventId);
-      error = '';
-    } catch {
-      error = $t.calendar.saveFailed;
-    }
+  function handleToggle(eventId: string) {
+    return runSelectionWrite(() => toggleEventSelection(eventId), $t.calendar.selectionUpdateFailed);
   }
 
   function handleSaveCalendar() {
@@ -124,14 +130,9 @@
     showSaveModal = true;
   }
 
-  async function handleLoadCalendar(eventIds: string[]) {
-    try {
-      // All-or-nothing: on failure the current selection is kept.
-      await replaceSelection(eventIds);
-      error = '';
-    } catch {
-      error = $t.myEvents.loadCalendarFailed;
-    }
+  function handleLoadCalendar(eventIds: string[]) {
+    // All-or-nothing: on failure the current selection is kept.
+    return runSelectionWrite(() => replaceSelection(eventIds), $t.myEvents.loadCalendarFailed);
   }
 
   async function handleEnablePush() {
@@ -206,8 +207,14 @@
     {exporting}
     on:export={exportToCalendar}
     on:save={handleSaveCalendar}
-    on:error={(e) => { error = e.detail; }}
+    on:error={(e) => { selectionAttempt += 1; selectionError = e.detail; }}
   />
+
+  {#if selectionError}
+    <div class="selection-error">
+      <Alert type="danger" message={selectionError} />
+    </div>
+  {/if}
 
   {#if isLoggedIn}
     <SavedCalendarsList
@@ -325,6 +332,10 @@
   .subtitle {
     color: var(--color-text-secondary);
     margin: 0;
+  }
+
+  .selection-error {
+    margin-block-end: var(--spacing-lg);
   }
 
   .loading-container {

@@ -66,7 +66,7 @@ export const nl: Translations = {
     save: 'Wedstrijd bewaren',
     saved: 'Bewaard',
     registerAction: 'Inschrijven',
-    saveFailed: 'Wedstrijd opslaan mislukt. Probeer opnieuw.',
+    selectionUpdateFailed: 'Je selectie bijwerken mislukt. Probeer opnieuw.',
     livestream: 'Livestream',
     notFoundTitle: 'Wedstrijd niet gevonden',
     notFoundDescription: 'Deze wedstrijd bestaat niet of is verwijderd.',

@@ -14,7 +14,7 @@
 ## 3. Callers
 
 - [x] 3.1 Add `replaceSelection` and use it to load a saved calendar all-or-nothing with `myEvents.loadCalendarFailed`. Verify with the `replaceSelection` store tests and the "loading a saved calendar" page tests.
-- [x] 3.2 Catch rejected writes in the race list, race detail, My Events toggles and type chips with `calendar.saveFailed` (nl, fr, en). Verify with `calendar-screens.test.ts`, `event-detail.test.ts` and `my-events-page.test.ts`.
+- [x] 3.2 Catch rejected writes in the race list, race detail, My Events toggles and type chips with `calendar.selectionUpdateFailed` (nl, fr, en). Verify with `calendar-screens.test.ts`, `event-detail.test.ts` and `my-events-page.test.ts`.
 
 ## 4. Integration checks
 

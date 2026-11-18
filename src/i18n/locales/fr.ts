@@ -66,7 +66,7 @@ export const fr: Translations = {
     save: 'Enregistrer la course',
     saved: 'Enregistrée',
     registerAction: "S'inscrire",
-    saveFailed: "L'enregistrement de la course a échoué. Réessayez.",
+    selectionUpdateFailed: 'La mise à jour de votre sélection a échoué. Réessayez.',
     livestream: 'Livestream',
     notFoundTitle: 'Course introuvable',
     notFoundDescription: "Cette course n'existe pas ou a été supprimée.",

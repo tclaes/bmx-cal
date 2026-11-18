@@ -65,8 +65,14 @@ describe('EventDetailPage', () => {
     try {
       render(EventDetailPage);
       await fireEvent.click(await screen.findByRole('button', { name: 'Wedstrijd bewaren' }));
-      expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
+      expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Race 1' })).toBeInTheDocument();
+
+      // Opening another race does not carry the message over.
+      eventsStore.setEvents([ev('1'), ev('2')]);
+      routeParams.set({ id: '2' });
+      expect(await screen.findByRole('heading', { name: 'Race 2' })).toBeInTheDocument();
+      expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
     } finally {
       spy.mockRestore();
     }

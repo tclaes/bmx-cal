@@ -66,7 +66,7 @@ export const en: Translations = {
     save: 'Save race',
     saved: 'Saved',
     registerAction: 'Register',
-    saveFailed: 'Saving the race failed. Please try again.',
+    selectionUpdateFailed: 'Updating your selection failed. Please try again.',
     livestream: 'Livestream',
     notFoundTitle: 'Race not found',
     notFoundDescription: 'This race does not exist or was removed.',

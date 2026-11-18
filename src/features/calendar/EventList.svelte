@@ -18,12 +18,17 @@
   // A save the account rejects is shown above the list; the list itself stays visible.
   let saveError = '';
 
+  // Only the latest save may set or clear the message, so an older save that finishes
+  // late never hides the result of a newer one.
+  let saveAttempt = 0;
+
   async function save(eventId: string) {
+    const attempt = ++saveAttempt;
     try {
       await toggleEventSelection(eventId);
-      saveError = '';
+      if (attempt === saveAttempt) saveError = '';
     } catch {
-      saveError = $t.calendar.saveFailed;
+      if (attempt === saveAttempt) saveError = $t.calendar.selectionUpdateFailed;
     }
   }
 
@@ -48,6 +53,7 @@
   $: {
     const currentUserId = $authStore.user?.id ?? null;
     if (previousUserId !== undefined && previousUserId !== currentUserId) {
+      saveError = '';
       loadAll('Failed to reload events');
       loadUserSelections();
     }

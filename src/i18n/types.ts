@@ -64,7 +64,7 @@ export interface Translations {
     save: string;
     saved: string;
     registerAction: string;
-    saveFailed: string;
+    selectionUpdateFailed: string;
     livestream: string;
     notFoundTitle: string;
     notFoundDescription: string;
