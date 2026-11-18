@@ -286,6 +286,53 @@ describe('MyEventsPage loading a saved calendar', () => {
     expect([...get(selectedEventIds)]).toEqual(['4']);
   });
 
+  describe('a newer load takes over from the click', () => {
+    beforeEach(() => {
+      vi.mocked(replaceSelection).mockClear();
+      vi.mocked(CalendarService.getUserCalendars).mockReset().mockResolvedValueOnce([
+        { id: 'c1', name: 'Zomer', event_count: 1, created_at: '2099-01-01' },
+        { id: 'c2', name: 'Winter', event_count: 1, created_at: '2099-01-02' },
+      ] as any);
+    });
+
+    it('an older load that succeeds late does not clear the newer load\'s read error', async () => {
+      let finishA!: () => void;
+      vi.mocked(replaceSelection).mockImplementationOnce(() => new Promise<void>((resolve) => { finishA = resolve; }));
+      vi.mocked(CalendarService.getCalendarEventIds).mockReset()
+        .mockResolvedValueOnce(['3'])
+        .mockRejectedValueOnce(new Error('network down'));
+      render(MyEventsPage);
+      const loads = await screen.findAllByRole('button', { name: 'Load' });
+      await fireEvent.click(loads[0]);
+      await waitFor(() => expect(replaceSelection).toHaveBeenCalledWith(['3'])); // A is replacing
+      await fireEvent.click(loads[1]); // B's read fails
+      expect(await screen.findByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).toBeInTheDocument();
+      finishA();
+      await new Promise(r => setTimeout(r, 0));
+      expect(screen.getByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).toBeInTheDocument();
+    });
+
+    it('an older load that fails late shows nothing while the newer read is still pending', async () => {
+      let failA!: (e: Error) => void;
+      vi.mocked(replaceSelection).mockImplementationOnce(() => new Promise<void>((_, reject) => { failA = reject; }));
+      let finishB!: (ids: string[]) => void;
+      vi.mocked(CalendarService.getCalendarEventIds).mockReset()
+        .mockResolvedValueOnce(['3'])
+        .mockImplementationOnce(() => new Promise<string[]>((resolve) => { finishB = resolve; }));
+      render(MyEventsPage);
+      const loads = await screen.findAllByRole('button', { name: 'Load' });
+      await fireEvent.click(loads[0]);
+      await waitFor(() => expect(replaceSelection).toHaveBeenCalledWith(['3']));
+      await fireEvent.click(loads[1]); // B's read is pending
+      failA(new Error('denied'));
+      await new Promise(r => setTimeout(r, 0));
+      expect(screen.queryByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).not.toBeInTheDocument();
+      finishB(['4']);
+      await waitFor(() => expect([...get(selectedEventIds)]).toEqual(['4']));
+      expect(screen.queryByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).not.toBeInTheDocument();
+    });
+  });
+
   it('drops a saved calendar read that finishes after the account changed', async () => {
     vi.mocked(replaceSelection).mockClear();
     let finishRead!: (ids: string[]) => void;

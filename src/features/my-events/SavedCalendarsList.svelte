@@ -8,7 +8,7 @@
 
   export let refreshTrigger = 0;
 
-  const dispatch = createEventDispatcher<{ load: string[]; loadError: void }>();
+  const dispatch = createEventDispatcher<{ loadStart: void; load: string[]; loadError: void }>();
 
   let calendars: SavedCalendar[] = [];
   let loading = true;
@@ -44,6 +44,8 @@
 
   async function handleLoad(id: string) {
     const load = ++latestLoad;
+    // Tell the page right away, so a load still running from an earlier click stops counting.
+    dispatch('loadStart');
     // A read that finishes after a sign-in or sign-out belongs to the previous account: drop it.
     const owner = $authStore.user?.id ?? null;
     const sameAccount = () => owner === ($authStore.user?.id ?? null) && load === latestLoad;

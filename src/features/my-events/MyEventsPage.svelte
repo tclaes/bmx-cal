@@ -161,6 +161,12 @@
     showSaveModal = true;
   }
 
+  // A saved-calendar load counts from the click, not from when its read returns: starting a new
+  // load makes any earlier load's pending result stale, so it can neither clear nor show a message.
+  function markLoadStarted() {
+    latestRun.set('load-calendar', ++runCounter);
+  }
+
   function handleLoadCalendar(eventIds: string[]) {
     // All-or-nothing: on failure the current selection is kept.
     return runSelectionWrite('load-calendar', () => replaceSelection(eventIds), $t.myEvents.loadCalendarFailed);
@@ -250,6 +256,7 @@
   {#if isLoggedIn}
     <SavedCalendarsList
       refreshTrigger={savedCalendarsRefresh}
+      on:loadStart={markLoadStarted}
       on:load={(e) => handleLoadCalendar(e.detail)}
       on:loadError={() => showSelectionResult('load-calendar', $t.myEvents.loadCalendarFailed)}
     />
