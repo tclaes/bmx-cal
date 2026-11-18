@@ -266,10 +266,22 @@ describe('MyEventsPage loading a saved calendar', () => {
   });
 
   it('replaces the selection with the saved calendar in one write', async () => {
+    vi.mocked(replaceSelection).mockClear();
     render(MyEventsPage);
     await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
     await waitFor(() => expect([...get(selectedEventIds)]).toEqual(['3']));
+    expect(replaceSelection).toHaveBeenCalledTimes(1);
     expect(replaceSelection).toHaveBeenCalledWith(['3']);
+  });
+
+  it('shows a translated error and changes nothing when the saved calendar cannot be read', async () => {
+    vi.mocked(replaceSelection).mockClear();
+    vi.mocked(CalendarService.getCalendarEventIds).mockReset().mockRejectedValueOnce(new Error('network down'));
+    render(MyEventsPage);
+    await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
+    expect(await screen.findByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).toBeInTheDocument();
+    expect(replaceSelection).not.toHaveBeenCalled();
+    expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
   });
 });
 
@@ -287,6 +299,16 @@ describe('MyEventsPage selection write failures', () => {
     expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
     // The message sits above the list; the races stay visible so the user can retry.
     expect(screen.getByText('Race 1')).toBeInTheDocument();
+  });
+
+  it('a later success for the same race clears its message', async () => {
+    vi.mocked(toggleEventSelection).mockRejectedValueOnce(new Error('denied'));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getAllByRole('button', { name: 'Wedstrijd bewaren' })[0]);
+    expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+    await fireEvent.click(screen.getAllByRole('button', { name: 'Wedstrijd bewaren' })[0]);
+    await waitFor(() => expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument());
   });
 
   it('an older change that finishes late does not hide the failure of a newer one', async () => {

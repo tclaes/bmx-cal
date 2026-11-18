@@ -13,6 +13,7 @@ import { findRoute } from '../router/routes';
 import { routeParams } from '../router';
 import { eventsStore, authStore } from '@core/stores';
 import { selectionService } from '@core/services';
+import { supabase } from '@data';
 import { locale } from '../i18n';
 
 const ev = (id: string, o: Partial<EventWithDetails> = {}): EventWithDetails => ({
@@ -58,10 +59,12 @@ describe('EventDetailPage', () => {
     expect(getEventById).toHaveBeenCalledWith('9');
   });
 
-  it('shows a translated error when saving the race fails', async () => {
+  it('shows a translated error when the account rejects a save', async () => {
     eventsStore.setEvents([ev('1')]);
     routeParams.set({ id: '1' });
-    const spy = vi.spyOn(selectionService, 'toggleSelection').mockImplementationOnce(() => { throw new Error('denied'); });
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection').mockRejectedValueOnce(new Error('denied'));
     try {
       render(EventDetailPage);
       await fireEvent.click(await screen.findByRole('button', { name: 'Wedstrijd bewaren' }));
@@ -75,6 +78,29 @@ describe('EventDetailPage', () => {
       expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
     } finally {
       spy.mockRestore();
+      getUser.mockRestore();
+    }
+  });
+
+  it('ignores a save result that arrives after another race opened', async () => {
+    eventsStore.setEvents([ev('1'), ev('2')]);
+    routeParams.set({ id: '1' });
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    let rejectSave!: (e: Error) => void;
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection')
+      .mockImplementationOnce(() => new Promise<void>((_, reject) => { rejectSave = reject; }));
+    try {
+      render(EventDetailPage);
+      await fireEvent.click(await screen.findByRole('button', { name: 'Wedstrijd bewaren' }));
+      routeParams.set({ id: '2' });
+      expect(await screen.findByRole('heading', { name: 'Race 2' })).toBeInTheDocument();
+      rejectSave(new Error('denied'));
+      await new Promise(r => setTimeout(r, 0));
+      expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+      getUser.mockRestore();
     }
   });
 

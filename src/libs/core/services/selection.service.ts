@@ -21,7 +21,11 @@ export const selectionService = {
   },
 
   clearLocalSelections(): void {
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore: storage can be unavailable (private mode); the in-memory store is cleared anyway
+    }
   },
 
   async getRemoteSelections(): Promise<string[]> {
@@ -32,31 +36,31 @@ export const selectionService = {
     return (data as { event_id: string }[]).map(row => row.event_id);
   },
 
-  async addRemoteSelection(eventId: string): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  // The account writes take the user id from the caller instead of looking it up, so a write
+  // started for one account can never end up writing another account's rows.
+
+  async addRemoteSelection(eventId: string, userId: string): Promise<void> {
     // (user_id, event_id) is unique: re-adding a race that is already saved is not an error.
     const { error } = await supabase
       .from('user_event_selections')
-      .upsert({ user_id: user.id, event_id: eventId }, { onConflict: 'user_id,event_id', ignoreDuplicates: true });
+      .upsert({ user_id: userId, event_id: eventId }, { onConflict: 'user_id,event_id', ignoreDuplicates: true });
     if (error) throw error;
   },
 
-  async removeRemoteSelection(eventId: string): Promise<void> {
+  async removeRemoteSelection(eventId: string, userId: string): Promise<void> {
     const { error } = await supabase
       .from('user_event_selections')
       .delete()
+      .eq('user_id', userId)
       .eq('event_id', eventId);
     if (error) throw error;
   },
 
-  async clearRemoteSelections(): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  async clearRemoteSelections(userId: string): Promise<void> {
     const { error } = await supabase
       .from('user_event_selections')
       .delete()
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
     if (error) throw error;
   },
 

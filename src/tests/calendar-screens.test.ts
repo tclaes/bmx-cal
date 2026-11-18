@@ -19,6 +19,7 @@ import EventList from '../features/calendar/EventList.svelte';
 import Navigation from '../layout/Navigation.svelte';
 import { eventsStore, filtersStore, authStore } from '@core/stores';
 import { selectionService } from '@core/services';
+import { supabase } from '@data';
 import { locale } from '../i18n';
 
 const base = (id: string, o: Partial<EventWithDetails> = {}): EventWithDetails => ({
@@ -96,15 +97,20 @@ describe('EventList', () => {
     expect(screen.getByRole('link', { name: 'Race 2' })).toHaveAttribute('href', '/events/2');
   });
 
-  it('shows a translated error and keeps the list when saving a race fails', async () => {
+  it('shows a translated error and keeps the list when the account rejects a save', async () => {
     eventsStore.setLoading(false);
     loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
-    const spy = vi.spyOn(selectionService, 'toggleSelection').mockImplementationOnce(() => { throw new Error('denied'); });
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection').mockRejectedValueOnce(new Error('denied'));
     try {
       render(EventList);
       const race2 = (await screen.findByRole('link', { name: 'Race 2' })).closest('article')!;
-      await fireEvent.click(within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' }));
+      const star = within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' });
+      await fireEvent.click(star);
       expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+      expect(spy).toHaveBeenCalledWith('2', 'u1');
+      expect(star).toHaveAttribute('aria-pressed', 'false');
       expect(screen.getByRole('link', { name: 'Race 2' })).toBeInTheDocument();
 
       // Signing in as someone else clears a message that belonged to the previous account.
@@ -112,6 +118,7 @@ describe('EventList', () => {
       await waitFor(() => expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument());
     } finally {
       spy.mockRestore();
+      getUser.mockRestore();
       authStore.setUser(null);
     }
   });

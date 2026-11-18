@@ -15,17 +15,14 @@
   let error = '';
   let saveError = '';
 
-  // Only the latest save may set or clear the message, so an older save that finishes
-  // late never hides the result of a newer one.
-  let saveAttempt = 0;
-
+  // A save result only counts for the race that is still open: the page is reused when
+  // another race opens, and a late result from the previous race is ignored.
   async function save(eventId: string) {
-    const attempt = ++saveAttempt;
     try {
       await toggleEventSelection(eventId);
-      if (attempt === saveAttempt) saveError = '';
+      if (eventId === event?.id) saveError = '';
     } catch {
-      if (attempt === saveAttempt) saveError = $t.calendar.selectionUpdateFailed;
+      if (eventId === event?.id) saveError = $t.calendar.selectionUpdateFailed;
     }
   }
   let editing = false;

@@ -36,11 +36,11 @@ export async function loadUserSelections() {
 // can never be overtaken by an older select or deselect that was still writing.
 let writeQueue: Promise<unknown> = Promise.resolve();
 
-/** A write that takes longer than this no longer holds up the writes queued after it. */
+/** A write that has been running this long no longer holds up the writes queued after it. */
 export const WRITE_QUEUE_TIMEOUT_MS = 15_000;
 
-// The account a queued write was started for. A write never runs for a different account,
-// for example when one user signs out and another signs in while writes are still queued.
+// The signed-in account as the app knows it. A write is bound to the account it was started
+// for: it never runs, or keeps writing, after another account signed in or the user signed out.
 let currentUserId: string | null = null;
 authStore.subscribe(state => { currentUserId = state.user?.id ?? null; });
 
@@ -50,27 +50,51 @@ export class AccountChangedError extends Error {
   }
 }
 
-function serialized<T>(write: () => Promise<T>): Promise<T> {
+interface WriteAccount {
+  /** The account to write to, or null when signed out (this device only). */
+  userId: string | null;
+  /** Throws AccountChangedError if the account changed; call it before every account write. */
+  check(): void;
+}
+
+function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T> {
   const owner = currentUserId;
-  const guarded = () => (owner === currentUserId ? write() : Promise.reject(new AccountChangedError()));
-  const run = writeQueue.then(guarded, guarded);
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<void>(resolve => { timer = setTimeout(resolve, WRITE_QUEUE_TIMEOUT_MS); });
-  writeQueue = Promise.race([run.then(() => undefined, () => undefined).finally(() => clearTimeout(timer)), timeout]);
+  const check = () => {
+    if (currentUserId !== owner) throw new AccountChangedError();
+  };
+  let releaseQueue!: () => void;
+  const released = new Promise<void>(resolve => { releaseQueue = resolve; });
+
+  const begin = async () => {
+    // The timeout starts when this write starts, not while it waits behind earlier writes.
+    const timer = setTimeout(releaseQueue, WRITE_QUEUE_TIMEOUT_MS);
+    try {
+      check();
+      const { data: { user } } = await supabase.auth.getUser();
+      check();
+      if (owner && user && user.id !== owner) throw new AccountChangedError();
+      return await write({ userId: user?.id ?? null, check });
+    } finally {
+      clearTimeout(timer);
+      releaseQueue();
+    }
+  };
+
+  const run = writeQueue.then(begin, begin);
+  writeQueue = released;
   return run;
 }
 
-export const toggleEventSelection = (eventId: string) => serialized(async () => {
-  const loggedIn = await isLoggedIn();
-
+export const toggleEventSelection = (eventId: string) => serialized(async ({ userId, check }) => {
   const isSelected = selectionService.toggleSelection(eventId);
 
-  if (loggedIn) {
+  if (userId) {
     try {
+      check();
       if (isSelected) {
-        await selectionService.addRemoteSelection(eventId);
+        await selectionService.addRemoteSelection(eventId, userId);
       } else {
-        await selectionService.removeRemoteSelection(eventId);
+        await selectionService.removeRemoteSelection(eventId, userId);
       }
     } catch (e) {
       // The account did not change, so this device should not either.
@@ -94,15 +118,16 @@ export const toggleEventSelection = (eventId: string) => serialized(async () => 
  * After signing in or up: races selected while signed out join the account instead of
  * being replaced by the account's (possibly empty) remote selection.
  */
-export const adoptLocalSelections = () => serialized(async () => {
+export const adoptLocalSelections = () => serialized(async ({ userId, check }) => {
   const local = selectionService.getLocalSelections();
-  if (local.length === 0) return;
+  if (local.length === 0 || !userId) return;
   try {
     const remote = new Set(await selectionService.getRemoteSelections());
     const missing = local.filter(id => !remote.has(id));
+    check();
     // Wait for every insert, also after one fails, so no insert is still running once the
     // next queued write (for example a clear) starts.
-    const results = await Promise.allSettled(missing.map(id => selectionService.addRemoteSelection(id)));
+    const results = await Promise.allSettled(missing.map(id => selectionService.addRemoteSelection(id, userId)));
     const failure = results.find(r => r.status === 'rejected');
     if (failure) throw (failure as PromiseRejectedResult).reason;
     const merged = Array.from(new Set([...remote, ...local]));
@@ -115,11 +140,12 @@ export const adoptLocalSelections = () => serialized(async () => {
 
 /**
  * Clears the account first and only then this device, so a failed clear (it throws)
- * leaves the selection exactly as it was everywhere.
+ * leaves the selection exactly as it was everywhere. Clearing this device cannot fail.
  */
-export const clearAllSelections = () => serialized(async () => {
-  if (await isLoggedIn()) {
-    await selectionService.clearRemoteSelections();
+export const clearAllSelections = () => serialized(async ({ userId, check }) => {
+  if (userId) {
+    check();
+    await selectionService.clearRemoteSelections(userId);
   }
   selectionService.clearLocalSelections();
   selectedEventIds.set(new Set());
@@ -130,9 +156,15 @@ export const clearAllSelections = () => serialized(async () => {
  * put back on this device as they were, and the first failure is thrown, so this device
  * never shows a change the account did not get.
  */
-async function mutateByType(eventIds: string[], mode: 'add' | 'remove') {
-  const loggedIn = await isLoggedIn();
+async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId, check }: WriteAccount) {
   const before = get(selectedEventIds);
+
+  const putBack = (ids: string[]) => selectedEventIds.update(current => {
+    const newIds = new Set(current);
+    ids.forEach(id => before.has(id) ? newIds.add(id) : newIds.delete(id));
+    selectionService.saveLocalSelections(Array.from(newIds));
+    return newIds;
+  });
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
@@ -141,46 +173,51 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove') {
     return newIds;
   });
 
-  if (!loggedIn) return;
+  if (!userId) return;
+  try {
+    check();
+  } catch (e) {
+    putBack(eventIds);
+    throw e;
+  }
   const remoteFn = mode === 'add'
     ? selectionService.addRemoteSelection
     : selectionService.removeRemoteSelection;
-  const results = await Promise.allSettled(eventIds.map(id => remoteFn.call(selectionService, id)));
+  const results = await Promise.allSettled(eventIds.map(id => remoteFn.call(selectionService, id, userId)));
   const failedIds = eventIds.filter((_, i) => results[i].status === 'rejected');
   if (failedIds.length === 0) return;
 
-  selectedEventIds.update(ids => {
-    const newIds = new Set(ids);
-    failedIds.forEach(id => before.has(id) ? newIds.add(id) : newIds.delete(id));
-    selectionService.saveLocalSelections(Array.from(newIds));
-    return newIds;
-  });
+  putBack(failedIds);
   throw (results.find(r => r.status === 'rejected') as PromiseRejectedResult).reason;
 }
 
 export function selectEventsByType(eventIds: string[]) {
-  return serialized(() => mutateByType(eventIds, 'add'));
+  return serialized(account => mutateByType(eventIds, 'add', account));
 }
 
 export function deselectEventsByType(eventIds: string[]) {
-  return serialized(() => mutateByType(eventIds, 'remove'));
+  return serialized(account => mutateByType(eventIds, 'remove', account));
 }
 
 /**
- * Replaces the whole selection, for example with a saved calendar. All-or-nothing: if the
- * account rejects any race, the account is put back as it was (best effort), this device
- * keeps its current selection, and the first failure is thrown.
+ * Replaces the whole selection, for example with a saved calendar. If the account rejects any
+ * race, the account is put back to what it held before (best effort: if that also fails, the
+ * account can be left partly replaced until the next load), this device keeps its current
+ * selection, and the first failure is thrown.
  */
-export const replaceSelection = (eventIds: string[]) => serialized(async () => {
-  const before = Array.from(get(selectedEventIds));
-  if (await isLoggedIn()) {
-    await selectionService.clearRemoteSelections();
-    const results = await Promise.allSettled(eventIds.map(id => selectionService.addRemoteSelection(id)));
+export const replaceSelection = (eventIds: string[]) => serialized(async ({ userId, check }) => {
+  if (userId) {
+    // Snapshot the account itself, not this device: it can hold races this device does not.
+    const accountBefore = await selectionService.getRemoteSelections();
+    check();
+    await selectionService.clearRemoteSelections(userId);
+    const results = await Promise.allSettled(eventIds.map(id => selectionService.addRemoteSelection(id, userId)));
     const failure = results.find(r => r.status === 'rejected');
     if (failure) {
       try {
-        await selectionService.clearRemoteSelections();
-        await Promise.allSettled(before.map(id => selectionService.addRemoteSelection(id)));
+        check();
+        await selectionService.clearRemoteSelections(userId);
+        await Promise.allSettled(accountBefore.map(id => selectionService.addRemoteSelection(id, userId)));
       } catch {
         // The next load reads the account again.
       }

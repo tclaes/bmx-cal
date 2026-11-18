@@ -58,24 +58,34 @@
   }
 
   // A selection change the account rejects is shown above the list, which stays visible.
-  // Only the latest change may set or clear the message, so an older change that finishes
-  // late never hides the result of a newer one.
+  // The message belongs to the change that failed (`failedKey`): only a later success of that
+  // same change clears it, so another change succeeding never hides a failure that still stands.
   let selectionError = '';
-  let selectionAttempt = 0;
+  let failedKey: string | null = null;
 
-  async function runSelectionWrite(write: () => Promise<unknown>, failMessage: string) {
-    const attempt = ++selectionAttempt;
+  function showSelectionResult(key: string, message: string) {
+    if (message) {
+      selectionError = message;
+      failedKey = key;
+    } else if (key === failedKey) {
+      selectionError = '';
+      failedKey = null;
+    }
+  }
+
+  async function runSelectionWrite(key: string, write: () => Promise<unknown>, failMessage: string) {
     try {
       await write();
-      if (attempt === selectionAttempt) selectionError = '';
+      showSelectionResult(key, '');
     } catch {
-      if (attempt === selectionAttempt) selectionError = failMessage;
+      showSelectionResult(key, failMessage);
     }
   }
 
   function handleTypeToggle(ids: string[]) {
     const fully = isTypeFullySelected(ids, $selectedEventIds);
     return runSelectionWrite(
+      `type:${ids.join(',')}`,
       () => (fully ? deselectEventsByType(ids) : selectEventsByType(ids)),
       $t.calendar.selectionUpdateFailed,
     );
@@ -119,7 +129,7 @@
   }
 
   function handleToggle(eventId: string) {
-    return runSelectionWrite(() => toggleEventSelection(eventId), $t.calendar.selectionUpdateFailed);
+    return runSelectionWrite(`race:${eventId}`, () => toggleEventSelection(eventId), $t.calendar.selectionUpdateFailed);
   }
 
   function handleSaveCalendar() {
@@ -132,7 +142,7 @@
 
   function handleLoadCalendar(eventIds: string[]) {
     // All-or-nothing: on failure the current selection is kept.
-    return runSelectionWrite(() => replaceSelection(eventIds), $t.myEvents.loadCalendarFailed);
+    return runSelectionWrite('load-calendar', () => replaceSelection(eventIds), $t.myEvents.loadCalendarFailed);
   }
 
   async function handleEnablePush() {
@@ -207,7 +217,7 @@
     {exporting}
     on:export={exportToCalendar}
     on:save={handleSaveCalendar}
-    on:error={(e) => { selectionAttempt += 1; selectionError = e.detail; }}
+    on:error={(e) => showSelectionResult('selection-bar', e.detail)}
   />
 
   {#if selectionError}
@@ -220,6 +230,7 @@
     <SavedCalendarsList
       refreshTrigger={savedCalendarsRefresh}
       on:load={(e) => handleLoadCalendar(e.detail)}
+      on:loadError={() => showSelectionResult('load-calendar', $t.myEvents.loadCalendarFailed)}
     />
   {/if}
 

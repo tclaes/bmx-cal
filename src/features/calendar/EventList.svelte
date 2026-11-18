@@ -18,17 +18,20 @@
   // A save the account rejects is shown above the list; the list itself stays visible.
   let saveError = '';
 
-  // Only the latest save may set or clear the message, so an older save that finishes
-  // late never hides the result of a newer one.
-  let saveAttempt = 0;
+  // The message belongs to the race whose save failed: only a later successful save of that
+  // same race clears it, so saving another race never hides a failure that still stands.
+  let failedEventId: string | null = null;
 
   async function save(eventId: string) {
-    const attempt = ++saveAttempt;
     try {
       await toggleEventSelection(eventId);
-      if (attempt === saveAttempt) saveError = '';
+      if (eventId === failedEventId) {
+        saveError = '';
+        failedEventId = null;
+      }
     } catch {
-      if (attempt === saveAttempt) saveError = $t.calendar.selectionUpdateFailed;
+      saveError = $t.calendar.selectionUpdateFailed;
+      failedEventId = eventId;
     }
   }
 
@@ -54,6 +57,7 @@
     const currentUserId = $authStore.user?.id ?? null;
     if (previousUserId !== undefined && previousUserId !== currentUserId) {
       saveError = '';
+      failedEventId = null;
       loadAll('Failed to reload events');
       loadUserSelections();
     }

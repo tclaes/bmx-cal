@@ -7,7 +7,7 @@
 
   export let refreshTrigger = 0;
 
-  const dispatch = createEventDispatcher<{ load: string[] }>();
+  const dispatch = createEventDispatcher<{ load: string[]; loadError: void }>();
 
   let calendars: SavedCalendar[] = [];
   let loading = true;
@@ -38,7 +38,14 @@
   }
 
   async function handleLoad(id: string) {
-    const eventIds = await CalendarService.getCalendarEventIds(id);
+    let eventIds: string[];
+    try {
+      eventIds = await CalendarService.getCalendarEventIds(id);
+    } catch {
+      // Reading the saved calendar failed before anything changed; the page shows why.
+      dispatch('loadError');
+      return;
+    }
     dispatch('load', eventIds);
   }
 </script>

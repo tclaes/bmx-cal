@@ -8,14 +8,20 @@ const sel = vi.hoisted(() => ({
   saveLocalSelections: vi.fn(),
 }));
 
+// Adoption happens right after sign-in: the app and Supabase both know the account.
+vi.mock('@data', () => ({
+  supabase: { auth: { getUser: vi.fn(async () => ({ data: { user: { id: 'u1' } } })) } },
+}));
+
 vi.mock('@core/services', async (orig) => {
   const actual = await orig<typeof import('@core/services')>();
   return { ...actual, selectionService: sel };
 });
 
-import { adoptLocalSelections, selectedEventIds } from '@core/stores';
+import { adoptLocalSelections, selectedEventIds, authStore } from '@core/stores';
 
 beforeEach(() => {
+  authStore.setUser({ id: 'u1' } as any);
   Object.values(sel).forEach(f => f.mockClear());
   sel.getLocalSelections.mockReturnValue([]);
   sel.getRemoteSelections.mockResolvedValue([]);
@@ -42,7 +48,7 @@ describe('adoptLocalSelections', () => {
     sel.getRemoteSelections.mockResolvedValue(['b', 'c']);
     await adoptLocalSelections();
     expect(sel.addRemoteSelection).toHaveBeenCalledTimes(1);
-    expect(sel.addRemoteSelection).toHaveBeenCalledWith('a');
+    expect(sel.addRemoteSelection).toHaveBeenCalledWith('a', 'u1');
     expect([...get(selectedEventIds)].sort()).toEqual(['a', 'b', 'c']);
     expect(sel.saveLocalSelections).toHaveBeenCalledWith(expect.arrayContaining(['a', 'b', 'c']));
   });

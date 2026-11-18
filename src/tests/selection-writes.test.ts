@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 
-type Call = { op: 'upsert' | 'delete'; eventId?: string; options?: unknown };
+type Call = { op: 'upsert' | 'delete'; eventId?: string; userId?: string; options?: unknown };
 
 const db = vi.hoisted(() => ({
   user: { id: 'u1' } as { id: string } | null,
@@ -12,26 +12,38 @@ const db = vi.hoisted(() => ({
   /** Per-race holds: an upsert for that race waits for its promise. */
   holdFor: new Map<string, Promise<void>>(),
   remote: [] as string[],
+  /** When set, reading the account's selection waits for this promise. */
+  holdSelect: null as Promise<void> | null,
 }));
 
 vi.mock('@data', () => ({
   supabase: {
     auth: { getUser: vi.fn(async () => ({ data: { user: db.user } })) },
     from: vi.fn(() => ({
-      select: async () => ({ data: db.remote.map(event_id => ({ event_id })), error: null }),
-      upsert: async (row: { event_id: string }, options: unknown) => {
+      select: async () => {
+        if (db.holdSelect) await db.holdSelect;
+        return { data: db.remote.map(event_id => ({ event_id })), error: null };
+      },
+      upsert: async (row: { event_id: string; user_id: string }, options: unknown) => {
         if (db.hold) await db.hold;
         const held = db.holdFor.get(row.event_id);
         if (held) await held;
-        db.calls.push({ op: 'upsert', eventId: row.event_id, options });
+        db.calls.push({ op: 'upsert', eventId: row.event_id, userId: row.user_id, options });
         return { error: db.failFor.has(row.event_id) ? { message: `insert ${row.event_id} denied` } : null };
       },
-      delete: () => ({
-        eq: async (column: string, value: string) => {
-          db.calls.push({ op: 'delete', eventId: column === 'event_id' ? value : undefined });
-          return { error: column === 'event_id' && db.failFor.has(value) ? { message: `delete ${value} denied` } : null };
-        },
-      }),
+      // delete().eq(...).eq(...) is awaited at the end of the chain.
+      delete: () => {
+        const filters: Record<string, string> = {};
+        const query = {
+          eq(column: string, value: string) { filters[column] = value; return query; },
+          then(resolve: (r: unknown) => void) {
+            db.calls.push({ op: 'delete', eventId: filters.event_id, userId: filters.user_id });
+            const denied = filters.event_id && db.failFor.has(filters.event_id);
+            resolve({ error: denied ? { message: `delete ${filters.event_id} denied` } : null });
+          },
+        };
+        return query;
+      },
     })),
   },
 }));
@@ -44,17 +56,22 @@ function setSelection(ids: string[]) {
   selectionService.saveLocalSelections(ids);
   selectedEventIds.set(new Set(ids));
 }
+/** Signs in (or out, with null) the same account for the app and for Supabase. */
+function signIn(id: string | null) {
+  db.user = id ? { id } : null;
+  authStore.setUser(id ? ({ id } as any) : null);
+}
 const storeIds = () => [...get(selectedEventIds)].sort();
 const localIds = () => selectionService.getLocalSelections().slice().sort();
 
 beforeEach(() => {
-  db.user = { id: 'u1' };
   db.calls = [];
   db.failFor = new Set();
   db.hold = null;
   db.holdFor = new Map();
   db.remote = [];
-  authStore.setUser(null);
+  db.holdSelect = null;
+  signIn('u1');
   localStorage.clear();
   setSelection([]);
 });
@@ -134,26 +151,59 @@ describe('selection writes', () => {
 
   it('replaceSelection is all-or-nothing: a rejected race puts the account back and keeps this device', async () => {
     setSelection(['a']);
+    db.remote = ['a', 'only-in-account'];
     db.failFor.add('y');
     await expect(replaceSelection(['x', 'y'])).rejects.toMatchObject({ message: 'insert y denied' });
     expect(storeIds()).toEqual(['a']);
     expect(localIds()).toEqual(['a']);
+    // The account gets back what it held, including races this device did not have.
     expect(db.calls.map(c => `${c.op}:${c.eventId ?? 'all'}`))
-      .toEqual(['delete:all', 'upsert:x', 'upsert:y', 'delete:all', 'upsert:a']);
+      .toEqual(['delete:all', 'upsert:x', 'upsert:y', 'delete:all', 'upsert:a', 'upsert:only-in-account']);
   });
 
-  it('a write queued for one account does not run after another account signs in', async () => {
-    authStore.setUser({ id: 'A' } as any);
+  it('every account write carries the user it was started for', async () => {
+    await selectEventsByType(['a']);
+    await deselectEventsByType(['a']);
+    await clearAllSelections();
+    expect(db.calls.map(c => `${c.op}:${c.userId}`)).toEqual(['upsert:u1', 'delete:u1', 'delete:u1']);
+  });
+
+  it('signed out, writes stay on this device', async () => {
+    signIn(null);
+    await selectEventsByType(['a']);
+    expect(storeIds()).toEqual(['a']);
+    expect(db.calls).toEqual([]);
+  });
+
+  it('a write queued for one account does not run after another account signs in, and changes nothing', async () => {
+    signIn('A');
+    setSelection(['a']);
     let release!: () => void;
     db.hold = new Promise<void>(r => { release = r; });
-    const first = selectEventsByType(['a']);
-    const second = toggleEventSelection('b');
+    const first = selectEventsByType(['b']);
+    const second = toggleEventSelection('c');
     await new Promise(r => setTimeout(r, 0)); // the first write has started for A
-    authStore.setUser({ id: 'B' } as any);
+    signIn('B');
     release();
     await first;
     await expect(second).rejects.toBeInstanceOf(AccountChangedError);
-    expect(db.calls.map(c => c.eventId)).toEqual(['a']);
+    expect(db.calls.map(c => `${c.op}:${c.eventId}:${c.userId}`)).toEqual(['upsert:b:A']);
+    expect(storeIds()).toEqual(['a', 'b']);
+    expect(localIds()).toEqual(['a', 'b']);
+  });
+
+  it('a write that is already running stops before its next account write when the account changes', async () => {
+    signIn('A');
+    setSelection(['a']);
+    let releaseRead!: () => void;
+    db.holdSelect = new Promise<void>(r => { releaseRead = r; });
+    const replacing = replaceSelection(['x']);
+    await new Promise(r => setTimeout(r, 0)); // reading A's selection
+    signIn('B');
+    releaseRead();
+    await expect(replacing).rejects.toBeInstanceOf(AccountChangedError);
+    expect(db.calls).toEqual([]); // B's rows were never touched
+    expect(storeIds()).toEqual(['a']);
   });
 
   it('a stuck write stops holding up later writes after the queue timeout', async () => {
@@ -167,6 +217,24 @@ describe('selection writes', () => {
       await vi.advanceTimersByTimeAsync(1);
       await later;
       expect(db.calls.map(c => c.eventId)).toContain('b');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('the timeout counts from when a write starts running, not from when it was queued', async () => {
+    vi.useFakeTimers();
+    try {
+      db.holdFor.set('one', new Promise<void>(() => {}));
+      db.holdFor.set('two', new Promise<void>(() => {}));
+      void selectEventsByType(['one']);
+      void selectEventsByType(['two']); // queued at t=0, starts at t=15s
+      const third = selectEventsByType(['three']);
+      await vi.advanceTimersByTimeAsync(WRITE_QUEUE_TIMEOUT_MS + 10_000); // t=25s: 'two' has run 10s
+      expect(db.calls.map(c => c.eventId)).not.toContain('three');
+      await vi.advanceTimersByTimeAsync(5_000); // t=30s: 'two' has run 15s
+      await third;
+      expect(db.calls.map(c => c.eventId)).toContain('three');
     } finally {
       vi.useRealTimers();
     }
