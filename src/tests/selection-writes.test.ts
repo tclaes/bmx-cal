@@ -18,6 +18,9 @@ const db = vi.hoisted(() => ({
   holdSelect: null as Promise<void> | null,
   /** When set, deletes wait for this promise before answering. */
   holdDelete: null as Promise<void> | null,
+  /** Number of account clears so far, and the one (1-based) that should fail. */
+  clearCalls: 0,
+  failClearCall: null as number | null,
   /** When set, looking up the signed-in user fails with this error. */
   userError: null as { message: string } | null,
 }));
@@ -47,6 +50,9 @@ vi.mock('@data', () => ({
             void (async () => {
               if (db.holdDelete) await db.holdDelete;
               db.calls.push({ op: 'delete', eventId: filters.event_id, userId: filters.user_id });
+              const isClear = !!filters.user_id && !filters.event_id;
+              if (isClear) db.clearCalls += 1;
+              if (isClear && db.failClearCall === db.clearCalls) return resolve({ error: { message: 'clear denied' } });
               const denied = filters.event_id && db.failFor.has(filters.event_id);
               resolve({ error: denied ? { message: `delete ${filters.event_id} denied` } : null });
             })();
@@ -83,6 +89,8 @@ beforeEach(() => {
   db.remote = [];
   db.holdSelect = null;
   db.holdDelete = null;
+  db.clearCalls = 0;
+  db.failClearCall = null;
   db.userError = null;
   signIn('u1');
   localStorage.clear();
@@ -244,6 +252,40 @@ describe('selection writes', () => {
     await expect(clearing).rejects.toBeInstanceOf(AccountChangedError);
     expect(storeIds()).toEqual(['a']);
     expect(localIds()).toEqual(['a']);
+  });
+
+  it('logs why the sign-in merge did not happen, keeps the local selection and still resolves', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      setSelection(['a']);
+      db.failFor.add('a');
+      await expect(adoptLocalSelections()).resolves.toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[selection] Could not merge the signed-out selection'),
+        expect.objectContaining({ message: 'insert a denied' }),
+      );
+      expect(localIds()).toEqual(['a']);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('logs a failed rollback after a failed replace and still throws the original failure', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      setSelection(['a']);
+      db.remote = ['a'];
+      db.failFor.add('y');
+      db.failClearCall = 2; // the first clear empties the account, the second one is the rollback
+      await expect(replaceSelection(['x', 'y'])).rejects.toMatchObject({ message: 'insert y denied' });
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[selection] Could not put the account back'),
+        expect.objectContaining({ message: 'clear denied' }),
+      );
+      expect(storeIds()).toEqual(['a']);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('a signed-in write fails visibly when the account cannot be looked up, and changes nothing', async () => {

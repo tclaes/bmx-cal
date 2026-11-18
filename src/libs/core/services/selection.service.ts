@@ -15,16 +15,18 @@ export const selectionService = {
   saveLocalSelections(eventIds: string[]): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(eventIds));
-    } catch {
-      // ignore
+    } catch (e) {
+      // Storage can be unavailable (private mode, quota): the in-memory selection still works.
+      console.warn('[selection] Could not save the selection on this device.', e);
     }
   },
 
   clearLocalSelections(): void {
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // ignore: storage can be unavailable (private mode); the in-memory store is cleared anyway
+    } catch (e) {
+      // Storage can be unavailable (private mode): the in-memory store is cleared anyway.
+      console.warn('[selection] Could not clear the selection on this device.', e);
     }
   },
 

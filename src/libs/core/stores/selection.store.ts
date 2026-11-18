@@ -95,17 +95,33 @@ function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T>
   return run;
 }
 
+/** The account write for each kind of change, so callers pick one by key instead of branching. */
+const remoteWrites = {
+  add: (eventId: string, userId: string) => selectionService.addRemoteSelection(eventId, userId),
+  remove: (eventId: string, userId: string) => selectionService.removeRemoteSelection(eventId, userId),
+} as const;
+
+type WriteMode = keyof typeof remoteWrites;
+
+/** The matching change to the shown selection, keyed the same way. */
+const localChanges: Record<WriteMode, (ids: Set<string>, eventId: string) => unknown> = {
+  add: (ids, eventId) => ids.add(eventId),
+  remove: (ids, eventId) => ids.delete(eventId),
+};
+
+/** Narrows a settled result to the rejected case, so `.reason` needs no cast. */
+function isRejected(result: PromiseSettledResult<unknown>): result is PromiseRejectedResult {
+  return result.status === 'rejected';
+}
+
 export const toggleEventSelection = (eventId: string) => serialized(async ({ userId, check, changed }) => {
   const isSelected = selectionService.toggleSelection(eventId);
+  const mode: WriteMode = isSelected ? 'add' : 'remove';
 
   if (userId) {
     try {
       check();
-      if (isSelected) {
-        await selectionService.addRemoteSelection(eventId, userId);
-      } else {
-        await selectionService.removeRemoteSelection(eventId, userId);
-      }
+      await remoteWrites[mode](eventId, userId);
       check(); // signed out or switched while writing: don't commit to the new account's device
     } catch (e) {
       // The account did not change, so this device should not either. After an account
@@ -119,11 +135,7 @@ export const toggleEventSelection = (eventId: string) => serialized(async ({ use
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
-    if (isSelected) {
-      newIds.add(eventId);
-    } else {
-      newIds.delete(eventId);
-    }
+    localChanges[mode](newIds, eventId);
     return newIds;
   });
 });
@@ -141,15 +153,17 @@ export const adoptLocalSelections = () => serialized(async ({ userId, check }) =
     check();
     // Wait for every insert, also after one fails, so no insert is still running once the
     // next queued write (for example a clear) starts.
-    const results = await Promise.allSettled(missing.map(id => selectionService.addRemoteSelection(id, userId)));
-    const failure = results.find(r => r.status === 'rejected');
-    if (failure) throw (failure as PromiseRejectedResult).reason;
+    const results = await Promise.allSettled(missing.map(id => remoteWrites.add(id, userId)));
+    const failure = results.find(isRejected);
+    if (failure) throw failure.reason;
     check();
     const merged = Array.from(new Set([...remote, ...local]));
     selectionService.saveLocalSelections(merged);
     selectedEventIds.set(new Set(merged));
-  } catch {
-    // Keep the local selection; the next load syncs it.
+  } catch (e) {
+    // Signing in must not fail because of this: keep the local selection (the next load syncs
+    // it) and leave a trace of why the merge did not happen.
+    console.warn('[selection] Could not merge the signed-out selection into the account; keeping it on this device.', e);
   }
 });
 
@@ -184,7 +198,7 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId
 
   selectedEventIds.update(ids => {
     const newIds = new Set(ids);
-    eventIds.forEach(id => mode === 'add' ? newIds.add(id) : newIds.delete(id));
+    eventIds.forEach(id => localChanges[mode](newIds, id));
     selectionService.saveLocalSelections(Array.from(newIds));
     return newIds;
   });
@@ -196,19 +210,16 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId
     putBack(eventIds);
     throw e;
   }
-  const remoteFn = mode === 'add'
-    ? selectionService.addRemoteSelection
-    : selectionService.removeRemoteSelection;
-  const results = await Promise.allSettled(eventIds.map(id => remoteFn.call(selectionService, id, userId)));
+  const results = await Promise.allSettled(eventIds.map(id => remoteWrites[mode](id, userId)));
   // Switched while writing: this device now belongs to the new account, leave it alone.
   if (changed()) throw new AccountChangedError();
-  const failedIds = eventIds.filter((_, i) => results[i].status === 'rejected');
+  const failedIds = eventIds.filter((_, i) => isRejected(results[i]));
   if (failedIds.length === 0) return;
 
   // A late failure (after the queue timeout) only puts back races no newer write changed since.
   const current = get(selectedEventIds);
   putBack(failedIds.filter(id => current.has(id) === (mode === 'add')));
-  throw (results.find(r => r.status === 'rejected') as PromiseRejectedResult).reason;
+  throw results.find(isRejected)!.reason; // there is at least one failed id, so one result was rejected
 }
 
 export function selectEventsByType(eventIds: string[]) {
@@ -231,17 +242,19 @@ export const replaceSelection = (eventIds: string[]) => serialized(async ({ user
     const accountBefore = await selectionService.getRemoteSelections();
     check();
     await selectionService.clearRemoteSelections(userId);
-    const results = await Promise.allSettled(eventIds.map(id => selectionService.addRemoteSelection(id, userId)));
-    const failure = results.find(r => r.status === 'rejected');
+    const results = await Promise.allSettled(eventIds.map(id => remoteWrites.add(id, userId)));
+    const failure = results.find(isRejected);
     if (failure) {
       try {
         check();
         await selectionService.clearRemoteSelections(userId);
-        await Promise.allSettled(accountBefore.map(id => selectionService.addRemoteSelection(id, userId)));
-      } catch {
-        // The next load reads the account again.
+        await Promise.allSettled(accountBefore.map(id => remoteWrites.add(id, userId)));
+      } catch (rollbackError) {
+        // The original failure is what the caller must see; the account can stay partly
+        // replaced until the next load reads it again, so leave a trace of that.
+        console.warn('[selection] Could not put the account back after a failed replace; the next load reads it again.', rollbackError);
       }
-      throw (failure as PromiseRejectedResult).reason;
+      throw failure.reason;
     }
     check(); // switched while replacing: the new account's device is not replaced
   }
