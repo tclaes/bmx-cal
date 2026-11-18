@@ -102,6 +102,8 @@ describe('EventList', () => {
     loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
     authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
     const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    // Signed in, the page reads the account's selection on mount: keep that off the network.
+    const getRemote = vi.spyOn(selectionService, 'getRemoteSelections').mockResolvedValue([]);
     const spy = vi.spyOn(selectionService, 'addRemoteSelection').mockRejectedValueOnce(new Error('denied'));
     try {
       render(EventList);
@@ -119,6 +121,7 @@ describe('EventList', () => {
     } finally {
       spy.mockRestore();
       getUser.mockRestore();
+      getRemote.mockRestore();
       authStore.setUser(null);
     }
   });
@@ -128,6 +131,8 @@ describe('EventList', () => {
     loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
     authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
     const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    // Signed in, the page reads the account's selection on mount: keep that off the network.
+    const getRemote = vi.spyOn(selectionService, 'getRemoteSelections').mockResolvedValue([]);
     let failLate!: (e: Error) => void;
     const spy = vi.spyOn(selectionService, 'addRemoteSelection')
       .mockImplementationOnce(() => new Promise<void>((_, reject) => { failLate = reject; }));
@@ -143,6 +148,7 @@ describe('EventList', () => {
     } finally {
       spy.mockRestore();
       getUser.mockRestore();
+      getRemote.mockRestore();
       authStore.setUser(null);
     }
   });

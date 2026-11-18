@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { CalendarService } from '@core/services';
+  import { authStore } from '@core/stores';
   import type { SavedCalendar } from '@core/services';
   import Button from '@ui/Button.svelte';
   import { formatDate } from '@shared/utils';
@@ -38,15 +39,18 @@
   }
 
   async function handleLoad(id: string) {
+    // A read that finishes after a sign-in or sign-out belongs to the previous account: drop it.
+    const owner = $authStore.user?.id ?? null;
+    const sameAccount = () => owner === ($authStore.user?.id ?? null);
     let eventIds: string[];
     try {
       eventIds = await CalendarService.getCalendarEventIds(id);
     } catch {
       // Reading the saved calendar failed before anything changed; the page shows why.
-      dispatch('loadError');
+      if (sameAccount()) dispatch('loadError');
       return;
     }
-    dispatch('load', eventIds);
+    if (sameAccount()) dispatch('load', eventIds);
   }
 </script>
 

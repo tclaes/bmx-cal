@@ -53,14 +53,19 @@ export class AccountChangedError extends Error {
 interface WriteAccount {
   /** The account to write to, or null when signed out (this device only). */
   userId: string | null;
-  /** Throws AccountChangedError if the account changed; call it before every account write. */
+  /** Throws AccountChangedError if the account changed; call it before every account write
+   *  and before changing this device after an account write. */
   check(): void;
+  /** True once the account changed: this device then belongs to the new account, so a write
+   *  for the old one must leave it alone (no commit, no rollback). */
+  changed(): boolean;
 }
 
 function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T> {
   const owner = currentUserId;
+  const changed = () => currentUserId !== owner;
   const check = () => {
-    if (currentUserId !== owner) throw new AccountChangedError();
+    if (changed()) throw new AccountChangedError();
   };
   let releaseQueue!: () => void;
   const released = new Promise<void>(resolve => { releaseQueue = resolve; });
@@ -73,7 +78,7 @@ function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T>
       const { data: { user } } = await supabase.auth.getUser();
       check();
       if (owner && user && user.id !== owner) throw new AccountChangedError();
-      return await write({ userId: user?.id ?? null, check });
+      return await write({ userId: user?.id ?? null, check, changed });
     } finally {
       clearTimeout(timer);
       releaseQueue();
@@ -85,7 +90,7 @@ function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T>
   return run;
 }
 
-export const toggleEventSelection = (eventId: string) => serialized(async ({ userId, check }) => {
+export const toggleEventSelection = (eventId: string) => serialized(async ({ userId, check, changed }) => {
   const isSelected = selectionService.toggleSelection(eventId);
 
   if (userId) {
@@ -96,9 +101,11 @@ export const toggleEventSelection = (eventId: string) => serialized(async ({ use
       } else {
         await selectionService.removeRemoteSelection(eventId, userId);
       }
+      check(); // signed out or switched while writing: don't commit to the new account's device
     } catch (e) {
-      // The account did not change, so this device should not either.
-      selectionService.toggleSelection(eventId);
+      // The account did not change, so this device should not either. After an account
+      // change this device belongs to the new account: leave it alone.
+      if (!changed()) selectionService.toggleSelection(eventId);
       throw e;
     }
   }
@@ -130,6 +137,7 @@ export const adoptLocalSelections = () => serialized(async ({ userId, check }) =
     const results = await Promise.allSettled(missing.map(id => selectionService.addRemoteSelection(id, userId)));
     const failure = results.find(r => r.status === 'rejected');
     if (failure) throw (failure as PromiseRejectedResult).reason;
+    check();
     const merged = Array.from(new Set([...remote, ...local]));
     selectionService.saveLocalSelections(merged);
     selectedEventIds.set(new Set(merged));
@@ -146,6 +154,7 @@ export const clearAllSelections = () => serialized(async ({ userId, check }) => 
   if (userId) {
     check();
     await selectionService.clearRemoteSelections(userId);
+    check(); // switched while clearing: the new account's device is not cleared
   }
   selectionService.clearLocalSelections();
   selectedEventIds.set(new Set());
@@ -156,7 +165,7 @@ export const clearAllSelections = () => serialized(async ({ userId, check }) => 
  * put back on this device as they were, and the first failure is thrown, so this device
  * never shows a change the account did not get.
  */
-async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId, check }: WriteAccount) {
+async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId, check, changed }: WriteAccount) {
   const before = get(selectedEventIds);
 
   const putBack = (ids: string[]) => selectedEventIds.update(current => {
@@ -184,6 +193,8 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId
     ? selectionService.addRemoteSelection
     : selectionService.removeRemoteSelection;
   const results = await Promise.allSettled(eventIds.map(id => remoteFn.call(selectionService, id, userId)));
+  // Switched while writing: this device now belongs to the new account, leave it alone.
+  if (changed()) throw new AccountChangedError();
   const failedIds = eventIds.filter((_, i) => results[i].status === 'rejected');
   if (failedIds.length === 0) return;
 
@@ -223,6 +234,7 @@ export const replaceSelection = (eventIds: string[]) => serialized(async ({ user
       }
       throw (failure as PromiseRejectedResult).reason;
     }
+    check(); // switched while replacing: the new account's device is not replaced
   }
   selectionService.saveLocalSelections(eventIds);
   selectedEventIds.set(new Set(eventIds));

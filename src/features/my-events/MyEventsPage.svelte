@@ -75,14 +75,21 @@
 
   // A result only counts for the account the change started for: after a sign-in or sign-out
   // the message is reset, and a late result from the previous account is ignored.
+  // Each change key remembers its latest run, so an older run of the same change that
+  // finishes late (possible after the store's queue timeout) never overrides a newer one.
+  const latestRun = new Map<string, number>();
+  let runCounter = 0;
+
   async function runSelectionWrite(key: string, write: () => Promise<unknown>, failMessage: string) {
+    const run = ++runCounter;
+    latestRun.set(key, run);
     const owner = $authStore.user?.id ?? null;
-    const sameAccount = () => owner === ($authStore.user?.id ?? null);
+    const counts = () => owner === ($authStore.user?.id ?? null) && latestRun.get(key) === run;
     try {
       await write();
-      if (sameAccount()) showSelectionResult(key, '');
+      if (counts()) showSelectionResult(key, '');
     } catch {
-      if (sameAccount()) showSelectionResult(key, failMessage);
+      if (counts()) showSelectionResult(key, failMessage);
     }
   }
 

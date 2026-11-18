@@ -17,9 +17,15 @@
 
   // A save result only counts for the race that is still open and the account it started for:
   // the page is reused when another race opens, and late results are ignored.
+  // Only the latest save counts, so an older save that finishes late (possible after the
+  // store's queue timeout) never overrides the newer one's result.
+  let saveCounter = 0;
+
   async function save(eventId: string) {
+    const attempt = ++saveCounter;
     const owner = $authStore.user?.id ?? null;
-    const current = () => eventId === event?.id && owner === ($authStore.user?.id ?? null);
+    const current = () =>
+      attempt === saveCounter && eventId === event?.id && owner === ($authStore.user?.id ?? null);
     try {
       await toggleEventSelection(eventId);
       if (current()) saveError = '';

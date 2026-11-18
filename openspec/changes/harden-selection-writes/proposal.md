@@ -7,7 +7,7 @@ The selection store hides failures and lets writes overlap. `selectionService` i
 ## What Changes
 
 - Selection writes (toggle, select by type, deselect by type, clear, replace, adopt after sign-in) run one at a time through a queue, in the order they were started. A write that has been running for 15 seconds stops holding up the writes after it.
-- A write is bound to the account it was started for: it checks the account before every account write, passes that user id to the service, and rejects without touching anything after an account switch.
+- A write is bound to the account it was started for: it checks the account before every account write and again before changing this device, passes that user id to the service, and after an account switch rejects without committing to or rolling back the new account's device. A saved-calendar read that finishes after a switch is dropped.
 - Add, remove and clear throw when Supabase rejects them. Adds use `upsert` with `ignoreDuplicates`, because `(user_id, event_id)` is unique.
 - Select and deselect put this device back for every race the account did not accept. Clear and replace write the account first, so a failure leaves this device untouched. Adopting signed-out picks after sign-in waits for every insert and keeps the local selection on failure.
 - New `replaceSelection` loads a saved calendar as one write: on failure this device keeps its selection and the account is put back to what it held. Putting the account back is best effort; if it also fails, the account can be left partly replaced until the next load.

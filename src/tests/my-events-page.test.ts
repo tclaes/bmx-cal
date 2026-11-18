@@ -265,6 +265,20 @@ describe('MyEventsPage loading a saved calendar', () => {
     expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
   });
 
+  it('drops a saved calendar read that finishes after the account changed', async () => {
+    vi.mocked(replaceSelection).mockClear();
+    let finishRead!: (ids: string[]) => void;
+    vi.mocked(CalendarService.getCalendarEventIds).mockReset()
+      .mockImplementationOnce(() => new Promise<string[]>((resolve) => { finishRead = resolve; }));
+    render(MyEventsPage);
+    await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
+    authStore.setUser({ id: 'other', email: 'o@b.c', role: 'user', managedTeams: [] } as any);
+    finishRead(['3']);
+    await new Promise(r => setTimeout(r, 0));
+    expect(replaceSelection).not.toHaveBeenCalled();
+    expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
+  });
+
   it('replaces the selection with the saved calendar in one write', async () => {
     vi.mocked(replaceSelection).mockClear();
     render(MyEventsPage);
@@ -319,6 +333,22 @@ describe('MyEventsPage selection write failures', () => {
     failLate(new Error('denied'));
     await new Promise(r => setTimeout(r, 0));
     expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
+  });
+
+  it('an older save of the same race that finishes late does not clear the newer failure', async () => {
+    let finishFirst!: () => void;
+    vi.mocked(toggleEventSelection)
+      .mockImplementationOnce(() => new Promise<void>((resolve) => { finishFirst = resolve; }))
+      .mockRejectedValueOnce(new Error('denied'));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    const star = () => screen.getAllByRole('button', { name: /^(Wedstrijd bewaren|Bewaard)$/ })[0];
+    await fireEvent.click(star());
+    await fireEvent.click(star());
+    expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+    finishFirst();
+    await new Promise(r => setTimeout(r, 0));
+    expect(screen.getByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
   });
 
   it('a later success for the same race clears its message', async () => {

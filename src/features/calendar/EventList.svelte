@@ -24,17 +24,24 @@
 
   // A result only counts for the account the save started for: after a sign-in or sign-out
   // the message is reset, and a late result from the previous account is ignored.
+  // Each race remembers its latest save: an older save of the same race that finishes late
+  // (possible after the store's queue timeout) never overrides the newer one's result.
+  const latestSave = new Map<string, number>();
+  let saveCounter = 0;
+
   async function save(eventId: string) {
+    const attempt = ++saveCounter;
+    latestSave.set(eventId, attempt);
     const owner = $authStore.user?.id ?? null;
-    const sameAccount = () => owner === ($authStore.user?.id ?? null);
+    const counts = () => owner === ($authStore.user?.id ?? null) && latestSave.get(eventId) === attempt;
     try {
       await toggleEventSelection(eventId);
-      if (sameAccount() && eventId === failedEventId) {
+      if (counts() && eventId === failedEventId) {
         saveError = '';
         failedEventId = null;
       }
     } catch {
-      if (!sameAccount()) return;
+      if (!counts()) return;
       saveError = $t.calendar.selectionUpdateFailed;
       failedEventId = eventId;
     }

@@ -14,6 +14,8 @@ const db = vi.hoisted(() => ({
   remote: [] as string[],
   /** When set, reading the account's selection waits for this promise. */
   holdSelect: null as Promise<void> | null,
+  /** When set, deletes wait for this promise before answering. */
+  holdDelete: null as Promise<void> | null,
 }));
 
 vi.mock('@data', () => ({
@@ -37,9 +39,12 @@ vi.mock('@data', () => ({
         const query = {
           eq(column: string, value: string) { filters[column] = value; return query; },
           then(resolve: (r: unknown) => void) {
-            db.calls.push({ op: 'delete', eventId: filters.event_id, userId: filters.user_id });
-            const denied = filters.event_id && db.failFor.has(filters.event_id);
-            resolve({ error: denied ? { message: `delete ${filters.event_id} denied` } : null });
+            void (async () => {
+              if (db.holdDelete) await db.holdDelete;
+              db.calls.push({ op: 'delete', eventId: filters.event_id, userId: filters.user_id });
+              const denied = filters.event_id && db.failFor.has(filters.event_id);
+              resolve({ error: denied ? { message: `delete ${filters.event_id} denied` } : null });
+            })();
           },
         };
         return query;
@@ -71,6 +76,7 @@ beforeEach(() => {
   db.holdFor = new Map();
   db.remote = [];
   db.holdSelect = null;
+  db.holdDelete = null;
   signIn('u1');
   localStorage.clear();
   setSelection([]);
@@ -185,7 +191,8 @@ describe('selection writes', () => {
     await new Promise(r => setTimeout(r, 0)); // the first write has started for A
     signIn('B');
     release();
-    await first;
+    // The running write finished its account write for A, but A is no longer signed in.
+    await expect(first).rejects.toBeInstanceOf(AccountChangedError);
     await expect(second).rejects.toBeInstanceOf(AccountChangedError);
     expect(db.calls.map(c => `${c.op}:${c.eventId}:${c.userId}`)).toEqual(['upsert:b:A']);
     expect(storeIds()).toEqual(['a', 'b']);
@@ -204,6 +211,32 @@ describe('selection writes', () => {
     await expect(replacing).rejects.toBeInstanceOf(AccountChangedError);
     expect(db.calls).toEqual([]); // B's rows were never touched
     expect(storeIds()).toEqual(['a']);
+  });
+
+  it('a toggle whose account changes while it writes does not change the new account\'s device', async () => {
+    signIn('A');
+    let release!: () => void;
+    db.hold = new Promise<void>(r => { release = r; });
+    const toggling = toggleEventSelection('a');
+    await new Promise(r => setTimeout(r, 0)); // writing for A
+    signIn('B');
+    release();
+    await expect(toggling).rejects.toBeInstanceOf(AccountChangedError);
+    expect(storeIds()).toEqual([]);
+  });
+
+  it('a clear whose account changes while it writes does not clear the new account\'s device', async () => {
+    signIn('A');
+    setSelection(['a']);
+    let release!: () => void;
+    db.holdDelete = new Promise<void>(r => { release = r; });
+    const clearing = clearAllSelections();
+    await new Promise(r => setTimeout(r, 0)); // clearing A's account
+    signIn('B');
+    release();
+    await expect(clearing).rejects.toBeInstanceOf(AccountChangedError);
+    expect(storeIds()).toEqual(['a']);
+    expect(localIds()).toEqual(['a']);
   });
 
   it('a stuck write stops holding up later writes after the queue timeout', async () => {
