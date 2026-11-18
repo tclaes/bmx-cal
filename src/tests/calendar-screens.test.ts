@@ -123,6 +123,30 @@ describe('EventList', () => {
     }
   });
 
+  it('ignores a save failure that arrives after the account changed', async () => {
+    eventsStore.setLoading(false);
+    loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    let failLate!: (e: Error) => void;
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection')
+      .mockImplementationOnce(() => new Promise<void>((_, reject) => { failLate = reject; }));
+    try {
+      render(EventList);
+      const race2 = (await screen.findByRole('link', { name: 'Race 2' })).closest('article')!;
+      await fireEvent.click(within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' }));
+      await waitFor(() => expect(spy).toHaveBeenCalled());
+      authStore.setUser({ id: 'u2', email: 'b@b.c', role: 'user', managedTeams: [] } as any);
+      failLate(new Error('denied'));
+      await new Promise(r => setTimeout(r, 0));
+      expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+      getUser.mockRestore();
+      authStore.setUser(null);
+    }
+  });
+
   it('shows the empty state with a reset action', async () => {
     loaded.events = [];
     render(EventList);

@@ -22,14 +22,19 @@
   // same race clears it, so saving another race never hides a failure that still stands.
   let failedEventId: string | null = null;
 
+  // A result only counts for the account the save started for: after a sign-in or sign-out
+  // the message is reset, and a late result from the previous account is ignored.
   async function save(eventId: string) {
+    const owner = $authStore.user?.id ?? null;
+    const sameAccount = () => owner === ($authStore.user?.id ?? null);
     try {
       await toggleEventSelection(eventId);
-      if (eventId === failedEventId) {
+      if (sameAccount() && eventId === failedEventId) {
         saveError = '';
         failedEventId = null;
       }
     } catch {
+      if (!sameAccount()) return;
       saveError = $t.calendar.selectionUpdateFailed;
       failedEventId = eventId;
     }

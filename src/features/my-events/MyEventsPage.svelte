@@ -73,13 +73,27 @@
     }
   }
 
+  // A result only counts for the account the change started for: after a sign-in or sign-out
+  // the message is reset, and a late result from the previous account is ignored.
   async function runSelectionWrite(key: string, write: () => Promise<unknown>, failMessage: string) {
+    const owner = $authStore.user?.id ?? null;
+    const sameAccount = () => owner === ($authStore.user?.id ?? null);
     try {
       await write();
-      showSelectionResult(key, '');
+      if (sameAccount()) showSelectionResult(key, '');
     } catch {
-      showSelectionResult(key, failMessage);
+      if (sameAccount()) showSelectionResult(key, failMessage);
     }
+  }
+
+  let previousUserId: string | null | undefined = undefined;
+  $: {
+    const currentUserId = $authStore.user?.id ?? null;
+    if (previousUserId !== undefined && previousUserId !== currentUserId) {
+      selectionError = '';
+      failedKey = null;
+    }
+    previousUserId = currentUserId;
   }
 
   function handleTypeToggle(ids: string[]) {

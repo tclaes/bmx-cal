@@ -15,15 +15,24 @@
   let error = '';
   let saveError = '';
 
-  // A save result only counts for the race that is still open: the page is reused when
-  // another race opens, and a late result from the previous race is ignored.
+  // A save result only counts for the race that is still open and the account it started for:
+  // the page is reused when another race opens, and late results are ignored.
   async function save(eventId: string) {
+    const owner = $authStore.user?.id ?? null;
+    const current = () => eventId === event?.id && owner === ($authStore.user?.id ?? null);
     try {
       await toggleEventSelection(eventId);
-      if (eventId === event?.id) saveError = '';
+      if (current()) saveError = '';
     } catch {
-      if (eventId === event?.id) saveError = $t.calendar.selectionUpdateFailed;
+      if (current()) saveError = $t.calendar.selectionUpdateFailed;
     }
+  }
+
+  let previousUserId: string | null | undefined = undefined;
+  $: {
+    const currentUserId = $authStore.user?.id ?? null;
+    if (previousUserId !== undefined && previousUserId !== currentUserId) saveError = '';
+    previousUserId = currentUserId;
   }
   let editing = false;
   let requestedId = '';

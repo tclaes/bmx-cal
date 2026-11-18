@@ -301,6 +301,26 @@ describe('MyEventsPage selection write failures', () => {
     expect(screen.getByText('Race 1')).toBeInTheDocument();
   });
 
+  it('switching accounts clears the message, and a late failure from the previous account is ignored', async () => {
+    authStore.setUser({ id: 'A', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    vi.mocked(toggleEventSelection).mockRejectedValueOnce(new Error('denied'));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getAllByRole('button', { name: 'Wedstrijd bewaren' })[0]);
+    expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+
+    authStore.setUser({ id: 'B', email: 'b@b.c', role: 'user', managedTeams: [] } as any);
+    await waitFor(() => expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument());
+
+    let failLate!: (e: Error) => void;
+    vi.mocked(toggleEventSelection).mockImplementationOnce(() => new Promise<void>((_, reject) => { failLate = reject; }));
+    await fireEvent.click(screen.getAllByRole('button', { name: 'Wedstrijd bewaren' })[1]);
+    authStore.setUser({ id: 'C', email: 'c@b.c', role: 'user', managedTeams: [] } as any);
+    failLate(new Error('denied'));
+    await new Promise(r => setTimeout(r, 0));
+    expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
+  });
+
   it('a later success for the same race clears its message', async () => {
     vi.mocked(toggleEventSelection).mockRejectedValueOnce(new Error('denied'));
     render(MyEventsPage);
