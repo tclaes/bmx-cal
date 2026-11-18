@@ -169,7 +169,8 @@ export const adoptLocalSelections = () => serialized(async ({ userId, check }) =
 
 /**
  * Clears the account first and only then this device, so a failed clear (it throws)
- * leaves the selection exactly as it was everywhere. Clearing this device cannot fail.
+ * leaves the selection exactly as it was everywhere. Clearing this device does not throw: if storage
+ * fails the error is logged, the shown selection is still cleared and the saved copy can stay behind.
  */
 export const clearAllSelections = () => serialized(async ({ userId, check }) => {
   if (userId) {
