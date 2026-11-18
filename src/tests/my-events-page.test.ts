@@ -38,11 +38,12 @@ vi.mock('@core/stores', async (orig) => {
     selectEventsByType: vi.fn(async (ids: string[]) => selected.update(s => new Set([...s, ...ids]))),
     deselectEventsByType: vi.fn(async (ids: string[]) => selected.update(s => { const n = new Set(s); ids.forEach(i => n.delete(i)); return n; })),
     clearAllSelections: vi.fn(async () => selected.set(new Set())),
+    replaceSelection: vi.fn(async (ids: string[]) => selected.set(new Set(ids))),
   };
 });
 
 import MyEventsPage from '../features/my-events/MyEventsPage.svelte';
-import { selectedEventIds, authStore, featureFlagsStore, clearAllSelections, toggleEventSelection } from '@core/stores';
+import { selectedEventIds, authStore, featureFlagsStore, replaceSelection, selectEventsByType } from '@core/stores';
 import { CalendarService } from '@core/services';
 import { locale } from '../i18n';
 
@@ -256,18 +257,33 @@ describe('MyEventsPage loading a saved calendar', () => {
     vi.mocked(CalendarService.getCalendarEventIds).mockResolvedValueOnce(['3']);
   });
 
-  it('shows a translated error and keeps the current selection when clearing fails', async () => {
-    vi.mocked(clearAllSelections).mockRejectedValueOnce(new Error('network down'));
+  it('shows a translated error and keeps the current selection when loading fails', async () => {
+    vi.mocked(replaceSelection).mockRejectedValueOnce(new Error('network down'));
     render(MyEventsPage);
     await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
-    expect(await screen.findByText('Selectie wissen mislukt')).toBeInTheDocument();
+    expect(await screen.findByText('Kalender laden mislukt. Je vorige selectie blijft behouden.')).toBeInTheDocument();
     expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
-    expect(toggleEventSelection).not.toHaveBeenCalledWith('3');
   });
 
-  it('replaces the selection with the saved calendar when clearing works', async () => {
+  it('replaces the selection with the saved calendar in one write', async () => {
     render(MyEventsPage);
     await fireEvent.click(await screen.findByRole('button', { name: 'Load' }));
     await waitFor(() => expect([...get(selectedEventIds)]).toEqual(['3']));
+    expect(replaceSelection).toHaveBeenCalledWith(['3']);
+  });
+});
+
+describe('MyEventsPage selection write failures', () => {
+  beforeEach(() => {
+    authStore.setUser(null);
+    selectedEventIds.set(new Set());
+  });
+
+  it('shows a translated error when selecting a whole type fails', async () => {
+    vi.mocked(selectEventsByType).mockRejectedValueOnce(new Error('denied'));
+    render(MyEventsPage);
+    await screen.findByText('Race 1');
+    await fireEvent.click(screen.getByRole('button', { name: /^CV/ }));
+    expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, within } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import type { EventWithDetails } from '@types';
 
@@ -18,6 +18,7 @@ import EventFilters from '../features/calendar/EventFilters.svelte';
 import EventList from '../features/calendar/EventList.svelte';
 import Navigation from '../layout/Navigation.svelte';
 import { eventsStore, filtersStore } from '@core/stores';
+import { selectionService } from '@core/services';
 import { locale } from '../i18n';
 
 const base = (id: string, o: Partial<EventWithDetails> = {}): EventWithDetails => ({
@@ -93,6 +94,21 @@ describe('EventList', () => {
     expect(screen.getByText('2 wedstrijden')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Race 1' })).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Race 2' })).toHaveAttribute('href', '/events/2');
+  });
+
+  it('shows a translated error and keeps the list when saving a race fails', async () => {
+    eventsStore.setLoading(false);
+    loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
+    const spy = vi.spyOn(selectionService, 'toggleSelection').mockImplementationOnce(() => { throw new Error('denied'); });
+    try {
+      render(EventList);
+      const race2 = (await screen.findByRole('link', { name: 'Race 2' })).closest('article')!;
+      await fireEvent.click(within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' }));
+      expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Race 2' })).toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('shows the empty state with a reset action', async () => {

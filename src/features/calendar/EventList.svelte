@@ -15,6 +15,17 @@
   $: countLabel = total === 1 ? $t.calendar.raceCountOne : interpolate($t.calendar.raceCount, { count: total });
 
   let previousUserId: string | null | undefined = undefined;
+  // A save the account rejects is shown above the list; the list itself stays visible.
+  let saveError = '';
+
+  async function save(eventId: string) {
+    try {
+      await toggleEventSelection(eventId);
+      saveError = '';
+    } catch {
+      saveError = $t.calendar.saveFailed;
+    }
+  }
 
   async function loadAll(failMessage: string) {
     try {
@@ -69,11 +80,14 @@
       <Button variant="secondary" on:click={() => filtersStore.reset()}>{$t.filters.resetFilters}</Button>
     </div>
   {:else}
+    {#if saveError}
+      <Alert type="danger" message={saveError} />
+    {/if}
     {#if hero}
       <CalendarHero
         event={hero}
         saved={$selectedEventIds.has(hero.id)}
-        on:save={() => hero && toggleEventSelection(hero.id)}
+        on:save={() => hero && save(hero.id)}
         on:navigate={(e) => navigate(e.detail)}
       />
     {/if}
@@ -104,7 +118,7 @@
             livestreamUrl={view.ongoing ? event.livestream_url : null}
             livestreamLabel={$t.calendar.livestream}
             on:click={(e) => open(e, view.href)}
-            on:save={() => toggleEventSelection(event.id)}
+            on:save={() => save(event.id)}
           />
         {/each}
       </div>

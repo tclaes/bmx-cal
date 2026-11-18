@@ -1,6 +1,7 @@
 import { writable, derived, get } from 'svelte/store';
 import { selectionService } from '@core/services';
 import { supabase } from '@data';
+import { authStore } from './auth.store';
 
 export const selectedEventIds = writable<Set<string>>(new Set());
 export const isLoadingSelections = writable<boolean>(false);
@@ -35,9 +36,27 @@ export async function loadUserSelections() {
 // can never be overtaken by an older select or deselect that was still writing.
 let writeQueue: Promise<unknown> = Promise.resolve();
 
+/** A write that takes longer than this no longer holds up the writes queued after it. */
+export const WRITE_QUEUE_TIMEOUT_MS = 15_000;
+
+// The account a queued write was started for. A write never runs for a different account,
+// for example when one user signs out and another signs in while writes are still queued.
+let currentUserId: string | null = null;
+authStore.subscribe(state => { currentUserId = state.user?.id ?? null; });
+
+export class AccountChangedError extends Error {
+  constructor() {
+    super('The account changed before this selection change was saved');
+  }
+}
+
 function serialized<T>(write: () => Promise<T>): Promise<T> {
-  const run = writeQueue.then(write, write);
-  writeQueue = run.catch(() => undefined);
+  const owner = currentUserId;
+  const guarded = () => (owner === currentUserId ? write() : Promise.reject(new AccountChangedError()));
+  const run = writeQueue.then(guarded, guarded);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<void>(resolve => { timer = setTimeout(resolve, WRITE_QUEUE_TIMEOUT_MS); });
+  writeQueue = Promise.race([run.then(() => undefined, () => undefined).finally(() => clearTimeout(timer)), timeout]);
   return run;
 }
 
@@ -146,3 +165,28 @@ export function selectEventsByType(eventIds: string[]) {
 export function deselectEventsByType(eventIds: string[]) {
   return serialized(() => mutateByType(eventIds, 'remove'));
 }
+
+/**
+ * Replaces the whole selection, for example with a saved calendar. All-or-nothing: if the
+ * account rejects any race, the account is put back as it was (best effort), this device
+ * keeps its current selection, and the first failure is thrown.
+ */
+export const replaceSelection = (eventIds: string[]) => serialized(async () => {
+  const before = Array.from(get(selectedEventIds));
+  if (await isLoggedIn()) {
+    await selectionService.clearRemoteSelections();
+    const results = await Promise.allSettled(eventIds.map(id => selectionService.addRemoteSelection(id)));
+    const failure = results.find(r => r.status === 'rejected');
+    if (failure) {
+      try {
+        await selectionService.clearRemoteSelections();
+        await Promise.allSettled(before.map(id => selectionService.addRemoteSelection(id)));
+      } catch {
+        // The next load reads the account again.
+      }
+      throw (failure as PromiseRejectedResult).reason;
+    }
+  }
+  selectionService.saveLocalSelections(eventIds);
+  selectedEventIds.set(new Set(eventIds));
+});

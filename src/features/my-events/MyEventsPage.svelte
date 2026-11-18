@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
+  import { selectedEventIds, loadUserSelections, toggleEventSelection, selectedCount, selectEventsByType, deselectEventsByType, replaceSelection } from '@core/stores';
   import { EventsService } from '@core/services';
   import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
   import Button from '@ui/Button.svelte';
@@ -58,10 +58,15 @@
   }
 
   async function handleTypeToggle(ids: string[]) {
-    if (isTypeFullySelected(ids, $selectedEventIds)) {
-      await deselectEventsByType(ids);
-    } else {
-      await selectEventsByType(ids);
+    try {
+      if (isTypeFullySelected(ids, $selectedEventIds)) {
+        await deselectEventsByType(ids);
+      } else {
+        await selectEventsByType(ids);
+      }
+      error = '';
+    } catch {
+      error = $t.calendar.saveFailed;
     }
   }
 
@@ -106,8 +111,8 @@
     try {
       await toggleEventSelection(eventId);
       error = '';
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to update selection';
+    } catch {
+      error = $t.calendar.saveFailed;
     }
   }
 
@@ -121,19 +126,11 @@
 
   async function handleLoadCalendar(eventIds: string[]) {
     try {
-      await clearAllSelections();
-    } catch {
-      // Clearing is all-or-nothing, so the current selection is still intact.
-      error = $t.myEvents.clearFailed;
-      return;
-    }
-    try {
-      for (const id of eventIds) {
-        await toggleEventSelection(id);
-      }
+      // All-or-nothing: on failure the current selection is kept.
+      await replaceSelection(eventIds);
       error = '';
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to update selection';
+    } catch {
+      error = $t.myEvents.loadCalendarFailed;
     }
   }
 

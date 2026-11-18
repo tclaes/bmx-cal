@@ -71,5 +71,24 @@ Clearing the selection SHALL remove all selected races at once without a confirm
 - **THEN** the selection is unchanged by the failed clear and the undo still restores the cleared races
 
 #### Scenario: Account rejects a change
-- **WHEN** the account rejects saving or removing a race (on select, deselect, clear or undo)
-- **THEN** this device keeps showing what the account has and an error is shown
+- **WHEN** the account rejects saving or removing a race (on select, deselect, clear or undo, from My Events, the race list or a race's detail page)
+- **THEN** this device keeps showing what the account has and a translated error is shown, without hiding the race list on the calendar pages
+
+### Requirement: Saved calendars and export
+The page SHALL let a signed-in user export the selection to an iCal file and save it as a named calendar, and SHALL list saved calendars. The save dialog and the saved calendars list SHALL follow the dark theme tokens and have touch targets of at least 44px. Loading a saved calendar SHALL replace the selection all-or-nothing.
+
+#### Scenario: Export
+- **WHEN** the user exports with at least one race selected
+- **THEN** an iCal file with the selected races is downloaded
+
+#### Scenario: Export without selection
+- **WHEN** the user exports with no race selected
+- **THEN** an error asks to select at least one race and no file is downloaded
+
+#### Scenario: Load a saved calendar
+- **WHEN** the user loads a saved calendar
+- **THEN** the selection becomes exactly that calendar's races
+
+#### Scenario: Loading a saved calendar fails
+- **WHEN** loading a saved calendar fails part-way
+- **THEN** the previous selection is kept and a translated error says so

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import type { EventWithDetails } from '@types';
 
 const getEventById = vi.hoisted(() => vi.fn());
@@ -12,6 +12,7 @@ import EventDetailPage from '../features/calendar/EventDetailPage.svelte';
 import { findRoute } from '../router/routes';
 import { routeParams } from '../router';
 import { eventsStore, authStore } from '@core/stores';
+import { selectionService } from '@core/services';
 import { locale } from '../i18n';
 
 const ev = (id: string, o: Partial<EventWithDetails> = {}): EventWithDetails => ({
@@ -55,6 +56,20 @@ describe('EventDetailPage', () => {
     render(EventDetailPage);
     expect(await screen.findByRole('heading', { name: 'Race 9' })).toBeInTheDocument();
     expect(getEventById).toHaveBeenCalledWith('9');
+  });
+
+  it('shows a translated error when saving the race fails', async () => {
+    eventsStore.setEvents([ev('1')]);
+    routeParams.set({ id: '1' });
+    const spy = vi.spyOn(selectionService, 'toggleSelection').mockImplementationOnce(() => { throw new Error('denied'); });
+    try {
+      render(EventDetailPage);
+      await fireEvent.click(await screen.findByRole('button', { name: 'Wedstrijd bewaren' }));
+      expect(await screen.findByText('Wedstrijd opslaan mislukt. Probeer opnieuw.')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Race 1' })).toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('shows not found with a link back', async () => {

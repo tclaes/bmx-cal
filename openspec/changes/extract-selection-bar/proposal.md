@@ -29,5 +29,7 @@ None.
 - `src/tests/my-events-page.test.ts`: the selection-bar and undo tests keep passing. New component-level tests are added for the bar.
 - `src/i18n/types.ts` and the nl, fr and en locales: two new keys, `myEvents.clearFailed` and `myEvents.restoreFailed`.
 - `src/libs/core/stores/selection.store.ts` and `selection.service.ts`: selection writes run in order, throw when Supabase rejects them, and leave this device as it was for races the account did not get; clearing is all-or-nothing (account first, then this device).
-- `MyEventsPage.svelte`: loading a saved calendar shows the translated clear error and keeps the current selection when clearing fails.
+- `MyEventsPage.svelte`: loading a saved calendar replaces the selection all-or-nothing (`replaceSelection`) and shows a translated error on failure; type chips and race toggles show `calendar.saveFailed`.
+- `src/features/calendar/EventList.svelte` and `EventDetailPage.svelte`: a rejected save shows `calendar.saveFailed` instead of an unhandled rejection.
+- i18n: `calendar.saveFailed` and `myEvents.loadCalendarFailed` in nl, fr and en.
 - No changes to the database or edge functions.

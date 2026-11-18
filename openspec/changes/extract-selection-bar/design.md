@@ -45,11 +45,14 @@ The component renders the bar when `$selectedCount > 0` and the undo message whe
 
 ### Selection store: ordered, all-or-nothing writes
 Undo can only promise an exact restore if the store reports failures honestly and writes can't overtake each other. So `selection.store.ts` now:
-- runs every write (`toggleEventSelection`, `selectEventsByType`, `deselectEventsByType`, `clearAllSelections`, `adoptLocalSelections`) through one queue, in the order they were started;
-- throws when the account write fails, because `selectionService` now checks the `{ error }` Supabase returns for add, remove and clear;
-- puts this device back as it was for every race whose account write failed (`mutateByType` uses `Promise.allSettled`, `toggleEventSelection` undoes its local toggle), and clears the account before this device.
+- runs every write (`toggleEventSelection`, `selectEventsByType`, `deselectEventsByType`, `clearAllSelections`, `replaceSelection`, `adoptLocalSelections`) through one queue, in the order they were started. A write that takes longer than 15 seconds (`WRITE_QUEUE_TIMEOUT_MS`) stops holding up the writes queued after it, so one stuck request can't block selection for the rest of the session;
+- runs a queued write only for the account it was started for. If a different user signed in (or the user signed out) in the meantime, the write rejects with `AccountChangedError` and touches nothing;
+- makes select, deselect, clear and replace throw when the account rejects them, because `selectionService` now checks the `{ error }` Supabase returns for add, remove and clear. `adoptLocalSelections` is the exception on purpose: after sign-in it waits for every insert, and if any fails it keeps the local selection and resolves, so signing in never fails because of it;
+- for select and deselect, updates this device first and then puts back every race whose account write failed (`mutateByType` uses `Promise.allSettled`, `toggleEventSelection` undoes its local toggle). Clear, replace and adoption write the account first and only then change this device, which is why a failed clear or replace leaves this device untouched;
+- adds `replaceSelection` for loading a saved calendar: clear the account, add every race, and if any add fails, put the account back as it was (best effort) and keep this device's selection.
 Adds use `upsert` with `ignoreDuplicates`, because `(user_id, event_id)` is unique and select-by-type re-adds races that are already saved.
-*Alternative:* write to the account first and update this device afterwards. Rejected because every tap would wait for the network.
+Every caller now catches a rejected write and shows a translated message: the race list and race detail (`calendar.saveFailed`, shown above the content so the list stays visible), the type chips and race toggles on My Events (`calendar.saveFailed`), loading a saved calendar (`myEvents.loadCalendarFailed`), and clear and undo in the selection bar.
+*Alternative:* write to the account first for select and deselect too. Rejected because every tap would wait for the network.
 
 ## Risks / Trade-offs
 
@@ -57,7 +60,8 @@ Adds use `upsert` with `ignoreDuplicates`, because `(user_id, event_id)` is uniq
 - [Moving undo state into the component could break the page's "clear with undo" unit tests if they depend on page internals] → The tests interact through roles and fake timers only, so they still apply when rendered through the page. Run them unchanged.
 - [`error` handling splits between the page and the component] → One `error` event and the existing page container. No second error UI.
 
-- [Selection writes now run one at a time, so a slow account write delays the next select or clear] → Each write is a single small request, and ordering is what keeps a newer clear from being overtaken. Writes still update this device first, so the UI stays responsive.
+- [Selection writes now run one at a time, so a slow account write delays the next select or clear] → Each write is a single small request, and ordering is what keeps a newer clear from being overtaken. Select and deselect still update this device first, so taps stay responsive; clear and replace wait for the account by design. After 15 seconds a stuck write no longer blocks the queue, at the cost of ordering for that one write.
+- [Putting the account back after a failed `replaceSelection` can itself fail] → This device keeps its selection either way, and the next load reads the account again.
 
 ## Migration Plan
 

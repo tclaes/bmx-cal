@@ -36,7 +36,8 @@ vi.mock('@data', () => ({
   },
 }));
 
-import { selectEventsByType, deselectEventsByType, toggleEventSelection, clearAllSelections, adoptLocalSelections, selectedEventIds } from '@core/stores';
+import { selectEventsByType, deselectEventsByType, toggleEventSelection, clearAllSelections, adoptLocalSelections, replaceSelection, selectedEventIds, authStore } from '@core/stores';
+import { AccountChangedError, WRITE_QUEUE_TIMEOUT_MS } from '../libs/core/stores/selection.store';
 import { selectionService } from '@core/services';
 
 function setSelection(ids: string[]) {
@@ -53,6 +54,7 @@ beforeEach(() => {
   db.hold = null;
   db.holdFor = new Map();
   db.remote = [];
+  authStore.setUser(null);
   localStorage.clear();
   setSelection([]);
 });
@@ -120,6 +122,54 @@ describe('selection writes', () => {
     await clearing;
     expect(db.calls.map(c => `${c.op}:${c.eventId ?? 'all'}`)).toEqual(['upsert:a', 'upsert:b', 'delete:all']);
     expect(storeIds()).toEqual([]);
+  });
+
+  it('replaceSelection swaps the whole selection on this device and in the account', async () => {
+    setSelection(['a']);
+    await replaceSelection(['x', 'y']);
+    expect(storeIds()).toEqual(['x', 'y']);
+    expect(localIds()).toEqual(['x', 'y']);
+    expect(db.calls.map(c => `${c.op}:${c.eventId ?? 'all'}`)).toEqual(['delete:all', 'upsert:x', 'upsert:y']);
+  });
+
+  it('replaceSelection is all-or-nothing: a rejected race puts the account back and keeps this device', async () => {
+    setSelection(['a']);
+    db.failFor.add('y');
+    await expect(replaceSelection(['x', 'y'])).rejects.toMatchObject({ message: 'insert y denied' });
+    expect(storeIds()).toEqual(['a']);
+    expect(localIds()).toEqual(['a']);
+    expect(db.calls.map(c => `${c.op}:${c.eventId ?? 'all'}`))
+      .toEqual(['delete:all', 'upsert:x', 'upsert:y', 'delete:all', 'upsert:a']);
+  });
+
+  it('a write queued for one account does not run after another account signs in', async () => {
+    authStore.setUser({ id: 'A' } as any);
+    let release!: () => void;
+    db.hold = new Promise<void>(r => { release = r; });
+    const first = selectEventsByType(['a']);
+    const second = toggleEventSelection('b');
+    await new Promise(r => setTimeout(r, 0)); // the first write has started for A
+    authStore.setUser({ id: 'B' } as any);
+    release();
+    await first;
+    await expect(second).rejects.toBeInstanceOf(AccountChangedError);
+    expect(db.calls.map(c => c.eventId)).toEqual(['a']);
+  });
+
+  it('a stuck write stops holding up later writes after the queue timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      db.holdFor.set('stuck', new Promise<void>(() => {}));
+      void selectEventsByType(['stuck']);
+      const later = selectEventsByType(['b']);
+      await vi.advanceTimersByTimeAsync(WRITE_QUEUE_TIMEOUT_MS - 1);
+      expect(db.calls.map(c => c.eventId)).not.toContain('b');
+      await vi.advanceTimersByTimeAsync(1);
+      await later;
+      expect(db.calls.map(c => c.eventId)).toContain('b');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('a failed write does not block later writes', async () => {
