@@ -75,9 +75,14 @@ function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T>
     const timer = setTimeout(releaseQueue, WRITE_QUEUE_TIMEOUT_MS);
     try {
       check();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
       check();
-      if (owner && user && user.id !== owner) throw new AccountChangedError();
+      if (owner) {
+        // The app says this account is signed in: the write must reach it, or fail visibly.
+        // It is never quietly downgraded to a device-only write.
+        if (error) throw error;
+        if (!user || user.id !== owner) throw new AccountChangedError();
+      }
       return await write({ userId: user?.id ?? null, check, changed });
     } finally {
       clearTimeout(timer);
@@ -104,8 +109,10 @@ export const toggleEventSelection = (eventId: string) => serialized(async ({ use
       check(); // signed out or switched while writing: don't commit to the new account's device
     } catch (e) {
       // The account did not change, so this device should not either. After an account
-      // change this device belongs to the new account: leave it alone.
-      if (!changed()) selectionService.toggleSelection(eventId);
+      // change this device belongs to the new account: leave it alone. A late failure (after
+      // the queue timeout) only rolls back if no newer write changed this race since.
+      const stillOurs = selectionService.getLocalSelections().includes(eventId) === isSelected;
+      if (!changed() && stillOurs) selectionService.toggleSelection(eventId);
       throw e;
     }
   }
@@ -198,7 +205,9 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId
   const failedIds = eventIds.filter((_, i) => results[i].status === 'rejected');
   if (failedIds.length === 0) return;
 
-  putBack(failedIds);
+  // A late failure (after the queue timeout) only puts back races no newer write changed since.
+  const current = get(selectedEventIds);
+  putBack(failedIds.filter(id => current.has(id) === (mode === 'add')));
   throw (results.find(r => r.status === 'rejected') as PromiseRejectedResult).reason;
 }
 

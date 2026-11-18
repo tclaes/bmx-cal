@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: Save from the detail page
-The detail page SHALL offer a save control that adds or removes the race from the user's selection. If the account rejects the change, the control SHALL keep its previous state and a translated error SHALL be shown on the page, which stays visible.
+The detail page SHALL offer a save control that adds or removes the race from the user's selection. If the account rejects the change, the control SHALL keep its previous state and a translated error SHALL be shown on the page, which stays visible. The error SHALL clear on a later successful save of the same race, when another race opens, and when the account changes.
 
 #### Scenario: Save
 - **WHEN** the user taps save on a race that is not saved
@@ -24,3 +24,7 @@ The detail page SHALL offer a save control that adds or removes the race from th
 #### Scenario: Another race opens
 - **WHEN** a save is still running and the user opens another race
 - **THEN** the result of that save is not shown on the other race's page
+
+#### Scenario: Account changes
+- **WHEN** the save error is shown and the user signs out or another account signs in
+- **THEN** the error is cleared, and a save result from the previous account that arrives later is not shown

@@ -7,6 +7,8 @@ const db = vi.hoisted(() => ({
   user: { id: 'u1' } as { id: string } | null,
   calls: [] as Call[],
   failFor: new Set<string>(),
+  /** Races whose insert (but not delete) is rejected. */
+  failInsertFor: new Set<string>(),
   /** When set, upserts wait for this promise before answering. */
   hold: null as Promise<void> | null,
   /** Per-race holds: an upsert for that race waits for its promise. */
@@ -16,11 +18,13 @@ const db = vi.hoisted(() => ({
   holdSelect: null as Promise<void> | null,
   /** When set, deletes wait for this promise before answering. */
   holdDelete: null as Promise<void> | null,
+  /** When set, looking up the signed-in user fails with this error. */
+  userError: null as { message: string } | null,
 }));
 
 vi.mock('@data', () => ({
   supabase: {
-    auth: { getUser: vi.fn(async () => ({ data: { user: db.user } })) },
+    auth: { getUser: vi.fn(async () => ({ data: { user: db.userError ? null : db.user }, error: db.userError })) },
     from: vi.fn(() => ({
       select: async () => {
         if (db.holdSelect) await db.holdSelect;
@@ -31,7 +35,8 @@ vi.mock('@data', () => ({
         const held = db.holdFor.get(row.event_id);
         if (held) await held;
         db.calls.push({ op: 'upsert', eventId: row.event_id, userId: row.user_id, options });
-        return { error: db.failFor.has(row.event_id) ? { message: `insert ${row.event_id} denied` } : null };
+        const denied = db.failFor.has(row.event_id) || db.failInsertFor.has(row.event_id);
+        return { error: denied ? { message: `insert ${row.event_id} denied` } : null };
       },
       // delete().eq(...).eq(...) is awaited at the end of the chain.
       delete: () => {
@@ -72,11 +77,13 @@ const localIds = () => selectionService.getLocalSelections().slice().sort();
 beforeEach(() => {
   db.calls = [];
   db.failFor = new Set();
+  db.failInsertFor = new Set();
   db.hold = null;
   db.holdFor = new Map();
   db.remote = [];
   db.holdSelect = null;
   db.holdDelete = null;
+  db.userError = null;
   signIn('u1');
   localStorage.clear();
   setSelection([]);
@@ -237,6 +244,35 @@ describe('selection writes', () => {
     await expect(clearing).rejects.toBeInstanceOf(AccountChangedError);
     expect(storeIds()).toEqual(['a']);
     expect(localIds()).toEqual(['a']);
+  });
+
+  it('a signed-in write fails visibly when the account cannot be looked up, and changes nothing', async () => {
+    setSelection(['a']);
+    db.userError = { message: 'network down' };
+    await expect(selectEventsByType(['b'])).rejects.toMatchObject({ message: 'network down' });
+    await expect(clearAllSelections()).rejects.toMatchObject({ message: 'network down' });
+    expect(storeIds()).toEqual(['a']);
+    expect(localIds()).toEqual(['a']);
+    expect(db.calls).toEqual([]);
+  });
+
+  it('a toggle that fails after the queue timeout does not undo a newer toggle of the same race', async () => {
+    vi.useFakeTimers();
+    try {
+      let failFirst!: () => void;
+      db.holdFor.set('a', new Promise<void>(r => { failFirst = r; }));
+      db.failInsertFor.add('a');
+      const first = toggleEventSelection('a'); // adds 'a' on this device, account write hangs
+      await vi.advanceTimersByTimeAsync(WRITE_QUEUE_TIMEOUT_MS);
+      const second = toggleEventSelection('a'); // runs after the timeout: removes 'a'
+      await second;
+      expect(localIds()).toEqual([]);
+      failFirst();
+      await expect(first).rejects.toMatchObject({ message: 'insert a denied' });
+      expect(localIds()).toEqual([]); // the late rollback did not re-add 'a'
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('a stuck write stops holding up later writes after the queue timeout', async () => {

@@ -26,8 +26,12 @@ Clearing the selection SHALL remove all selected races at once without a confirm
 - **THEN** the message disappears and the selection stays empty
 
 #### Scenario: Clearing fails
-- **WHEN** clearing the selection fails
+- **WHEN** the account rejects clearing the selection
 - **THEN** the selection is unchanged on this device and in the account, a translated error is shown and no undo message appears
+
+#### Scenario: Account switches while clearing
+- **WHEN** another account signs in (or the user signs out) while a clear is being applied to the previous account
+- **THEN** the previous account may already be cleared, but this device, which now belongs to the new account, is left unchanged
 
 #### Scenario: Restoring fails
 - **WHEN** the user taps undo and restoring the races fails
@@ -62,7 +66,11 @@ The page SHALL let a signed-in user export the selection to an iCal file and sav
 
 #### Scenario: Loading a saved calendar fails
 - **WHEN** loading a saved calendar fails part-way
-- **THEN** the previous selection is kept on this device and a translated error says so
+- **THEN** the previous selection is kept on this device, the account is put back to what it held before, and a translated error says so
+
+#### Scenario: Putting the account back also fails
+- **WHEN** loading a saved calendar fails part-way and putting the account back fails too
+- **THEN** this device keeps its previous selection and the account can be left partly replaced; the next load of the page shows what the account holds
 
 #### Scenario: Saved calendar cannot be read
 - **WHEN** reading the saved calendar's races fails

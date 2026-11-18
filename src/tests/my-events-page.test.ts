@@ -265,6 +265,27 @@ describe('MyEventsPage loading a saved calendar', () => {
     expect([...get(selectedEventIds)].sort()).toEqual(['1', '2']);
   });
 
+  it('applies saved calendars in click order, even when the first read finishes last', async () => {
+    vi.mocked(replaceSelection).mockClear();
+    vi.mocked(CalendarService.getUserCalendars).mockReset().mockResolvedValueOnce([
+      { id: 'c1', name: 'Zomer', event_count: 1, created_at: '2099-01-01' },
+      { id: 'c2', name: 'Winter', event_count: 1, created_at: '2099-01-02' },
+    ] as any);
+    let finishFirst!: (ids: string[]) => void;
+    vi.mocked(CalendarService.getCalendarEventIds).mockReset()
+      .mockImplementationOnce(() => new Promise<string[]>((resolve) => { finishFirst = resolve; }))
+      .mockResolvedValueOnce(['4']);
+    render(MyEventsPage);
+    const loads = await screen.findAllByRole('button', { name: 'Load' });
+    await fireEvent.click(loads[0]);
+    await fireEvent.click(loads[1]);
+    await waitFor(() => expect(replaceSelection).toHaveBeenCalledWith(['4']));
+    finishFirst(['3']);
+    await new Promise(r => setTimeout(r, 0));
+    expect(replaceSelection).toHaveBeenCalledTimes(1);
+    expect([...get(selectedEventIds)]).toEqual(['4']);
+  });
+
   it('drops a saved calendar read that finishes after the account changed', async () => {
     vi.mocked(replaceSelection).mockClear();
     let finishRead!: (ids: string[]) => void;

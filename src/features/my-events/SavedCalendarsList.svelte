@@ -38,10 +38,15 @@
     }
   }
 
+  // Loads apply in click order: a slow read that finishes after a newer load was started is
+  // dropped, so it can never overwrite the calendar the user picked last.
+  let latestLoad = 0;
+
   async function handleLoad(id: string) {
+    const load = ++latestLoad;
     // A read that finishes after a sign-in or sign-out belongs to the previous account: drop it.
     const owner = $authStore.user?.id ?? null;
-    const sameAccount = () => owner === ($authStore.user?.id ?? null);
+    const sameAccount = () => owner === ($authStore.user?.id ?? null) && load === latestLoad;
     let eventIds: string[];
     try {
       eventIds = await CalendarService.getCalendarEventIds(id);
