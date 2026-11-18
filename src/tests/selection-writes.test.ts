@@ -20,6 +20,8 @@ const db = vi.hoisted(() => ({
   remote: [] as string[],
   /** When set, reading the account's selection waits for this promise. */
   holdSelect: null as Promise<void> | null,
+  /** Like holdSelect, but only the first read waits. */
+  holdSelectOnce: null as Promise<void> | null,
   /** When set, deletes wait for this promise before answering. */
   holdDelete: null as Promise<void> | null,
   /** Number of account clears so far, and the one (1-based) that should fail. */
@@ -34,8 +36,12 @@ vi.mock('@data', () => ({
     auth: { getUser: vi.fn(async () => ({ data: { user: db.userError ? null : db.user }, error: db.userError })) },
     from: vi.fn(() => ({
       select: async () => {
+        const rows = db.remote.map(event_id => ({ event_id })); // what the account holds when asked
+        const once = db.holdSelectOnce;
+        db.holdSelectOnce = null;
+        if (once) await once;
         if (db.holdSelect) await db.holdSelect;
-        return { data: db.remote.map(event_id => ({ event_id })), error: null };
+        return { data: rows, error: null };
       },
       upsert: async (row: { event_id: string; user_id: string }, options: unknown) => {
         const denied = db.failInsertOnce.delete(row.event_id) || db.failFor.has(row.event_id) || db.failInsertFor.has(row.event_id);
@@ -71,7 +77,7 @@ vi.mock('@data', () => ({
   },
 }));
 
-import { selectEventsByType, deselectEventsByType, toggleEventSelection, clearAllSelections, adoptLocalSelections, replaceSelection, selectedEventIds, authStore } from '@core/stores';
+import { selectEventsByType, deselectEventsByType, toggleEventSelection, clearAllSelections, adoptLocalSelections, replaceSelection, loadUserSelections, selectedEventIds, authStore } from '@core/stores';
 import { AccountChangedError, WRITE_QUEUE_TIMEOUT_MS } from '../libs/core/stores/selection.store';
 import { selectionService } from '@core/services';
 
@@ -97,6 +103,7 @@ beforeEach(() => {
   db.failInsertOnce = new Set();
   db.remote = [];
   db.holdSelect = null;
+  db.holdSelectOnce = null;
   db.holdDelete = null;
   db.clearCalls = 0;
   db.failClearCall = null;
@@ -376,6 +383,36 @@ describe('selection writes', () => {
     } finally {
       warn.mockRestore();
     }
+  });
+
+  it('a load that finishes after the account changed is dropped, and the new account is loaded instead', async () => {
+    signIn('A');
+    db.remote = ['from-A'];
+    let release!: () => void;
+    db.holdSelectOnce = new Promise<void>(r => { release = r; });
+    const loadingA = loadUserSelections(); // slow: still reading A's selection
+    await new Promise(r => setTimeout(r, 0));
+    signIn('B');
+    db.remote = ['from-B'];
+    release();
+    await loadingA;
+    expect(storeIds()).toEqual(['from-B']); // A's selection was never applied
+    expect(localIds()).toEqual(['from-B']);
+  });
+
+  it('a load that finishes after a newer load started is dropped', async () => {
+    signIn('A');
+    db.remote = ['old'];
+    let release!: () => void;
+    db.holdSelectOnce = new Promise<void>(r => { release = r; });
+    const older = loadUserSelections(); // reads ['old'], then waits
+    await new Promise(r => setTimeout(r, 0));
+    db.remote = ['new'];
+    await loadUserSelections(); // newer load: reads ['new'] straight away
+    expect(storeIds()).toEqual(['new']);
+    release();
+    await older;
+    expect(storeIds()).toEqual(['new']); // the older load did not overwrite it
   });
 
   it('a signed-in write fails when the account lookup returns no user (no error), and changes nothing', async () => {

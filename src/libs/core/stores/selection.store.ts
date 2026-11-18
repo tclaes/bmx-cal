@@ -16,19 +16,34 @@ async function isLoggedIn(): Promise<boolean> {
   return !!user;
 }
 
-export async function loadUserSelections() {
+// A load applies only if it is still the latest one for the account it started for. A slow load
+// from the previous account (or an older load) must not overwrite what a newer one applied, and
+// must not reset write ownership either.
+let latestLoad = 0;
+
+export async function loadUserSelections(): Promise<void> {
+  const load = ++latestLoad;
+  const owner = currentUserId;
+  const outdated = () => load !== latestLoad || owner !== currentUserId;
+  // When the account changed while loading, nothing else is guaranteed to load for the new
+  // one, so do it here. A newer load that already started just wins.
+  const finishOutdated = () => (load === latestLoad ? loadUserSelections() : undefined);
+
   try {
     if (await isLoggedIn()) {
       const eventIds = await selectionService.getRemoteSelections();
+      if (outdated()) return finishOutdated();
       claimAll(); // the shown selection now comes from the account: no earlier write owns a race
       selectionService.saveLocalSelections(eventIds);
       selectedEventIds.set(new Set(eventIds));
     } else {
       const eventIds = selectionService.getLocalSelections();
+      if (outdated()) return finishOutdated();
       claimAll();
       selectedEventIds.set(new Set(eventIds));
     }
   } catch {
+    if (outdated()) return finishOutdated();
     const eventIds = selectionService.getLocalSelections();
     claimAll();
     selectedEventIds.set(new Set(eventIds));
