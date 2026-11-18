@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import type { EventWithDetails } from '@types';
 
 const getEventById = vi.hoisted(() => vi.fn());
@@ -150,6 +150,26 @@ describe('EventDetailPage', () => {
     await new Promise(r => setTimeout(r, 0));
     expect(screen.getByRole('heading', { name: 'Race 2' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Race 1' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the latest request for a race when an older request for the same race fails last (A, B, A)', async () => {
+    let rejectOlderA!: (e: Error) => void;
+    getEventById
+      .mockImplementationOnce(() => new Promise((_, reject) => { rejectOlderA = reject; })) // A, slow
+      .mockImplementationOnce(() => new Promise(() => {})) // B, never answers
+      .mockResolvedValueOnce(ev('1')); // A again, fast
+    routeParams.set({ id: '1' });
+    render(EventDetailPage);
+    await waitFor(() => expect(getEventById).toHaveBeenCalledTimes(1));
+    routeParams.set({ id: '2' });
+    await waitFor(() => expect(getEventById).toHaveBeenCalledTimes(2));
+    routeParams.set({ id: '1' });
+    await waitFor(() => expect(getEventById).toHaveBeenCalledTimes(3));
+    expect(await screen.findByRole('heading', { name: 'Race 1' })).toBeInTheDocument();
+    rejectOlderA(new Error('network down')); // the older request for the same race fails last
+    await new Promise(r => setTimeout(r, 0));
+    expect(screen.getByRole('heading', { name: 'Race 1' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('shows not found with a link back', async () => {

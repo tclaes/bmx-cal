@@ -13,6 +13,10 @@ const db = vi.hoisted(() => ({
   hold: null as Promise<void> | null,
   /** Per-race holds: an upsert for that race waits for its promise. */
   holdFor: new Map<string, Promise<void>>(),
+  /** Like holdFor, but only the first upsert for the race waits. */
+  holdOnceFor: new Map<string, Promise<void>>(),
+  /** Races whose next insert (only) is rejected; decided when the insert starts. */
+  failInsertOnce: new Set<string>(),
   remote: [] as string[],
   /** When set, reading the account's selection waits for this promise. */
   holdSelect: null as Promise<void> | null,
@@ -34,11 +38,14 @@ vi.mock('@data', () => ({
         return { data: db.remote.map(event_id => ({ event_id })), error: null };
       },
       upsert: async (row: { event_id: string; user_id: string }, options: unknown) => {
+        const denied = db.failInsertOnce.delete(row.event_id) || db.failFor.has(row.event_id) || db.failInsertFor.has(row.event_id);
+        const once = db.holdOnceFor.get(row.event_id);
+        db.holdOnceFor.delete(row.event_id);
+        if (once) await once;
         if (db.hold) await db.hold;
         const held = db.holdFor.get(row.event_id);
         if (held) await held;
         db.calls.push({ op: 'upsert', eventId: row.event_id, userId: row.user_id, options });
-        const denied = db.failFor.has(row.event_id) || db.failInsertFor.has(row.event_id);
         return { error: denied ? { message: `insert ${row.event_id} denied` } : null };
       },
       // delete().eq(...).eq(...) is awaited at the end of the chain.
@@ -86,6 +93,8 @@ beforeEach(() => {
   db.failInsertFor = new Set();
   db.hold = null;
   db.holdFor = new Map();
+  db.holdOnceFor = new Map();
+  db.failInsertOnce = new Set();
   db.remote = [];
   db.holdSelect = null;
   db.holdDelete = null;
@@ -296,6 +305,77 @@ describe('selection writes', () => {
     expect(storeIds()).toEqual(['a']);
     expect(localIds()).toEqual(['a']);
     expect(db.calls).toEqual([]);
+  });
+
+  it('a late failed select does not undo a newer remove and add of the same race (A, B, A)', async () => {
+    vi.useFakeTimers();
+    try {
+      let releaseFirst!: () => void;
+      db.holdOnceFor.set('a', new Promise<void>(r => { releaseFirst = r; }));
+      db.failInsertOnce.add('a');
+      const first = selectEventsByType(['a']); // stalls past the queue timeout, then fails
+      first.catch(() => {});
+      await vi.advanceTimersByTimeAsync(WRITE_QUEUE_TIMEOUT_MS);
+      await deselectEventsByType(['a']);
+      await selectEventsByType(['a']);
+      expect(storeIds()).toEqual(['a']);
+      releaseFirst();
+      await expect(first).rejects.toMatchObject({ message: 'insert a denied' });
+      expect(storeIds()).toEqual(['a']); // the value matched the failed write's, but a newer write owns it
+      expect(localIds()).toEqual(['a']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a late failed toggle does not undo a newer toggle of the same race (A, B, A)', async () => {
+    vi.useFakeTimers();
+    try {
+      let releaseFirst!: () => void;
+      db.holdOnceFor.set('a', new Promise<void>(r => { releaseFirst = r; }));
+      db.failInsertOnce.add('a');
+      const first = toggleEventSelection('a'); // on, stalls past the timeout, then fails
+      first.catch(() => {});
+      await vi.advanceTimersByTimeAsync(WRITE_QUEUE_TIMEOUT_MS);
+      await toggleEventSelection('a'); // off
+      await toggleEventSelection('a'); // on again
+      expect(localIds()).toEqual(['a']);
+      releaseFirst();
+      await expect(first).rejects.toMatchObject({ message: 'insert a denied' });
+      expect(localIds()).toEqual(['a']);
+      expect(storeIds()).toEqual(['a']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a write started while the app is signed out never reaches an account the session already names', async () => {
+    authStore.setUser(null); // the app has not published the sign-in yet...
+    db.user = { id: 'u1' }; // ...but Supabase already has a session
+    setSelection(['a']);
+    await selectEventsByType(['b']);
+    await clearAllSelections();
+    await replaceSelection(['x']);
+    expect(db.calls).toEqual([]); // nothing was sent to u1's account
+    expect(storeIds()).toEqual(['x']);
+    expect(localIds()).toEqual(['x']);
+  });
+
+  it('reports a failed restoration insert during a rollback and still throws the original failure', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      setSelection(['a']);
+      db.remote = ['a'];
+      db.failFor.add('y'); // the replacement fails...
+      db.failInsertFor.add('a'); // ...and so does restoring what the account held
+      await expect(replaceSelection(['x', 'y'])).rejects.toMatchObject({ message: 'insert y denied' });
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[selection] Could not put the account back'),
+        expect.objectContaining({ message: 'insert a denied' }),
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('a signed-in write fails when the account lookup returns no user (no error), and changes nothing', async () => {

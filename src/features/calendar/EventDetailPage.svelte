@@ -51,7 +51,12 @@
     load(id);
   }
 
+  // Every load gets its own number, so a slow earlier request, even one for the same race (A,
+  // then B, then A again), can never replace the result of the latest request.
+  let loadAttempt = 0;
+
   async function load(eventId: string) {
+    const attempt = ++loadAttempt;
     error = '';
     saveError = '';
     const cached = $eventsStore.events.find(e => e.id === eventId);
@@ -61,18 +66,16 @@
       return;
     }
     loading = true;
-    // A late result for a race that is no longer requested is dropped, so the race shown
-    // always matches the one asked for (and its save results are not ignored).
     try {
       const loaded = await EventsService.getEventById(eventId);
-      if (eventId !== requestedId) return;
+      if (attempt !== loadAttempt) return;
       event = loaded;
     } catch (err) {
-      if (eventId !== requestedId) return;
+      if (attempt !== loadAttempt) return;
       event = null;
       error = toUserMessage(err, 'Failed to load event');
     } finally {
-      if (eventId === requestedId) loading = false;
+      if (attempt === loadAttempt) loading = false;
     }
   }
 

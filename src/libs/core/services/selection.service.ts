@@ -2,8 +2,15 @@ import { supabase } from '@data';
 
 const STORAGE_KEY = 'bmx_selected_events';
 
+// The selection as last saved. When saving to storage fails (private mode, full quota) storage
+// is behind, so reads use this copy until a save succeeds again: otherwise toggling the same
+// race twice would read the same stale value and the race could never be deselected.
+let lastSaved: string[] = [];
+let storageBehind = false;
+
 export const selectionService = {
   getLocalSelections(): string[] {
+    if (storageBehind) return [...lastSaved];
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
@@ -13,19 +20,25 @@ export const selectionService = {
   },
 
   saveLocalSelections(eventIds: string[]): void {
+    lastSaved = [...eventIds];
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(eventIds));
+      storageBehind = false;
     } catch (e) {
-      // Storage can be unavailable (private mode, quota): the in-memory selection still works.
+      // Storage can be unavailable (private mode, quota): keep working from the saved copy above.
+      storageBehind = true;
       console.warn('[selection] Could not save the selection on this device.', e);
     }
   },
 
   clearLocalSelections(): void {
+    lastSaved = [];
     try {
       localStorage.removeItem(STORAGE_KEY);
+      storageBehind = false;
     } catch (e) {
-      // Storage can be unavailable (private mode): the in-memory store is cleared anyway.
+      // Storage can be unavailable (private mode): the in-memory selection is cleared anyway.
+      storageBehind = true;
       console.warn('[selection] Could not clear the selection on this device.', e);
     }
   },

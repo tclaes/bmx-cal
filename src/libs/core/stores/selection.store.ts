@@ -20,14 +20,17 @@ export async function loadUserSelections() {
   try {
     if (await isLoggedIn()) {
       const eventIds = await selectionService.getRemoteSelections();
+      claimAll(); // the shown selection now comes from the account: no earlier write owns a race
       selectionService.saveLocalSelections(eventIds);
       selectedEventIds.set(new Set(eventIds));
     } else {
       const eventIds = selectionService.getLocalSelections();
+      claimAll();
       selectedEventIds.set(new Set(eventIds));
     }
   } catch {
     const eventIds = selectionService.getLocalSelections();
+    claimAll();
     selectedEventIds.set(new Set(eventIds));
   }
 }
@@ -83,7 +86,10 @@ function serialized<T>(write: (account: WriteAccount) => Promise<T>): Promise<T>
         if (error) throw error;
         if (!user || user.id !== owner) throw new AccountChangedError();
       }
-      return await write({ userId: user?.id ?? null, check, changed });
+      // The write follows the account the app knows (`owner`), not the raw session: a session can
+      // exist a moment before the app publishes the sign-in. A write started while signed out
+      // stays on this device, and sign-in then merges it into the account.
+      return await write({ userId: owner ? (user?.id ?? null) : null, check, changed });
     } finally {
       clearTimeout(timer);
       releaseQueue();
@@ -114,8 +120,32 @@ function isRejected(result: PromiseSettledResult<unknown>): result is PromiseRej
   return result.status === 'rejected';
 }
 
+// Which write last changed each race on this device. A write that fails late (after the queue
+// timeout) may only roll back the races it still owns: comparing values cannot tell, because a
+// newer remove and add of the same race leaves the value unchanged.
+let writeSeq = 0;
+const lastChange = new Map<string, number>();
+
+/** Marks `eventIds` as changed by a new write and returns that write's ticket. */
+function claim(eventIds: string[]): number {
+  const ticket = ++writeSeq;
+  eventIds.forEach(id => lastChange.set(id, ticket));
+  return ticket;
+}
+
+/** A change that replaces the whole selection: no earlier write owns any race any more. */
+function claimAll(): void {
+  writeSeq += 1;
+  lastChange.clear();
+}
+
+function owns(eventId: string, ticket: number): boolean {
+  return lastChange.get(eventId) === ticket;
+}
+
 export const toggleEventSelection = (eventId: string) => serialized(async ({ userId, check, changed }) => {
   const isSelected = selectionService.toggleSelection(eventId);
+  const ticket = claim([eventId]);
   const mode: WriteMode = isSelected ? 'add' : 'remove';
 
   if (userId) {
@@ -127,8 +157,7 @@ export const toggleEventSelection = (eventId: string) => serialized(async ({ use
       // The account did not change, so this device should not either. After an account
       // change this device belongs to the new account: leave it alone. A late failure (after
       // the queue timeout) only rolls back if no newer write changed this race since.
-      const stillOurs = selectionService.getLocalSelections().includes(eventId) === isSelected;
-      if (!changed() && stillOurs) selectionService.toggleSelection(eventId);
+      if (!changed() && owns(eventId, ticket)) selectionService.toggleSelection(eventId);
       throw e;
     }
   }
@@ -158,6 +187,7 @@ export const adoptLocalSelections = () => serialized(async ({ userId, check }) =
     if (failure) throw failure.reason;
     check();
     const merged = Array.from(new Set([...remote, ...local]));
+    claimAll();
     selectionService.saveLocalSelections(merged);
     selectedEventIds.set(new Set(merged));
   } catch (e) {
@@ -178,6 +208,7 @@ export const clearAllSelections = () => serialized(async ({ userId, check }) => 
     await selectionService.clearRemoteSelections(userId);
     check(); // switched while clearing: the new account's device is not cleared
   }
+  claimAll();
   selectionService.clearLocalSelections();
   selectedEventIds.set(new Set());
 });
@@ -189,10 +220,12 @@ export const clearAllSelections = () => serialized(async ({ userId, check }) => 
  */
 async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId, check, changed }: WriteAccount) {
   const before = get(selectedEventIds);
+  const ticket = claim(eventIds);
 
+  // Only races this write still owns are put back: a newer write that changed a race keeps it.
   const putBack = (ids: string[]) => selectedEventIds.update(current => {
     const newIds = new Set(current);
-    ids.forEach(id => before.has(id) ? newIds.add(id) : newIds.delete(id));
+    ids.filter(id => owns(id, ticket)).forEach(id => before.has(id) ? newIds.add(id) : newIds.delete(id));
     selectionService.saveLocalSelections(Array.from(newIds));
     return newIds;
   });
@@ -217,9 +250,7 @@ async function mutateByType(eventIds: string[], mode: 'add' | 'remove', { userId
   const failedIds = eventIds.filter((_, i) => isRejected(results[i]));
   if (failedIds.length === 0) return;
 
-  // A late failure (after the queue timeout) only puts back races no newer write changed since.
-  const current = get(selectedEventIds);
-  putBack(failedIds.filter(id => current.has(id) === (mode === 'add')));
+  putBack(failedIds); // a late failure (after the queue timeout) only puts back races it still owns
   throw results.find(isRejected)!.reason; // there is at least one failed id, so one result was rejected
 }
 
@@ -249,7 +280,9 @@ export const replaceSelection = (eventIds: string[]) => serialized(async ({ user
       try {
         check();
         await selectionService.clearRemoteSelections(userId);
-        await Promise.allSettled(accountBefore.map(id => remoteWrites.add(id, userId)));
+        const restored = await Promise.allSettled(accountBefore.map(id => remoteWrites.add(id, userId)));
+        const restoreFailure = restored.find(isRejected);
+        if (restoreFailure) throw restoreFailure.reason; // reported by the warning below
       } catch (rollbackError) {
         // The original failure is what the caller must see; the account can stay partly
         // replaced until the next load reads it again, so leave a trace of that.
@@ -259,6 +292,7 @@ export const replaceSelection = (eventIds: string[]) => serialized(async ({ user
     }
     check(); // switched while replacing: the new account's device is not replaced
   }
+  claimAll();
   selectionService.saveLocalSelections(eventIds);
   selectedEventIds.set(new Set(eventIds));
 });
