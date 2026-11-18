@@ -137,6 +137,21 @@ describe('EventDetailPage', () => {
     }
   });
 
+  it('shows the requested race when an earlier race finishes loading last', async () => {
+    let finishFirst!: (e: EventWithDetails) => void;
+    getEventById
+      .mockImplementationOnce(() => new Promise((resolve) => { finishFirst = resolve; }))
+      .mockResolvedValueOnce(ev('2'));
+    routeParams.set({ id: '1' });
+    render(EventDetailPage);
+    routeParams.set({ id: '2' });
+    expect(await screen.findByRole('heading', { name: 'Race 2' })).toBeInTheDocument();
+    finishFirst(ev('1'));
+    await new Promise(r => setTimeout(r, 0));
+    expect(screen.getByRole('heading', { name: 'Race 2' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Race 1' })).not.toBeInTheDocument();
+  });
+
   it('shows not found with a link back', async () => {
     getEventById.mockResolvedValue(null);
     routeParams.set({ id: 'nope' });

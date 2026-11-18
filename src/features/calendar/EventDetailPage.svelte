@@ -61,13 +61,18 @@
       return;
     }
     loading = true;
+    // A late result for a race that is no longer requested is dropped, so the race shown
+    // always matches the one asked for (and its save results are not ignored).
     try {
-      event = await EventsService.getEventById(eventId);
+      const loaded = await EventsService.getEventById(eventId);
+      if (eventId !== requestedId) return;
+      event = loaded;
     } catch (err) {
+      if (eventId !== requestedId) return;
       event = null;
       error = toUserMessage(err, 'Failed to load event');
     } finally {
-      loading = false;
+      if (eventId === requestedId) loading = false;
     }
   }
 
