@@ -1,0 +1,106 @@
+:root {
+  /* Surfaces (design B "Startlicht", dark) */
+  --color-bg-primary: #14171c;
+  --color-bg-secondary: #1e232b;
+  --color-bg-tertiary: #1a1e25;
+
+  /* Text */
+  --color-text-primary: #f3f5f7;
+  --color-text-secondary: #b4bcc8;
+  --color-text-muted: #9aa3b2;
+  --color-text-on-accent: #0b1015;
+
+  /* Cyan: primary brand colour */
+  --color-primary: #1c9ad6;
+  --color-primary-hover: #4db8ee;
+  --color-primary-light: rgb(28 154 214 / 16%);
+  --color-cyan-soft: #8fd0f2;
+
+  /* Orange: accent / calls to action */
+  --color-accent: #ff7a2b;
+  --color-accent-hover: #ff8a3d;
+  --color-accent-strong: #f26b1d;
+  --color-secondary: #9aa3b2;
+  --color-secondary-hover: #b4bcc8;
+  --color-secondary-light: #1e232b;
+
+  /* Start-light (registration indicator) */
+  --color-start-green: #35d07f;
+  --color-success: #35d07f;
+  --color-success-light: rgb(53 208 127 / 16%);
+  --color-warning: #ff7a2b;
+  --color-warning-light: rgb(255 122 43 / 16%);
+  --color-danger: #f0555b;
+  --color-danger-hover: #ff7378;
+  --color-danger-light: rgb(240 85 91 / 16%);
+  --color-error: var(--color-danger);
+  --color-border: #2c333d;
+  --color-border-hover: var(--color-primary);
+  --color-surface-secondary: var(--color-bg-secondary);
+  --color-surface-hover: #262d37;
+  --color-primary-dark: var(--color-primary-hover);
+  --color-primary-100: var(--color-primary-light);
+  --color-primary-200: rgb(28 154 214 / 32%);
+  --color-primary-700: var(--color-primary-hover);
+  --color-border-light: #232932;
+
+  /* Race types: label background / label text / stripe / dot ring */
+  --race-cv-bg: #ffe922;
+  --race-cv-fg: #111;
+  --race-cv-stripe: #111;
+  --race-cv-ring: #ffe922;
+  --race-tc-bg: #def;
+  --race-tc-fg: #111;
+  --race-tc-stripe: linear-gradient(to right, #111 0 33%, #ffe922 33% 66%, #e11d2a 66%);
+  --race-tc-ring: #def;
+  --race-cw-bg: #c81e2b;
+  --race-cw-fg: #fff;
+  --race-cw-stripe: #ffd500;
+  --race-cw-ring: #f0555b;
+  --race-3nc-bg: #fff;
+  --race-3nc-fg: #111;
+  --race-3nc-stripe: #111;
+  --race-3nc-ring: #fff;
+  --race-ec-bg: #1f4fd8;
+  --race-ec-fg: #fff;
+  --race-ec-stripe: #fff;
+  --race-ec-ring: #6c8ff0;
+  --race-wc-bg: #fff;
+  --race-wc-fg: #111;
+  --race-wc-stripe: linear-gradient(to right, #e11d2a, #ff7a2b, #ffe922, #35d07f, #2aa5e0, #8a4fd8);
+  --race-wc-ring: #2aa5e0;
+
+  /* Next race hero */
+  --hero-bg: var(--color-bg-secondary);
+
+  /* Diagonal stripes on the right-hand side only: a solid layer with a slanted edge
+     covers the stripes on the left. */
+  --hero-stripe:
+    linear-gradient(110deg, var(--hero-bg) 0 64%, transparent 64%),
+    repeating-linear-gradient(110deg, rgb(255 255 255 / 4%) 0 30px, transparent 30px 60px);
+
+  /* Unknown race type fallback */
+  --race-unknown-bg: #2c333d;
+  --race-unknown-fg: #f3f5f7;
+  --race-unknown-stripe: #9aa3b2;
+  --race-unknown-ring: #9aa3b2;
+
+  /* Utilities */
+  --color-white: #fff;
+  --color-shadow: #000;
+  --color-overlay: rgb(0 0 0 / 50%);
+  --color-focus-ring: color-mix(in srgb, var(--color-primary) 30%, transparent);
+
+  /* Badge variants: white text on a solid background */
+  --badge-fg: #fff;
+  --badge-default-bg: #3b82f6;
+  --badge-success-bg: #15803d;
+  --badge-warning-bg: #b45309;
+  --badge-error-bg: #b91c1c;
+
+  /* Registration status text colors */
+  --color-status-closed: #6b7280;
+  --color-status-opens-soon: #b45309;
+  --color-status-open: #047857;
+  --color-status-register-now: #1d4ed8;
+}

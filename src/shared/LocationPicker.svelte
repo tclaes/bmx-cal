@@ -136,7 +136,7 @@
   }
 
   .required {
-    color: var(--color-error, #dc2626);
+    color: var(--color-error);
     margin-left: var(--spacing-xxs);
   }
 

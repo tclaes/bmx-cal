@@ -74,7 +74,7 @@ Client-side routing via Navaid. Routes are defined in `src/router/index.ts`. Rou
 
 ### Styling
 
-- CSS custom properties defined in `src/styles/variables.css` (color ramps, spacing scale, typography, border radii, transitions)
+- CSS custom properties defined in `src/styles/colors.css` (all color tokens) and `src/styles/variables.css` (spacing scale, typography, border radii, shadows, transitions)
 - Mobile-first responsive design with breakpoints at 768px and 1024px
 - Scoped styles per Svelte component; no Tailwind or BEM
 

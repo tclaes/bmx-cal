@@ -102,7 +102,7 @@
     background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
-    box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 10%, transparent);
     z-index: 1000;
     max-height: 300px;
     overflow-y: auto;

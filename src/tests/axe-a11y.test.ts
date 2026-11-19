@@ -120,13 +120,17 @@ describe('theme tokens used by components', () => {
   it('defines every custom property that components reference', async () => {
     const { readFileSync, readdirSync, statSync } = await import('node:fs');
     const { join } = await import('node:path');
-    const defined = new Set(readFileSync('src/styles/variables.css', 'utf8').match(/--[a-z0-9-]+(?=\s*:)/g));
+    const defined = new Set(
+      ['variables.css', 'colors.css'].flatMap(
+        (f) => readFileSync(`src/styles/${f}`, 'utf8').match(/--[a-z0-9-]+(?=\s*:)/g) ?? [],
+      ),
+    );
     const used = new Map<string, string>();
     const walk = (dir: string) => {
       for (const name of readdirSync(dir)) {
         const p = join(dir, name);
         if (statSync(p).isDirectory()) { if (name !== 'tests') walk(p); continue; }
-        if (!/\.(svelte|css)$/.test(name) || p.endsWith('variables.css')) continue;
+        if (!/\.(svelte|css)$/.test(name) || p.endsWith('variables.css') || p.endsWith('colors.css')) continue;
         for (const m of readFileSync(p, 'utf8').matchAll(/var\((--[a-z0-9-]+)/g)) {
           // Locally declared properties (e.g. --type-color) are fine.
           if (!used.has(m[1])) used.set(m[1], p);

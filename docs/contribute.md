@@ -17,6 +17,12 @@ When adding new features:
 
 Every `margin*`, `padding*`, `gap`, `row-gap` and `column-gap` value (and the legacy `grid-*gap` aliases) uses the `--spacing-*` tokens from `src/styles/variables.css` (`--spacing-xxs` 2px up to `--spacing-3xl` 64px), or a `calc()` of them. `0`, `auto`, `inherit` and percentages are fine, and so is a `calc()` that mixes spacing tokens with other design tokens. Snap an off-scale value to the nearest token instead of adding a new one. `npm run stylelint` fails on any `px`, `rem` or `em` literal in these properties. When a literal really is needed (for example the visually-hidden `margin: -1px`), put `/* stylelint-disable-next-line declaration-property-value-disallowed-list -- <reason> */` above it.
 
+## Colors
+
+All colors are tokens in `src/styles/colors.css`, the only file allowed to contain raw color values. Components, other stylesheets and non-test `.ts` files use `var(--color-*)` (or the `--race-*`, `--badge-*`, `--hero-*` groups). Allowed keywords: `transparent`, `currentColor`, `inherit`, `none`. For a translucent variant use `color-mix(in srgb, var(--color-primary) 10%, transparent)`. If no token fits, add a semantic token to `colors.css` instead of writing a literal.
+
+`npm run stylelint` fails on hex colors, `rgb()/hsl()`-style functions and named colors outside `colors.css`; `src/tests/no-color-literals.test.ts` covers TypeScript.
+
 ## End-to-end tests
 
 There are two Playwright suites:
