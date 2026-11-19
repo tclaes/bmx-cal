@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { selectedEventIds, loadUserSelections, toggleEventSelection, clearAllSelections, selectedCount, selectEventsByType, deselectEventsByType } from '@core/stores';
+  import { selectedEventIds, loadUserSelections, toggleEventSelection, selectedCount, selectEventsByType, deselectEventsByType, replaceSelection } from '@core/stores';
   import { EventsService } from '@core/services';
   import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
   import Button from '@ui/Button.svelte';
-  import { RaceRow, TypeChip } from '@ui';
+  import { RaceRow, TypeChip, Alert } from '@ui';
   import { navigate } from '../../router';
   import LoadingSpinner from '@ui/LoadingSpinner.svelte';
   import { authStore, featureEnabled } from '@core/stores';
@@ -57,12 +57,59 @@
     return ids.some(id => selected.has(id)) && !isTypeFullySelected(ids, selected);
   }
 
-  async function handleTypeToggle(ids: string[]) {
-    if (isTypeFullySelected(ids, $selectedEventIds)) {
-      await deselectEventsByType(ids);
-    } else {
-      await selectEventsByType(ids);
+  // A selection change the account rejects is shown above the list, which stays visible.
+  // The message belongs to the change that failed (`failedKey`): only a later success of that
+  // same change clears it, so another change succeeding never hides a failure that still stands.
+  let selectionError = '';
+  let failedKey: string | null = null;
+
+  function showSelectionResult(key: string, message: string) {
+    if (message) {
+      selectionError = message;
+      failedKey = key;
+    } else if (key === failedKey) {
+      selectionError = '';
+      failedKey = null;
     }
+  }
+
+  // A result only counts for the account the change started for: after a sign-in or sign-out
+  // the message is reset, and a late result from the previous account is ignored.
+  // Each change key remembers its latest run, so an older run of the same change that
+  // finishes late (possible after the store's queue timeout) never overrides a newer one.
+  const latestRun = new Map<string, number>();
+  let runCounter = 0;
+
+  async function runSelectionWrite(key: string, write: () => Promise<unknown>, failMessage: string) {
+    const run = ++runCounter;
+    latestRun.set(key, run);
+    const owner = $authStore.user?.id ?? null;
+    const counts = () => owner === ($authStore.user?.id ?? null) && latestRun.get(key) === run;
+    try {
+      await write();
+      if (counts()) showSelectionResult(key, '');
+    } catch {
+      if (counts()) showSelectionResult(key, failMessage);
+    }
+  }
+
+  let previousUserId: string | null | undefined = undefined;
+  $: {
+    const currentUserId = $authStore.user?.id ?? null;
+    if (previousUserId !== undefined && previousUserId !== currentUserId) {
+      selectionError = '';
+      failedKey = null;
+    }
+    previousUserId = currentUserId;
+  }
+
+  function handleTypeToggle(ids: string[]) {
+    const fully = isTypeFullySelected(ids, $selectedEventIds);
+    return runSelectionWrite(
+      `type:${ids.join(',')}`,
+      () => (fully ? deselectEventsByType(ids) : selectEventsByType(ids)),
+      $t.calendar.selectionUpdateFailed,
+    );
   }
 
   // The notification block is behind the `notifications` flag. The flag may load after
@@ -102,13 +149,8 @@
     navigate(href);
   }
 
-  async function handleToggle(eventId: string) {
-    try {
-      await toggleEventSelection(eventId);
-      error = '';
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to update selection';
-    }
+  function handleToggle(eventId: string) {
+    return runSelectionWrite(`race:${eventId}`, () => toggleEventSelection(eventId), $t.calendar.selectionUpdateFailed);
   }
 
   function handleSaveCalendar() {
@@ -119,11 +161,15 @@
     showSaveModal = true;
   }
 
-  async function handleLoadCalendar(eventIds: string[]) {
-    await clearAllSelections();
-    for (const id of eventIds) {
-      await toggleEventSelection(id);
-    }
+  // A saved-calendar load counts from the click, not from when its read returns: starting a new
+  // load makes any earlier load's pending result stale, so it can neither clear nor show a message.
+  function markLoadStarted() {
+    latestRun.set('load-calendar', ++runCounter);
+  }
+
+  function handleLoadCalendar(eventIds: string[]) {
+    // All-or-nothing: on failure the current selection is kept.
+    return runSelectionWrite('load-calendar', () => replaceSelection(eventIds), $t.myEvents.loadCalendarFailed);
   }
 
   async function handleEnablePush() {
@@ -198,13 +244,21 @@
     {exporting}
     on:export={exportToCalendar}
     on:save={handleSaveCalendar}
-    on:error={(e) => { error = e.detail; }}
+    on:error={(e) => showSelectionResult('selection-bar', e.detail)}
   />
+
+  {#if selectionError}
+    <div class="selection-error">
+      <Alert type="danger" message={selectionError} />
+    </div>
+  {/if}
 
   {#if isLoggedIn}
     <SavedCalendarsList
       refreshTrigger={savedCalendarsRefresh}
+      on:loadStart={markLoadStarted}
       on:load={(e) => handleLoadCalendar(e.detail)}
+      on:loadError={() => showSelectionResult('load-calendar', $t.myEvents.loadCalendarFailed)}
     />
   {/if}
 
@@ -317,6 +371,10 @@
   .subtitle {
     color: var(--color-text-secondary);
     margin: 0;
+  }
+
+  .selection-error {
+    margin-block-end: var(--spacing-lg);
   }
 
   .loading-container {

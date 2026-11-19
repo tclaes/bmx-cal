@@ -50,6 +50,35 @@ function label(state: UpdateState): string {
 
 Use a lookup object when every branch only maps a value to another value.
 
+### Always handle a catch block
+
+A `catch` block, or a promise `.catch()` handler, never swallows an error silently. It must do at least one of these with the error:
+
+- **Log it** with a message prefix naming the area, for example `console.warn('[selection] Could not save the selection on this device.', error)`. Use this when the app carries on with a fallback.
+- **Report it** to the user with a translated message. Do not show the raw error text: it can contain internal detail (see `toUserMessage`).
+- **Rethrow it**, or pass it on, so the caller decides.
+
+If ignoring the error is really the right thing, say so with a reason on the block: `// ignored: <reason>`. A comment that only says "ignore" or "keep going" is not enough, and an empty catch is never allowed.
+
+```ts
+// Avoid
+try {
+  localStorage.setItem(KEY, value);
+} catch {
+  // ignore
+}
+
+// Prefer
+try {
+  localStorage.setItem(KEY, value);
+} catch (error) {
+  // Storage can be unavailable (private mode): the in-memory value still works.
+  console.warn('[selection] Could not save the selection on this device.', error);
+}
+```
+
+Existing catch blocks that do not follow this are tracked in #46, together with a lint rule that enforces it.
+
 ### Prefer native HTML over hand-built behaviour
 
 When the platform has an element or API for something, use it instead of rebuilding it with `div`s and JavaScript. For example, the mandatory update dialog (`UpdateRequired.svelte`) uses `<dialog>` with `showModal()`, which provides the top layer, page inertness and focus handling, so no custom focus trap, `inert` toggling or extra z-index is needed. The optional banner (`UpdatePrompt.svelte`) is a non-modal `<dialog open>`, so the app stays usable.

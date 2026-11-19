@@ -64,6 +64,7 @@ export interface Translations {
     save: string;
     saved: string;
     registerAction: string;
+    selectionUpdateFailed: string;
     livestream: string;
     notFoundTitle: string;
     notFoundDescription: string;
@@ -205,6 +206,7 @@ export interface Translations {
     exportFailed: string;
     clearFailed: string;
     restoreFailed: string;
+    loadCalendarFailed: string;
     notifTitle: string;
     notifDescription: string;
     notifEnablePush: string;

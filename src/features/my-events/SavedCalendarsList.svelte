@@ -1,13 +1,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { CalendarService } from '@core/services';
+  import { authStore } from '@core/stores';
   import type { SavedCalendar } from '@core/services';
   import Button from '@ui/Button.svelte';
   import { formatDate } from '@shared/utils';
 
   export let refreshTrigger = 0;
 
-  const dispatch = createEventDispatcher<{ load: string[] }>();
+  const dispatch = createEventDispatcher<{ loadStart: void; load: string[]; loadError: void }>();
 
   let calendars: SavedCalendar[] = [];
   let loading = true;
@@ -37,9 +38,26 @@
     }
   }
 
+  // Loads apply in click order: a slow read that finishes after a newer load was started is
+  // dropped, so it can never overwrite the calendar the user picked last.
+  let latestLoad = 0;
+
   async function handleLoad(id: string) {
-    const eventIds = await CalendarService.getCalendarEventIds(id);
-    dispatch('load', eventIds);
+    const load = ++latestLoad;
+    // Tell the page right away, so a load still running from an earlier click stops counting.
+    dispatch('loadStart');
+    // A read that finishes after a sign-in or sign-out belongs to the previous account: drop it.
+    const owner = $authStore.user?.id ?? null;
+    const sameAccount = () => owner === ($authStore.user?.id ?? null) && load === latestLoad;
+    let eventIds: string[];
+    try {
+      eventIds = await CalendarService.getCalendarEventIds(id);
+    } catch {
+      // Reading the saved calendar failed before anything changed; the page shows why.
+      if (sameAccount()) dispatch('loadError');
+      return;
+    }
+    if (sameAccount()) dispatch('load', eventIds);
   }
 </script>
 

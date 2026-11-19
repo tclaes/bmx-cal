@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import type { EventWithDetails } from '@types';
 
@@ -17,7 +17,9 @@ import CalendarHero from '../features/calendar/CalendarHero.svelte';
 import EventFilters from '../features/calendar/EventFilters.svelte';
 import EventList from '../features/calendar/EventList.svelte';
 import Navigation from '../layout/Navigation.svelte';
-import { eventsStore, filtersStore } from '@core/stores';
+import { eventsStore, filtersStore, authStore } from '@core/stores';
+import { selectionService } from '@core/services';
+import { supabase } from '@data';
 import { locale } from '../i18n';
 
 const base = (id: string, o: Partial<EventWithDetails> = {}): EventWithDetails => ({
@@ -93,6 +95,62 @@ describe('EventList', () => {
     expect(screen.getByText('2 wedstrijden')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Race 1' })).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Race 2' })).toHaveAttribute('href', '/events/2');
+  });
+
+  it('shows a translated error and keeps the list when the account rejects a save', async () => {
+    eventsStore.setLoading(false);
+    loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    // Signed in, the page reads the account's selection on mount: keep that off the network.
+    const getRemote = vi.spyOn(selectionService, 'getRemoteSelections').mockResolvedValue([]);
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection').mockRejectedValueOnce(new Error('denied'));
+    try {
+      render(EventList);
+      const race2 = (await screen.findByRole('link', { name: 'Race 2' })).closest('article')!;
+      const star = within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' });
+      await fireEvent.click(star);
+      expect(await screen.findByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).toBeInTheDocument();
+      expect(spy).toHaveBeenCalledWith('2', 'u1');
+      expect(star).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('link', { name: 'Race 2' })).toBeInTheDocument();
+
+      // Signing in as someone else clears a message that belonged to the previous account.
+      authStore.setUser({ id: 'other', email: 'o@x.y', role: 'user', managedTeams: [] } as any);
+      await waitFor(() => expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument());
+    } finally {
+      spy.mockRestore();
+      getUser.mockRestore();
+      getRemote.mockRestore();
+      authStore.setUser(null);
+    }
+  });
+
+  it('ignores a save failure that arrives after the account changed', async () => {
+    eventsStore.setLoading(false);
+    loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
+    authStore.setUser({ id: 'u1', email: 'a@b.c', role: 'user', managedTeams: [] } as any);
+    const getUser = vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: { id: 'u1' } } } as any);
+    // Signed in, the page reads the account's selection on mount: keep that off the network.
+    const getRemote = vi.spyOn(selectionService, 'getRemoteSelections').mockResolvedValue([]);
+    let failLate!: (e: Error) => void;
+    const spy = vi.spyOn(selectionService, 'addRemoteSelection')
+      .mockImplementationOnce(() => new Promise<void>((_, reject) => { failLate = reject; }));
+    try {
+      render(EventList);
+      const race2 = (await screen.findByRole('link', { name: 'Race 2' })).closest('article')!;
+      await fireEvent.click(within(race2 as HTMLElement).getByRole('button', { name: 'Wedstrijd bewaren' }));
+      await waitFor(() => expect(spy).toHaveBeenCalled());
+      authStore.setUser({ id: 'u2', email: 'b@b.c', role: 'user', managedTeams: [] } as any);
+      failLate(new Error('denied'));
+      await new Promise(r => setTimeout(r, 0));
+      expect(screen.queryByText('Je selectie bijwerken mislukt. Probeer opnieuw.')).not.toBeInTheDocument();
+    } finally {
+      spy.mockRestore();
+      getUser.mockRestore();
+      getRemote.mockRestore();
+      authStore.setUser(null);
+    }
   });
 
   it('shows the empty state with a reset action', async () => {

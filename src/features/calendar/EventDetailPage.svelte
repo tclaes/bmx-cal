@@ -13,6 +13,35 @@
   let event: EventWithDetails | null = null;
   let loading = true;
   let error = '';
+  let saveError = '';
+
+  // A save result only counts for the race that is still open and the account it started for:
+  // the page is reused when another race opens, and late results are ignored.
+  // Only the latest save counts, so an older save that finishes late (possible after the
+  // store's queue timeout) never overrides the newer one's result.
+  let saveCounter = 0;
+
+  async function save(eventId: string) {
+    const attempt = ++saveCounter;
+    const owner = $authStore.user?.id ?? null;
+    // Compare with the requested race, not the shown one: while another race is still loading
+    // the page keeps showing the previous race, and its late result must not land on the new one.
+    const current = () =>
+      attempt === saveCounter && eventId === requestedId && owner === ($authStore.user?.id ?? null);
+    try {
+      await toggleEventSelection(eventId);
+      if (current()) saveError = '';
+    } catch {
+      if (current()) saveError = $t.calendar.selectionUpdateFailed;
+    }
+  }
+
+  let previousUserId: string | null | undefined = undefined;
+  $: {
+    const currentUserId = $authStore.user?.id ?? null;
+    if (previousUserId !== undefined && previousUserId !== currentUserId) saveError = '';
+    previousUserId = currentUserId;
+  }
   let editing = false;
   let requestedId = '';
 
@@ -22,8 +51,14 @@
     load(id);
   }
 
+  // Every load gets its own number, so a slow earlier request, even one for the same race (A,
+  // then B, then A again), can never replace the result of the latest request.
+  let loadAttempt = 0;
+
   async function load(eventId: string) {
+    const attempt = ++loadAttempt;
     error = '';
+    saveError = '';
     const cached = $eventsStore.events.find(e => e.id === eventId);
     if (cached) {
       event = cached;
@@ -32,12 +67,15 @@
     }
     loading = true;
     try {
-      event = await EventsService.getEventById(eventId);
+      const loaded = await EventsService.getEventById(eventId);
+      if (attempt !== loadAttempt) return;
+      event = loaded;
     } catch (err) {
+      if (attempt !== loadAttempt) return;
       event = null;
       error = toUserMessage(err, 'Failed to load event');
     } finally {
-      loading = false;
+      if (attempt === loadAttempt) loading = false;
     }
   }
 
@@ -148,11 +186,14 @@
         </section>
       {/if}
 
+      {#if saveError}
+        <Alert type="danger" message={saveError} />
+      {/if}
       <div class="actions">
         {#if view.ongoing && event.livestream_url}
           <a class="secondary" href={event.livestream_url} target="_blank" rel="noopener noreferrer">{$t.calendar.watchLivestream}</a>
         {/if}
-        <button type="button" class="secondary" aria-pressed={saved} on:click={() => event && toggleEventSelection(event.id)}>
+        <button type="button" class="secondary" aria-pressed={saved} on:click={() => event && save(event.id)}>
           {saved ? $t.calendar.saved : $t.calendar.save}
         </button>
         {#if canEdit}

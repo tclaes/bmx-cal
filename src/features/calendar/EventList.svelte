@@ -15,6 +15,37 @@
   $: countLabel = total === 1 ? $t.calendar.raceCountOne : interpolate($t.calendar.raceCount, { count: total });
 
   let previousUserId: string | null | undefined = undefined;
+  // A save the account rejects is shown above the list; the list itself stays visible.
+  let saveError = '';
+
+  // The message belongs to the race whose save failed: only a later successful save of that
+  // same race clears it, so saving another race never hides a failure that still stands.
+  let failedEventId: string | null = null;
+
+  // A result only counts for the account the save started for: after a sign-in or sign-out
+  // the message is reset, and a late result from the previous account is ignored.
+  // Each race remembers its latest save: an older save of the same race that finishes late
+  // (possible after the store's queue timeout) never overrides the newer one's result.
+  const latestSave = new Map<string, number>();
+  let saveCounter = 0;
+
+  async function save(eventId: string) {
+    const attempt = ++saveCounter;
+    latestSave.set(eventId, attempt);
+    const owner = $authStore.user?.id ?? null;
+    const counts = () => owner === ($authStore.user?.id ?? null) && latestSave.get(eventId) === attempt;
+    try {
+      await toggleEventSelection(eventId);
+      if (counts() && eventId === failedEventId) {
+        saveError = '';
+        failedEventId = null;
+      }
+    } catch {
+      if (!counts()) return;
+      saveError = $t.calendar.selectionUpdateFailed;
+      failedEventId = eventId;
+    }
+  }
 
   async function loadAll(failMessage: string) {
     try {
@@ -37,6 +68,8 @@
   $: {
     const currentUserId = $authStore.user?.id ?? null;
     if (previousUserId !== undefined && previousUserId !== currentUserId) {
+      saveError = '';
+      failedEventId = null;
       loadAll('Failed to reload events');
       loadUserSelections();
     }
@@ -69,11 +102,14 @@
       <Button variant="secondary" on:click={() => filtersStore.reset()}>{$t.filters.resetFilters}</Button>
     </div>
   {:else}
+    {#if saveError}
+      <Alert type="danger" message={saveError} />
+    {/if}
     {#if hero}
       <CalendarHero
         event={hero}
         saved={$selectedEventIds.has(hero.id)}
-        on:save={() => hero && toggleEventSelection(hero.id)}
+        on:save={() => hero && save(hero.id)}
         on:navigate={(e) => navigate(e.detail)}
       />
     {/if}
@@ -104,7 +140,7 @@
             livestreamUrl={view.ongoing ? event.livestream_url : null}
             livestreamLabel={$t.calendar.livestream}
             on:click={(e) => open(e, view.href)}
-            on:save={() => toggleEventSelection(event.id)}
+            on:save={() => save(event.id)}
           />
         {/each}
       </div>
