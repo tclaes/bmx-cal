@@ -61,6 +61,7 @@ export const nl: Translations = {
     editEvent: 'Evenement bewerken',
     heroLabel: 'Volgende wedstrijd',
     thenHeading: 'Daarna',
+    previousHeading: 'Vorige wedstrijden',
     raceCount: '{count} wedstrijden',
     raceCountOne: '1 wedstrijd',
     save: 'Wedstrijd bewaren',

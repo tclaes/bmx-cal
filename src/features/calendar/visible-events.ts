@@ -48,18 +48,38 @@ export function filterEvents(
   return [...result].sort((a, b) => a.date.localeCompare(b.date));
 }
 
+export interface PastYearGroup {
+  year: number;
+  /** Races of this calendar year (by start date), most recent first. */
+  events: EventWithDetails[];
+}
+
 export interface CalendarSplit {
   /** Next upcoming race (or ongoing), null when none matches. */
   hero: EventWithDetails | null;
-  /** Remaining upcoming races in date order, followed by past races in date order. */
-  rest: EventWithDetails[];
+  /** Remaining upcoming races in date order. */
+  upcoming: EventWithDetails[];
+  /** Past races grouped per calendar year, newest year first. */
+  pastByYear: PastYearGroup[];
+}
+
+export function groupPastByYear(past: EventWithDetails[]): PastYearGroup[] {
+  const groups = new Map<number, EventWithDetails[]>();
+  const newestFirst = [...past].sort((a, b) => b.date.localeCompare(a.date));
+  for (const event of newestFirst) {
+    const year = Number(event.date.slice(0, 4));
+    const group = groups.get(year);
+    if (group) group.push(event);
+    else groups.set(year, [event]);
+  }
+  return [...groups].map(([year, events]) => ({ year, events }));
 }
 
 export function splitHero(events: EventWithDetails[], today: string = todayIso()): CalendarSplit {
   const upcoming = events.filter(event => !isPast(event, today));
   const past = events.filter(event => isPast(event, today));
   const [hero = null, ...others] = upcoming;
-  return { hero, rest: [...others, ...past] };
+  return { hero, upcoming: others, pastByYear: groupPastByYear(past) };
 }
 
 export const visibleEvents = derived(

@@ -8,6 +8,7 @@ import {
   formatWeekday,
   formatDayMonth,
 } from './date-format';
+import { REGISTRATION_STATE } from './registration-state';
 import type { RegistrationState } from './registration-state';
 import { getRegistrationStatus } from './registration-status';
 
@@ -72,7 +73,7 @@ export function getRaceView(event: EventWithDetails, tr: Translations): RaceView
     locationLabel,
     status,
     opensLabel:
-      raw?.state === 'soon' && event.registration_opens
+      raw?.state === REGISTRATION_STATE.soon && event.registration_opens
         ? interpolate(tr.calendar.registrationOpensOn, { date: formatDayMonth(event.registration_opens) })
         : '',
     deadlineLabel: event.registration_deadline

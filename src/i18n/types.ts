@@ -59,6 +59,7 @@ export interface Translations {
     editEvent: string;
     heroLabel: string;
     thenHeading: string;
+    previousHeading: string;
     raceCount: string;
     raceCountOne: string;
     save: string;

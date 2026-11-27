@@ -8,7 +8,7 @@
   import { routeParams, navigate } from '../../router';
   import { t } from '../../i18n';
   import EventEditor from './EventEditor.svelte';
-  import { getRaceView } from '@shared/utils';
+  import { getRaceView, canRegister as canRegisterFor } from '@shared/utils';
 
   let event: EventWithDetails | null = null;
   let loading = true;
@@ -106,8 +106,7 @@
   }
 
   $: view = event ? getRaceView(event, $t) : null;
-  $: canRegister =
-    !!event?.registration_url && !!view?.status && (view.status.state === 'open' || view.status.state === 'register');
+  $: canRegister = !!event && canRegisterFor(event, view?.status);
   $: saved = event ? $selectedEventIds.has(event.id) : false;
   $: canEdit = event ? canEditEvent(event, $authStore.user) : false;
   $: dateText = event

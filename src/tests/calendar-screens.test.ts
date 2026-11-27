@@ -97,6 +97,66 @@ describe('EventList', () => {
     expect(screen.getByRole('link', { name: 'Race 2' })).toHaveAttribute('href', '/events/2');
   });
 
+  it('lists past races per year below the upcoming races, newest first', async () => {
+    eventsStore.setLoading(false);
+    filtersStore.toggleShowPastEvents();
+    loaded.events = [
+      base('old', { date: '2024-05-01' }), base('mid', { date: '2025-03-01' }), base('late', { date: '2025-10-12' }),
+      base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' }),
+    ];
+    const { container } = render(EventList);
+    const section = await screen.findByRole('region', { name: 'Vorige wedstrijden' });
+    expect(screen.getByText('1 wedstrijd', { selector: '.list-head:not(.previous *) .count' })).toBeInTheDocument();
+
+    const years = within(section).getAllByRole('heading', { level: 3 });
+    expect(years.map(h => h.textContent)).toEqual(['2025', '2024']);
+    expect(within(section).getAllByRole('heading', { level: 4 }).map(h => h.textContent)).toEqual(['Race late', 'Race mid', 'Race old']);
+    expect(within(section).getByText('2 wedstrijden')).toBeInTheDocument();
+    expect(within(section).getAllByRole('link', { name: /^Race / }).map(a => a.textContent)).toEqual(['Race late', 'Race mid', 'Race old']);
+
+    // The section comes after the last upcoming race.
+    const upcomingRow = screen.getByRole('link', { name: 'Race 2' });
+    expect(upcomingRow.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelectorAll('.previous')).toHaveLength(1);
+  });
+
+  it('translates the section heading and every count when the language changes', async () => {
+    eventsStore.setLoading(false);
+    filtersStore.toggleShowPastEvents();
+    loaded.events = [
+      base('a', { date: '2024-01-01' }), base('b', { date: '2024-02-01' }),
+      base('1', { date: '2099-01-01' }), base('2', { date: '2099-02-01' }), base('3', { date: '2099-03-01' }),
+    ];
+    render(EventList);
+    await screen.findByText('Vorige wedstrijden');
+    expect(screen.getAllByText('2 wedstrijden')).toHaveLength(2);
+    locale.setLocale('en');
+    expect(await screen.findByText('Previous races')).toBeInTheDocument();
+    expect(screen.getAllByText('2 races')).toHaveLength(2);
+    expect(screen.queryByText('2 wedstrijden')).not.toBeInTheDocument();
+  });
+
+  it('shows no previous-races section while past events are hidden', async () => {
+    eventsStore.setLoading(false);
+    loaded.events = [base('old', { date: '2024-05-01' }), base('1', { date: '2099-03-15' })];
+    render(EventList);
+    expect(await screen.findByRole('link', { name: 'Race 1' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Vorige wedstrijden' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Race old' })).not.toBeInTheDocument();
+  });
+
+  it('shows the previous-races section instead of the empty state when only past races match', async () => {
+    eventsStore.setLoading(false);
+    filtersStore.toggleShowPastEvents();
+    loaded.events = [base('old', { date: '2024-05-01' })];
+    render(EventList);
+    const section = await screen.findByRole('region', { name: 'Vorige wedstrijden' });
+    expect(within(section).getByRole('link', { name: 'Race old' })).toBeInTheDocument();
+    expect(screen.queryByText('Volgende wedstrijd')).not.toBeInTheDocument();
+    expect(screen.queryByText('Daarna')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Filters resetten' })).not.toBeInTheDocument();
+  });
+
   it('shows a translated error and keeps the list when the account rejects a save', async () => {
     eventsStore.setLoading(false);
     loaded.events = [base('1', { date: '2099-03-15' }), base('2', { date: '2099-04-19' })];
