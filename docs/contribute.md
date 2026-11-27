@@ -47,6 +47,14 @@ The notes below apply to the mocked suite.
 - Sign in as a role by passing `user` (`role: 'admin'`, or `managedTeams` for a team manager).
 - Prefer `getByRole` / `getByLabel`; use `data-testid` only when there is no accessible handle.
 
+## OpenSpec changes
+
+Archive an OpenSpec change in the same pull request that implements it, before the PR merges. Do not leave it for a follow-up PR.
+
+- Make the archive the last commit on the branch, once review has settled and all tasks in `tasks.md` are checked. Run `/opsx:archive <change>`: it syncs the change's delta specs into `openspec/specs/` and moves the change to `openspec/changes/archive/YYYY-MM-DD-<change>/`.
+- This way master's specs always describe master's code, and no finished changes pile up in `openspec/changes/`.
+- If review asks for changes after archiving, update the main spec in `openspec/specs/` and the archived change's files to match. Do not move the change back.
+
 ## Ignored artifacts
 
 `vite.config.ts.timestamp-*.mjs` files are Vite temp files from crashed runs and can be deleted.

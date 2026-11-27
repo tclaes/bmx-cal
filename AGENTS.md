@@ -48,6 +48,10 @@ references `docs/coding-styles.md`
 
 references `docs/contribute.md`
 
+## OpenSpec
+
+Archive each OpenSpec change (`/opsx:archive`) as the last commit of the PR that implements it, before merging. See "OpenSpec changes" in `docs/contribute.md`.
+
 ## Local test environment
 
 references `docs/test-env.md`
