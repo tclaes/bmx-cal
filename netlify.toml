@@ -1,0 +1,16 @@
+# Netlify build settings. See docs/deploy.md.
+# Response headers live in public/_headers and the SPA fallback in public/_redirects;
+# Netlify reads both from the published folder, so they are not repeated here.
+# The Node version comes from .nvmrc.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Deploy previews and branch deploys must not send traffic to Google Analytics.
+# An empty measurement ID turns analytics off (src/shared/utils/analytics.ts).
+[context.deploy-preview.environment]
+  VITE_GA_MEASUREMENT_ID = ""
+
+[context.branch-deploy.environment]
+  VITE_GA_MEASUREMENT_ID = ""

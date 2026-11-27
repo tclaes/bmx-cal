@@ -83,6 +83,7 @@ npm run test:e2e    # Playwright smoke suite against the local stack
 | File imports | [docs/file-import.md](docs/file-import.md) |
 | Coding styles | [docs/coding-styles.md](docs/coding-styles.md) |
 | Releases and app updates | [docs/releases.md](docs/releases.md) |
+| Frontend hosting and deploys | [docs/deploy.md](docs/deploy.md) |
 
 Planned and in-flight changes live in [`openspec/`](openspec/).
 

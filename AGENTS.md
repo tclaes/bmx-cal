@@ -55,3 +55,7 @@ references `docs/test-env.md`
 ## Releases and app updates
 
 references `docs/releases.md`
+
+## Frontend hosting and deploys
+
+references `docs/deploy.md`
