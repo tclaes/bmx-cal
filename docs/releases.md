@@ -34,8 +34,8 @@ The build (`vite.config.ts`, plugin `release-manifest`) writes `dist/version.jso
 
 Every release reaches production through a pull request from `development` into `master`:
 
-1. Open the PR: `gh pr create --base master --head development --title "Release 1.4.0"`.
-2. On that PR, add one commit that bumps the version and writes the notes, as described in the two sections below. `development` itself stays on the last released version until then.
+1. Bump the version and write the notes, as described in the two sections below, on a branch `chore/release-<version>` from `development`. Open it against `development` and squash-merge it. `development` only accepts changes through a PR, so the bump cannot be pushed onto the release PR itself.
+2. Open the release PR: `gh pr create --base master --head development --title "Release 1.4.0"`.
 3. Wait for `Release check`, `Test` and `E2E (mocked Supabase)` to pass. `Release check` fails until the version is higher than master's.
 4. Merge with a **merge commit** (not squash), so `master` and `development` keep the same history. Netlify then deploys `master`.
 5. Deploy any migrations and edge functions the release needs, following "Release order" in `docs/deploy.md`.

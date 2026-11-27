@@ -1,9 +1,9 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "minVersion": "1.0.0",
   "notes": {
-    "nl": "Updates werken nu betrouwbaar: je krijgt een melding zodra er een nieuwe versie is, en belangrijke oplossingen worden meteen doorgevoerd.",
-    "fr": "Les mises à jour sont désormais fiables : vous êtes averti dès qu'une nouvelle version est disponible et les correctifs importants sont appliqués immédiatement.",
-    "en": "Updates now work reliably: you are notified as soon as a new version is available, and important fixes are applied right away."
+    "nl": "Het menu bovenaan blijft nu in beeld terwijl je scrolt. Voorbije wedstrijden staan per jaar onder de komende wedstrijden. Wedstrijden bewaren in je kalender werkt betrouwbaarder.",
+    "fr": "Le menu du haut reste désormais visible pendant le défilement. Les courses passées sont classées par année sous les courses à venir. L'enregistrement des courses dans votre calendrier est plus fiable.",
+    "en": "The top menu now stays in view while you scroll. Past races are listed per year below the upcoming ones. Saving races to your calendar is more reliable."
   }
 }
