@@ -85,4 +85,13 @@ Expect `server: Netlify`, a 301 from `www` to the apex, and the version noted in
 
 ### Edge functions and migrations
 
-These are deployed to Supabase separately, after the change is merged to `master` (see `docs/edge-functions.md`). A Netlify deploy does not deploy them.
+A Netlify deploy does not deploy them. Migrations are applied as described in `docs/db.md` ("Migrations") and edge functions are deployed as described in `docs/edge-functions.md`, both only after the change is merged to `master`.
+
+#### Release order
+
+Once Netlify deploys from `master`, every merge publishes the frontend straight away. The migrations and edge functions that a frontend change needs must therefore be live before that frontend goes out, or users get errors in between. Use one of these, in this order of preference:
+
+1. **Backend first, in its own PR.** Make the migration or function change backward compatible (add, don't rename or drop), merge it, and deploy it to Supabase. Then merge the frontend PR that uses it. Remove anything old in a later PR, once no deployed frontend uses it.
+2. **Hold the frontend publish.** When the change cannot be split, open **Deploys** in Netlify and choose **Lock to stop auto publishing** before merging. Merge, deploy the migrations and edge functions, then publish the new deploy and unlock auto publishing.
+
+A frontend-only or backend-only change needs neither step.
