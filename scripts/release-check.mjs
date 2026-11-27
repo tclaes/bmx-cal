@@ -76,13 +76,18 @@ const isMain = Boolean(process.argv[1]) && fileURLToPath(import.meta.url) === re
 
 if (isMain) {
   const { HEAD_REF = '', BASE_VERSION = '', HEAD_VERSION = '', HEAD_REPO = '', BASE_REPO = '' } = process.env;
-  const problems = checkRelease({
-    headRef: HEAD_REF,
-    baseVersion: BASE_VERSION,
-    headVersion: HEAD_VERSION,
-    headRepo: HEAD_REPO,
-    baseRepo: BASE_REPO,
-  });
+  // Missing repository names would otherwise compare equal ('' === '') and pass.
+  const missing = ['HEAD_REPO', 'BASE_REPO'].filter((name) => !process.env[name]);
+  const problems =
+    missing.length > 0
+      ? [`Missing ${missing.join(' and ')}: the release check needs both repository names.`]
+      : checkRelease({
+          headRef: HEAD_REF,
+          baseVersion: BASE_VERSION,
+          headVersion: HEAD_VERSION,
+          headRepo: HEAD_REPO,
+          baseRepo: BASE_REPO,
+        });
 
   if (problems.length === 0) {
     console.log(`Release check passed: ${HEAD_REF} raises the version ${BASE_VERSION} -> ${HEAD_VERSION}.`);

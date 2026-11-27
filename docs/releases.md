@@ -46,7 +46,7 @@ For an urgent fix that cannot wait for the next release:
 
 1. Branch `hotfix/<name>` from `master`, fix it, and bump the patch version (usually with `minVersion`, see "Crucial bug fix" below).
 2. Open the PR into `master`. `Release check` accepts `hotfix/*` branches. Merge with a merge commit.
-3. Open a PR from `master` into `development` and merge it with a merge commit, so the fix and the new version are not lost. Nothing checks that this step happened: `Release check` only compares version numbers, so a next release that bumps past the hotfix version (for example `1.2.0` after a `1.1.1` hotfix) still passes. Do this step right after the hotfix merges, and before opening the next release PR.
+3. Open a PR from `master` into `development` and merge it with a merge commit, so the fix and the new version are not lost. Nothing checks that this step happened: `Release check` validates the source branch, the repository and that the version goes up, but not whether the hotfix was merged back. A next release that bumps past the hotfix version (for example `1.2.0` after a `1.1.1` hotfix) still passes. Do this step right after the hotfix merges, and before opening the next release PR.
 
 ### Feature release (optional update)
 
