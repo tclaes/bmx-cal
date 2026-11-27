@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
+  GEMINI_FALLBACK_MODEL,
   GEMINI_MODEL,
   generateGeminiContent,
   geminiGenerateContentUrl,
@@ -34,6 +35,10 @@ const noSleep = vi.fn(async (_ms: number) => {});
 describe('edge shared gemini: request shape', () => {
   it('uses gemini-3.8-flash', () => {
     expect(GEMINI_MODEL).toBe('gemini-3.8-flash');
+  });
+
+  it('falls back to gemini-3.5-flash-lite by default', () => {
+    expect(GEMINI_FALLBACK_MODEL).toBe('gemini-3.5-flash-lite');
   });
 
   it('builds the generateContent URL without a key', () => {

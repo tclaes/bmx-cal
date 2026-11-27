@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
-import { AiServiceError, generateGeminiContent } from "../_shared/gemini.ts";
+import { AiServiceError, GEMINI_FALLBACK_MODEL, generateGeminiContent } from "../_shared/gemini.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -109,7 +109,7 @@ ${text}`;
         maxOutputTokens: 16384,
       },
     },
-    { fallbackModel: Deno.env.get("GEMINI_FALLBACK_MODEL") },
+    { fallbackModel: Deno.env.get("GEMINI_FALLBACK_MODEL") ?? GEMINI_FALLBACK_MODEL },
   );
   const content = data.candidates[0].content.parts[0].text;
 

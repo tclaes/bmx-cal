@@ -5,6 +5,9 @@
 
 export const GEMINI_MODEL = "gemini-3.8-flash";
 
+/** Free-tier model tried when GEMINI_MODEL keeps failing with a retryable status. The optional GEMINI_FALLBACK_MODEL secret overrides it. */
+export const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
+
 export const AI_UNAVAILABLE_MESSAGE =
   "AI analysis is temporarily unavailable. Please try again later, or import a CSV, Excel or iCal file instead.";
 
