@@ -10,7 +10,7 @@ Turning on "show past events" in the calendar seems to do nothing (issue #51). T
 - Past races are grouped per calendar year, each with a year heading and that year's race count. Years go newest first; within a year races go most recent first.
 - The count next to the upcoming list ("Next up" / "Daarna") counts upcoming races only.
 - When the filters match only past races, the page shows the previous-races section instead of the empty state.
-- New user-facing strings (section heading, year count) are added in nl, fr and en.
+- One new user-facing string, the section heading, is added in nl, fr and en; the year counts reuse the existing `raceCount` / `raceCountOne` strings.
 - Out of scope: the export (it keeps exporting all visible races), collapsible years or pagination, and how events are fetched.
 
 ## Capabilities

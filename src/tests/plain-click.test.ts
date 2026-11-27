@@ -9,6 +9,7 @@ describe('isPlainLeftClick', () => {
     expect(isPlainLeftClick(new MouseEvent('click', { button: 0, metaKey: true }))).toBe(false);
     expect(isPlainLeftClick(new MouseEvent('click', { button: 0, ctrlKey: true }))).toBe(false);
     expect(isPlainLeftClick(new MouseEvent('click', { button: 0, shiftKey: true }))).toBe(false);
+    expect(isPlainLeftClick(new MouseEvent('click', { button: 0, altKey: true }))).toBe(false);
     expect(isPlainLeftClick(new MouseEvent('click', { button: 1 }))).toBe(false);
   });
 });
