@@ -81,6 +81,14 @@
     background-color: var(--color-bg-primary);
   }
 
+  /* The header, not the nav inside it, is sticky: a sticky element only sticks
+     within its parent, and .app spans the whole page. */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-header);
+  }
+
   .skip-link {
     position: absolute;
     top: -40px;

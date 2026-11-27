@@ -77,7 +77,7 @@
       grid-column: 2;
       grid-row: 1;
       position: sticky;
-      top: calc(var(--spacing-xl) * 2 + 24px);
+      top: calc(var(--header-height) + var(--spacing-lg));
     }
 
     .calendar-main {
