@@ -47,6 +47,15 @@ The notes below apply to the mocked suite.
 - Sign in as a role by passing `user` (`role: 'admin'`, or `managedTeams` for a team manager).
 - Prefer `getByRole` / `getByLabel`; use `data-testid` only when there is no accessible handle.
 
+## Branches and pull requests
+
+Work flows **issue → branch → PR into `development` → release PR → `master`**.
+
+- `development` is the default branch. Branch from it and open every feature or fix PR against it: `gh pr create --base development`. Feature PRs are squash-merged.
+- `master` is production: Netlify publishes every merge into it. It only accepts PRs from `development` (a release) or from `hotfix/<name>` (an urgent fix), and each one must raise the version. The `Release check` workflow (`.github/workflows/release-check.yml`, `scripts/release-check.mjs`) enforces both, and `master` cannot merge without it.
+- Release, hotfix and hotfix back-merge PRs use a **merge commit**, not a squash, so `development` and `master` keep the same history. See "Release PR" and "Hotfix" in `docs/releases.md`.
+- Both branches are protected: changes go through a PR, and `Test` and `E2E (mocked Supabase)` must pass.
+
 ## OpenSpec changes
 
 Archive an OpenSpec change in the same pull request that implements it, before the PR merges. Do not leave it for a follow-up PR.

@@ -85,13 +85,13 @@ Expect `server: Netlify`, a 301 from `www` to the apex, and the version noted in
 
 ### Edge functions and migrations
 
-A Netlify deploy does not deploy them. Migrations are applied as described in `docs/db.md` ("Migrations") and edge functions are deployed as described in `docs/edge-functions.md`, both only after the change is merged to `master`.
+A Netlify deploy does not deploy them. Migrations are applied as described in `docs/db.md` ("Migrations") and edge functions are deployed as described in `docs/edge-functions.md`, both only after the change is merged to `master`. Feature PRs merge into `development` first (see "Branches and pull requests" in `docs/contribute.md`), so in practice that is when the release PR reaches `master`.
 
 #### Release order
 
-Once Netlify deploys from `master`, every merge publishes the frontend straight away. The migrations and edge functions that a frontend change needs must therefore be live before that frontend goes out, or users get errors in between. Use one of these, in this order of preference:
+Netlify deploys from `master`, so every release or hotfix merge publishes the frontend straight away. Merges into `development` do not reach production (pull requests still get a deploy preview). The migrations and edge functions that a frontend change needs must therefore be live before that frontend goes out, or users get errors in between. Use one of these, in this order of preference:
 
-1. **Backend first, in its own PR.** Make the migration or function change backward compatible (add, don't rename or drop), merge it, and deploy it to Supabase. Then merge the frontend PR that uses it. Remove anything old in a later PR, once no deployed frontend uses it.
-2. **Hold the frontend publish.** When the change cannot be split, open **Deploys** in Netlify and choose **Lock to stop auto publishing** before merging. Merge, deploy the migrations and edge functions, then publish the new deploy and unlock auto publishing.
+1. **Backend first, in its own release.** Make the migration or function change backward compatible (add, don't rename or drop), release it to `master`, and deploy it to Supabase. Then release the frontend change that uses it. Remove anything old in a later PR, once no deployed frontend uses it.
+2. **Hold the frontend publish.** When the change cannot be split, open **Deploys** in Netlify and choose **Lock to stop auto publishing** before merging the release PR. Merge it, deploy the migrations and edge functions, then publish the new deploy and unlock auto publishing.
 
 A frontend-only change needs neither step. A backend-only change needs neither step only when it is backward compatible with every frontend version users may still run: the live one and older ones that are still open or cached (see `minVersion` in `docs/releases.md`). If it removes or changes something those versions use, add the replacement first and remove the old part later, as in step 1, or force an update first through `minVersion`.
