@@ -19,10 +19,11 @@ The calendar page SHALL open with a hero for the next upcoming race that shows i
 
 #### Scenario: No upcoming race
 - **WHEN** there is no upcoming race that matches the active filters
-- **THEN** no hero is shown and the empty state is shown instead
+- **THEN** no hero is shown
+- **AND** the previous-races section is shown when past races are shown and match the filters, otherwise the empty state is shown
 
 ### Requirement: Race timeline list
-Below the hero the page SHALL list the remaining races in date order as a timeline of race rows, with a heading and the number of races shown.
+Below the hero the page SHALL list the remaining upcoming races in date order as a timeline of race rows, with a heading and the number of upcoming races shown. Past races SHALL NOT appear in this list.
 
 #### Scenario: Rows in date order
 - **WHEN** several upcoming races exist
@@ -37,6 +38,10 @@ Below the hero the page SHALL list the remaining races in date order as a timeli
 - **WHEN** a race is ongoing and has a livestream url
 - **THEN** its row offers a livestream link
 
+#### Scenario: Count covers upcoming races only
+- **WHEN** past races are shown
+- **THEN** the number next to the list heading counts only the upcoming races in the list
+
 ### Requirement: Filtering
 The page SHALL let users filter races by free-text search on city, country or race name, by race type (single or several chips, with an ALL chip that clears the type filter), by date range, and by showing past races. The race count and the hero SHALL reflect the active filters.
 
@@ -46,7 +51,8 @@ The page SHALL let users filter races by free-text search on city, country or ra
 
 #### Scenario: Show past events
 - **WHEN** the user enables "show past events"
-- **THEN** past races are listed in date order and the hero is the next upcoming race
+- **THEN** the hero is the next upcoming race and the upcoming races are listed in date order
+- **AND** past races that match the other filters are listed in the previous-races section below the upcoming races
 
 #### Scenario: Reset
 - **WHEN** the user resets the filters
@@ -99,3 +105,29 @@ All text on the page SHALL come from the nl, fr and en locale files and SHALL fo
 #### Scenario: Language switch
 - **WHEN** the user switches from NL to FR
 - **THEN** headings, filter labels, month names, registration messages and button labels change to French
+
+### Requirement: Previous races section
+When past races are shown, the page SHALL list them in a separate section below the upcoming races, under a "Previous races" heading, grouped per calendar year of the race date. Each year SHALL have a heading with the year and its number of races. Years SHALL be ordered newest first, and races within a year most recent first.
+
+#### Scenario: Section below upcoming races
+- **WHEN** "show past events" is on and both upcoming and past races match the filters
+- **THEN** the previous-races section with its heading appears after the last upcoming race
+
+#### Scenario: Grouped per year, newest first
+- **WHEN** the shown past races fall in 2024 and 2025
+- **THEN** the 2025 group comes before the 2024 group
+- **AND** each group's heading shows the year and the number of races in that group
+- **AND** within each group the most recent race comes first
+
+#### Scenario: Past events hidden
+- **WHEN** "show past events" is off
+- **THEN** no previous-races section and no year headings are shown
+
+#### Scenario: Only past races match
+- **WHEN** "show past events" is on and the filters match only past races
+- **THEN** no hero, upcoming list or empty state is shown
+- **AND** the previous-races section is shown with its year groups
+
+#### Scenario: Localised headings
+- **WHEN** the user switches the language
+- **THEN** the section heading and the year race counts are shown in that language
