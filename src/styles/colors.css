@@ -1,74 +1,95 @@
+/*
+ * Role-based color tokens. Every value comes from the palette in `palette.css`
+ * (through the `--palette-` primitives, mixed with `color-mix()` for
+ * translucent variants); raw color values are not allowed here.
+ * Components use these tokens, never the palette.
+ */
 :root {
   /* Surfaces (design B "Startlicht", dark) */
-  --color-bg-primary: #14171c;
-  --color-bg-secondary: #1e232b;
-  --color-bg-tertiary: #1a1e25;
+  --color-bg-primary: var(--palette-ink-900);
+  --color-bg-secondary: var(--palette-ink-800);
+  --color-bg-tertiary: var(--palette-ink-850);
 
   /* Text */
-  --color-text-primary: #f3f5f7;
-  --color-text-secondary: #b4bcc8;
-  --color-text-muted: #9aa3b2;
-  --color-text-on-accent: #0b1015;
+  --color-text-primary: var(--palette-ink-50);
+  --color-text-secondary: var(--palette-ink-300);
+  --color-text-muted: var(--palette-ink-400);
+  --color-text-on-accent: var(--palette-ink-950);
 
   /* Cyan: primary brand colour */
-  --color-primary: #1c9ad6;
-  --color-primary-hover: #4db8ee;
-  --color-primary-light: rgb(28 154 214 / 16%);
-  --color-cyan-soft: #8fd0f2;
+  --color-primary: var(--palette-cyan-500);
+  --color-primary-hover: var(--palette-cyan-400);
+  --color-primary-light: color-mix(in srgb, var(--palette-cyan-500) 16%, transparent);
+  --color-cyan-soft: var(--palette-cyan-200);
 
   /* Orange: accent / calls to action */
-  --color-accent: #ff7a2b;
-  --color-accent-hover: #ff8a3d;
-  --color-accent-strong: #f26b1d;
-  --color-secondary: #9aa3b2;
-  --color-secondary-hover: #b4bcc8;
-  --color-secondary-light: #1e232b;
+  --color-accent: var(--palette-orange-500);
+  --color-accent-hover: var(--palette-orange-400);
+  --color-accent-strong: var(--palette-orange-600);
+  --color-secondary: var(--palette-ink-400);
+  --color-secondary-hover: var(--palette-ink-300);
+  --color-secondary-light: var(--palette-ink-800);
 
   /* Start-light (registration indicator) */
-  --color-start-green: #35d07f;
-  --color-success: #35d07f;
-  --color-success-light: rgb(53 208 127 / 16%);
-  --color-warning: #ff7a2b;
-  --color-warning-light: rgb(255 122 43 / 16%);
-  --color-danger: #f0555b;
-  --color-danger-hover: #ff7378;
-  --color-danger-light: rgb(240 85 91 / 16%);
+  --color-start-green: var(--palette-green-400);
+  --color-success: var(--palette-green-400);
+  --color-success-light: color-mix(in srgb, var(--palette-green-400) 16%, transparent);
+  --color-warning: var(--palette-orange-500);
+  --color-warning-light: color-mix(in srgb, var(--palette-orange-500) 16%, transparent);
+  --color-danger: var(--palette-red-400);
+  --color-danger-hover: var(--palette-red-300);
+  --color-danger-light: color-mix(in srgb, var(--palette-red-400) 16%, transparent);
   --color-error: var(--color-danger);
-  --color-border: #2c333d;
+  --color-border: var(--palette-ink-650);
   --color-border-hover: var(--color-primary);
   --color-surface-secondary: var(--color-bg-secondary);
-  --color-surface-hover: #262d37;
+  --color-surface-hover: var(--palette-ink-700);
   --color-primary-dark: var(--color-primary-hover);
   --color-primary-100: var(--color-primary-light);
-  --color-primary-200: rgb(28 154 214 / 32%);
+  --color-primary-200: color-mix(in srgb, var(--palette-cyan-500) 32%, transparent);
   --color-primary-700: var(--color-primary-hover);
-  --color-border-light: #232932;
+  --color-border-light: var(--palette-ink-750);
 
   /* Race types: label background / label text / stripe / dot ring */
-  --race-cv-bg: #ffe922;
-  --race-cv-fg: #111;
-  --race-cv-stripe: #111;
-  --race-cv-ring: #ffe922;
-  --race-tc-bg: #def;
-  --race-tc-fg: #111;
-  --race-tc-stripe: linear-gradient(to right, #111 0 33%, #ffe922 33% 66%, #e11d2a 66%);
-  --race-tc-ring: #def;
-  --race-cw-bg: #c81e2b;
-  --race-cw-fg: #fff;
-  --race-cw-stripe: #ffd500;
-  --race-cw-ring: #f0555b;
-  --race-3nc-bg: #fff;
-  --race-3nc-fg: #111;
-  --race-3nc-stripe: #111;
-  --race-3nc-ring: #fff;
-  --race-ec-bg: #1f4fd8;
-  --race-ec-fg: #fff;
-  --race-ec-stripe: #fff;
-  --race-ec-ring: #6c8ff0;
-  --race-wc-bg: #fff;
-  --race-wc-fg: #111;
-  --race-wc-stripe: linear-gradient(to right, #e11d2a, #ff7a2b, #ffe922, #35d07f, #2aa5e0, #8a4fd8);
-  --race-wc-ring: #2aa5e0;
+  --race-cv-bg: var(--palette-yellow-300);
+  --race-cv-fg: var(--palette-near-black);
+  --race-cv-stripe: var(--palette-near-black);
+  --race-cv-ring: var(--palette-yellow-300);
+  --race-tc-bg: var(--palette-blue-50);
+  --race-tc-fg: var(--palette-near-black);
+  --race-tc-stripe:
+    linear-gradient(
+      to right,
+      var(--palette-near-black) 0 33%,
+      var(--palette-yellow-300) 33% 66%,
+      var(--palette-red-600) 66%
+    );
+  --race-tc-ring: var(--palette-blue-50);
+  --race-cw-bg: var(--palette-red-700);
+  --race-cw-fg: var(--palette-white);
+  --race-cw-stripe: var(--palette-yellow-400);
+  --race-cw-ring: var(--palette-red-400);
+  --race-3nc-bg: var(--palette-white);
+  --race-3nc-fg: var(--palette-near-black);
+  --race-3nc-stripe: var(--palette-near-black);
+  --race-3nc-ring: var(--palette-white);
+  --race-ec-bg: var(--palette-blue-600);
+  --race-ec-fg: var(--palette-white);
+  --race-ec-stripe: var(--palette-white);
+  --race-ec-ring: var(--palette-blue-300);
+  --race-wc-bg: var(--palette-white);
+  --race-wc-fg: var(--palette-near-black);
+  --race-wc-stripe:
+    linear-gradient(
+      to right,
+      var(--palette-red-600),
+      var(--palette-orange-500),
+      var(--palette-yellow-300),
+      var(--palette-green-400),
+      var(--palette-sky-500),
+      var(--palette-purple-500)
+    );
+  --race-wc-ring: var(--palette-sky-500);
 
   /* Next race hero */
   --hero-bg: var(--color-bg-secondary);
@@ -77,30 +98,34 @@
      covers the stripes on the left. */
   --hero-stripe:
     linear-gradient(110deg, var(--hero-bg) 0 64%, transparent 64%),
-    repeating-linear-gradient(110deg, rgb(255 255 255 / 4%) 0 30px, transparent 30px 60px);
+    repeating-linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--palette-white) 4%, transparent) 0 30px,
+      transparent 30px 60px
+    );
 
   /* Unknown race type fallback */
-  --race-unknown-bg: #2c333d;
-  --race-unknown-fg: #f3f5f7;
-  --race-unknown-stripe: #9aa3b2;
-  --race-unknown-ring: #9aa3b2;
+  --race-unknown-bg: var(--palette-ink-650);
+  --race-unknown-fg: var(--palette-ink-50);
+  --race-unknown-stripe: var(--palette-ink-400);
+  --race-unknown-ring: var(--palette-ink-400);
 
   /* Utilities */
-  --color-white: #fff;
-  --color-shadow: #000;
-  --color-overlay: rgb(0 0 0 / 50%);
+  --color-white: var(--palette-white);
+  --color-shadow: var(--palette-black);
+  --color-overlay: color-mix(in srgb, var(--palette-black) 50%, transparent);
   --color-focus-ring: color-mix(in srgb, var(--color-primary) 30%, transparent);
 
   /* Badge variants: white text on a solid background */
-  --badge-fg: #fff;
-  --badge-default-bg: #3b82f6;
-  --badge-success-bg: #15803d;
-  --badge-warning-bg: #b45309;
-  --badge-error-bg: #b91c1c;
+  --badge-fg: var(--palette-white);
+  --badge-default-bg: var(--palette-blue-500);
+  --badge-success-bg: var(--palette-green-700);
+  --badge-warning-bg: var(--palette-amber-700);
+  --badge-error-bg: var(--palette-red-800);
 
   /* Registration status text colors */
-  --color-status-closed: #6b7280;
-  --color-status-opens-soon: #b45309;
-  --color-status-open: #047857;
-  --color-status-register-now: #1d4ed8;
+  --color-status-closed: var(--palette-gray-500);
+  --color-status-opens-soon: var(--palette-amber-700);
+  --color-status-open: var(--palette-emerald-700);
+  --color-status-register-now: var(--palette-blue-700);
 }

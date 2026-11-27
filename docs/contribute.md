@@ -19,9 +19,9 @@ Every `margin*`, `padding*`, `gap`, `row-gap` and `column-gap` value (and the le
 
 ## Colors
 
-All colors are tokens in `src/styles/colors.css`, the only file allowed to contain raw color values. Components, other stylesheets and non-test `.ts` files use `var(--color-*)` (or the `--race-*`, `--badge-*`, `--hero-*` groups). Allowed keywords: `transparent`, `currentColor`, `inherit`, `none`. For a translucent variant use `color-mix(in srgb, var(--color-primary) 10%, transparent)`. If no token fits, add a semantic token to `colors.css` instead of writing a literal.
+Colors have two layers. `src/styles/palette.css` is the palette: `--palette-*` primitives named after the color (`--palette-cyan-500`), each raw hex value once. It is the only file allowed to contain raw color values. `src/styles/colors.css` defines the role-based tokens and builds them only from the palette (`var(--palette-*)`, `color-mix()` for alpha). Components, other stylesheets and non-test `.ts` files use `var(--color-*)` (or the `--race-*`, `--badge-*`, `--hero-*` groups). Allowed keywords: `transparent`, `currentColor`, `inherit`, `none`. For a translucent variant use `color-mix(in srgb, var(--color-primary) 10%, transparent)`. Never use `--palette-*` outside `colors.css`. If no token fits, add a semantic token to `colors.css` (and a primitive to `palette.css` for a new color) instead of writing a literal.
 
-`npm run stylelint` fails on hex colors, `rgb()/hsl()`-style functions and named colors outside `colors.css`; `src/tests/no-color-literals.test.ts` covers TypeScript.
+`npm run stylelint` fails on hex colors, `rgb()/hsl()`-style functions and named colors outside `palette.css`; `src/tests/no-color-literals.test.ts` covers TypeScript and the palette rules.
 
 ## End-to-end tests
 

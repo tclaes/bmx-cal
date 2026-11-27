@@ -51,3 +51,43 @@ describe('color tokens', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe('color palette', () => {
+  const STYLES = join(SRC, 'styles');
+  const declarations = (css: string) =>
+    [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map(([, name, value]) => ({
+      name,
+      value: value.trim(),
+    }));
+
+  it('palette.css only declares --palette-* primitives with a hex value', () => {
+    const bad = declarations(readFileSync(join(STYLES, 'palette.css'), 'utf8')).filter(
+      ({ name, value }) => !name.startsWith('--palette-') || !/^#[0-9a-f]{3,8}$/i.test(value),
+    );
+    expect(bad).toEqual([]);
+  });
+
+  it('every palette reference in colors.css exists', () => {
+    const defined = new Set(declarations(readFileSync(join(STYLES, 'palette.css'), 'utf8')).map((d) => d.name));
+    const used = [...readFileSync(join(STYLES, 'colors.css'), 'utf8').matchAll(/var\((--palette-[\w-]+)/g)].map(
+      (m) => m[1],
+    );
+    expect(used.filter((name) => !defined.has(name))).toEqual([]);
+  });
+
+  it('only colors.css references --palette-* tokens', () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((name) => {
+        const path = join(dir, name);
+        if (statSync(path).isDirectory()) return name === 'tests' ? [] : walk(path);
+        return /\.(css|svelte|ts)$/.test(name) && !/\.(test|spec)\.ts$/.test(name) ? [path] : [];
+      });
+    const offenders = walk(SRC).filter(
+      (file) =>
+        !file.endsWith(join('styles', 'colors.css')) &&
+        !file.endsWith(join('styles', 'palette.css')) &&
+        /var\(\s*--palette-/.test(readFileSync(file, 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
+});

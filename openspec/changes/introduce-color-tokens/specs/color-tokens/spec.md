@@ -1,7 +1,18 @@
 ## ADDED Requirements
 
+### Requirement: Colors come from a palette
+The app SHALL define every raw color value once, as a `--palette-*` custom property in `src/styles/palette.css`. `palette.css` SHALL contain only `--palette-*` declarations with hex values.
+
+#### Scenario: Palette primitive
+- **WHEN** `palette.css` defines `--palette-cyan-500: #1c9ad6`
+- **THEN** lint and the palette guard test pass
+
+#### Scenario: Non-primitive in the palette
+- **WHEN** `palette.css` defines `--color-primary: #1c9ad6`
+- **THEN** the palette guard test fails
+
 ### Requirement: Colors are defined as design tokens
-The app SHALL define all colors as CSS custom properties in `src/styles/colors.css`.
+The app SHALL define all role-based color tokens as CSS custom properties in `src/styles/colors.css`, built only from palette primitives (`var(--palette-*)`, or `color-mix()` of them).
 
 #### Scenario: Token lookup
 - **WHEN** a component needs a color
@@ -9,7 +20,15 @@ The app SHALL define all colors as CSS custom properties in `src/styles/colors.c
 
 #### Scenario: A needed color has no token
 - **WHEN** a developer needs a color role not covered by existing tokens
-- **THEN** they add a token in `colors.css` instead of writing a literal in the component
+- **THEN** they add a token in `colors.css` (and, for a new color, a primitive in `palette.css`) instead of writing a literal in the component
+
+#### Scenario: Component uses a palette primitive
+- **WHEN** a component contains `color: var(--palette-cyan-500)`
+- **THEN** the palette guard test fails
+
+#### Scenario: Raw value in the token file
+- **WHEN** `colors.css` defines `--color-white: #fff`
+- **THEN** `npm run stylelint` fails with a `color-no-hex` error
 
 ### Requirement: Components use tokens only
 Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT contain literal color values (hex, `rgb()`/`hsl()`-style functions, or named colors other than `transparent`, `currentColor`, `inherit`, `none`).
@@ -34,11 +53,11 @@ Components (`.svelte`), stylesheets (`.css`) and TypeScript modules SHALL NOT co
 - **WHEN** a component needs a translucent variant of a token
 - **THEN** it uses `color-mix(in srgb, var(--color-primary) 10%, transparent)` (or a dedicated token) and lint passes
 
-### Requirement: The token file is the only exemption
-Literal colors SHALL be permitted only in `src/styles/colors.css`.
+### Requirement: The palette is the only exemption
+Literal colors SHALL be permitted only in `src/styles/palette.css`.
 
 #### Scenario: Palette definition
-- **WHEN** `colors.css` defines `--color-white: #fff`
+- **WHEN** `palette.css` defines `--palette-white: #fff`
 - **THEN** lint passes for that file
 
 ### Requirement: TypeScript does not hold color literals

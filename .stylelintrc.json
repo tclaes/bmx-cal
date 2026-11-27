@@ -52,7 +52,7 @@
     },
     {
       "files": [
-        "src/styles/colors.css"
+        "src/styles/palette.css"
       ],
       "rules": {
         "color-no-hex": null,
