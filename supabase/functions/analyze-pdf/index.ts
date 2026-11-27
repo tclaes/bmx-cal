@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 import { AiServiceError, geminiError } from "../_shared/ai-errors.ts";
-import { geminiGenerateContentUrl } from "../_shared/gemini.ts";
+import { geminiGenerateContentUrl, geminiHeaders } from "../_shared/gemini.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -94,12 +94,10 @@ Text to analyze:
 ${text}`;
 
   const response = await fetch(
-    geminiGenerateContentUrl(geminiApiKey),
+    geminiGenerateContentUrl(),
     {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: geminiHeaders(geminiApiKey),
       body: JSON.stringify({
         contents: [
           {
