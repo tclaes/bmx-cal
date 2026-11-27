@@ -42,20 +42,34 @@ describe('filterEvents', () => {
 });
 
 describe('splitHero', () => {
-  it('uses the first upcoming race as hero', () => {
-    const { hero, rest } = splitHero(filterEvents(events, filters(), TODAY), TODAY);
-    expect(hero?.id).toBe('ongoing');
-    expect(rest.map(e => e.id)).toEqual(['soon', 'late']);
+  const years = (split: ReturnType<typeof splitHero>) =>
+    split.pastByYear.map(g => [g.year, g.events.map(e => e.id)]);
+
+  it('uses the first upcoming race as hero and has no past groups by default', () => {
+    const split = splitHero(filterEvents(events, filters(), TODAY), TODAY);
+    expect(split.hero?.id).toBe('ongoing');
+    expect(split.upcoming.map(e => e.id)).toEqual(['soon', 'late']);
+    expect(split.pastByYear).toEqual([]);
   });
-  it('keeps the hero upcoming and puts past races after upcoming ones', () => {
-    const { hero, rest } = splitHero(filterEvents(events, filters({ showPastEvents: true }), TODAY), TODAY);
-    expect(hero?.id).toBe('ongoing');
-    expect(rest.map(e => e.id)).toEqual(['soon', 'late', 'past']);
+  it('keeps an ongoing race upcoming and puts past races in their own year group', () => {
+    const split = splitHero(filterEvents(events, filters({ showPastEvents: true }), TODAY), TODAY);
+    expect(split.hero?.id).toBe('ongoing');
+    expect(split.upcoming.map(e => e.id)).toEqual(['soon', 'late']);
+    expect(years(split)).toEqual([[2026, ['past']]]);
   });
-  it('has no hero when nothing is upcoming', () => {
-    const { hero, rest } = splitHero([events[0]], TODAY);
-    expect(hero).toBeNull();
-    expect(rest.map(e => e.id)).toEqual(['past']);
+  it('groups past races per year, newest year and most recent race first', () => {
+    const past = [
+      ev('a24', '2024-03-10'), ev('b25', '2025-02-01'), ev('c25', '2025-11-20'),
+      ev('d24', '2024-12-31', { end_date: '2025-01-01' }), ev('e26', '2026-01-05'),
+    ];
+    const split = splitHero(filterEvents(past, filters({ showPastEvents: true }), TODAY), TODAY);
+    expect(years(split)).toEqual([[2026, ['e26']], [2025, ['c25', 'b25']], [2024, ['d24', 'a24']]]);
+  });
+  it('has no hero and no upcoming races when only past races match', () => {
+    const split = splitHero([events[0]], TODAY);
+    expect(split.hero).toBeNull();
+    expect(split.upcoming).toEqual([]);
+    expect(years(split)).toEqual([[2026, ['past']]]);
   });
 });
 

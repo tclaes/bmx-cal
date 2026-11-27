@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getRegistrationStatus, getFridayBefore } from '@shared/utils';
+import { getRegistrationStatus, getFridayBefore, canRegister } from '@shared/utils';
 
 const FUTURE_EVENT_DATE = '2099-06-15';
 const PAST_DEADLINE = '2020-01-01';
@@ -176,5 +176,19 @@ describe('getFridayBefore', () => {
     const friday = getFridayBefore('2026-04-10');
     expect(friday.getDay()).toBe(5);
     expect(toLocalDateStr(friday)).toBe('2026-04-10');
+  });
+});
+
+describe('canRegister', () => {
+  const url = { registration_url: 'https://reg.example' };
+  it('is true for an open or register-now state with a url', () => {
+    expect(canRegister(url, { state: 'open' })).toBe(true);
+    expect(canRegister(url, { state: 'register' })).toBe(true);
+  });
+  it('is false when closed, not open yet, without status or without a url', () => {
+    expect(canRegister(url, { state: 'closed' })).toBe(false);
+    expect(canRegister(url, { state: 'soon' })).toBe(false);
+    expect(canRegister(url, null)).toBe(false);
+    expect(canRegister({ registration_url: null }, { state: 'open' })).toBe(false);
   });
 });

@@ -61,6 +61,7 @@ export const fr: Translations = {
     editEvent: 'Modifier l\'événement',
     heroLabel: 'Prochaine course',
     thenHeading: 'Ensuite',
+    previousHeading: 'Courses précédentes',
     raceCount: '{count} courses',
     raceCountOne: '1 course',
     save: 'Enregistrer la course',

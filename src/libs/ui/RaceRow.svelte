@@ -1,53 +1,46 @@
 <script lang="ts">
   import TypeLabel from './TypeLabel.svelte';
   import StartLight from './StartLight.svelte';
-  import { getRaceTypeKey } from '@shared/utils';
-  import type { RegistrationState } from '@shared/utils';
+  import { getRaceTypeKey, canRegister as canRegisterFor, REGISTRATION_STATE } from '@shared/utils';
+  import type { RaceView } from '@shared/utils';
+  import type { EventWithDetails } from '@types';
   import { createEventDispatcher } from 'svelte';
 
   const dispatch = createEventDispatcher<{ save: void }>();
 
-  export let title: string;
-  /** Detail target: the title is the only anchor, its ::after covers the whole row. */
-  export let href: string;
-  export let day = '';
-  export let month = '';
-  /** Secondary line, e.g. "Zondag · Keerbergen". */
-  export let meta = '';
-  export let type: string | null | undefined = '';
-  /** From getRegistrationStatus(); null hides the registration part. */
-  export let status: { state: RegistrationState; label: string } | null = null;
-  export let registrationUrl: string | null | undefined = null;
-  export let registerLabel = '';
-  /** Shown instead of the button while registration is not open yet. */
-  export let opensLabel = '';
-  /** Shown next to the light while registration is open, e.g. "Deadline 12 mrt". */
-  export let deadlineLabel = '';
+  export let event: EventWithDetails;
+  /** From getRaceView(): date parts, meta line, registration state and the detail href. */
+  export let view: RaceView;
   /** Save (star) control; hidden when saveLabel is empty. Emits `save` on click. */
   export let saved = false;
   export let saveLabel = '';
-  /** Livestream link, shown when both url and label are set. */
-  export let livestreamUrl: string | null | undefined = null;
+  export let registerLabel = '';
+  /** Heading level of the race title; use 4 when the rows sit under an h3 group heading. */
+  export let headingLevel: 3 | 4 = 3;
+  /** Livestream link, shown while the race is ongoing and both url and label are set. */
   export let livestreamLabel = '';
 
-  $: key = getRaceTypeKey(type);
-  $: canRegister = !!registrationUrl && !!status && (status.state === 'open' || status.state === 'register');
+  $: key = getRaceTypeKey(event.event_type?.name);
+  $: status = view.status;
+  $: canRegister = canRegisterFor(event, status);
+  $: soon = status?.state === REGISTRATION_STATE.soon;
+  $: livestreamUrl = view.ongoing ? event.livestream_url : null;
 </script>
 
 <article class="race-row race-{key}" class:has-save={!!saveLabel}>
   <div class="inner">
   <div class="when">
-    {#if day}<span class="day">{day}</span>{/if}
-    {#if month}<span class="month">{month}</span>{/if}
+    {#if view.day}<span class="day">{view.day}</span>{/if}
+    {#if view.month}<span class="month">{view.month}</span>{/if}
   </div>
-  <span class="type"><TypeLabel {type} /></span>
+  <span class="type"><TypeLabel type={event.event_type?.name} /></span>
 
-  <div class="rail" aria-hidden="true"><span class="dot"></span></div>
+  <div class="rail" aria-hidden="true"><span class="dot" /></div>
 
   <div class="content">
-    <h3 class="title"><a class="row-link" {href} on:click>{title}</a></h3>
-    {#if meta}
-      <p class="meta">{meta}</p>
+    <svelte:element this={`h${headingLevel}`} class="title"><a class="row-link" href={view.href} on:click>{event.title}</a></svelte:element>
+    {#if view.meta}
+      <p class="meta">{view.meta}</p>
     {/if}
 
     {#if saveLabel}
@@ -66,19 +59,19 @@
     {/if}
 
     {#if status}
-      <div class="status" class:alone={!canRegister} class:soon={status.state === 'soon'}>
+      <div class="status" class:alone={!canRegister} class:soon>
         <StartLight state={status.state} label={status.label} />
-        {#if status.state === 'soon' && opensLabel}
-          <span class="opens">{opensLabel}</span>
-        {:else if canRegister && deadlineLabel}
-          <span class="deadline">{deadlineLabel}</span>
+        {#if soon && view.opensLabel}
+          <span class="opens">{view.opensLabel}</span>
+        {:else if canRegister && view.deadlineLabel}
+          <span class="deadline">{view.deadlineLabel}</span>
         {:else}
           <span class="status-label">{status.label}</span>
         {/if}
       </div>
       {#if canRegister}
         <div class="action">
-          <a class="register" href={registrationUrl} target="_blank" rel="noopener noreferrer">{registerLabel}</a>
+          <a class="register" href={event.registration_url} target="_blank" rel="noopener noreferrer">{registerLabel}</a>
         </div>
       {/if}
     {/if}

@@ -3,7 +3,7 @@
   import { TypeLabel, StartLight } from '@ui';
   import type { EventWithDetails } from '@types';
   import { t } from '../../i18n';
-  import { getRaceView } from '@shared/utils';
+  import { getRaceView, canRegister as canRegisterFor, isPlainLeftClick, REGISTRATION_STATE } from '@shared/utils';
 
   export let event: EventWithDetails;
   export let saved = false;
@@ -11,8 +11,7 @@
   const dispatch = createEventDispatcher<{ save: void; navigate: string }>();
 
   $: view = getRaceView(event, $t);
-  $: canRegister =
-    !!event.registration_url && !!view.status && (view.status.state === 'open' || view.status.state === 'register');
+  $: canRegister = canRegisterFor(event, view.status);
 
   function mapsUrl(): string {
     return (
@@ -22,7 +21,7 @@
   }
 
   function handleClick(e: MouseEvent) {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    if (!isPlainLeftClick(e)) return;
     e.preventDefault();
     dispatch('navigate', view.href);
   }
@@ -70,7 +69,7 @@
   <div class="actions">
     {#if canRegister}
       <a class="register" href={event.registration_url} target="_blank" rel="noopener noreferrer">{$t.calendar.registerAction}</a>
-    {:else if view.status?.state === 'soon' && view.opensLabel}
+    {:else if view.status?.state === REGISTRATION_STATE.soon && view.opensLabel}
       <span class="opens">{view.opensLabel}</span>
     {/if}
     <button

@@ -61,6 +61,7 @@ export const en: Translations = {
     editEvent: 'Edit event',
     heroLabel: 'Next race',
     thenHeading: 'Next up',
+    previousHeading: 'Previous races',
     raceCount: '{count} races',
     raceCountOne: '1 race',
     save: 'Save race',

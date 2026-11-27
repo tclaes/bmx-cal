@@ -1,18 +1,21 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { toUserMessage } from '@shared/utils';
-  import { LoadingSpinner, Alert, RaceRow, Button } from '@ui';
+  import { LoadingSpinner, Alert, Button } from '@ui';
   import { eventsStore, filtersStore, authStore, selectedEventIds, loadUserSelections, toggleEventSelection } from '@core/stores';
   import { EventsService } from '@core/services';
   import { t, interpolate } from '../../i18n';
   import { navigate } from '../../router';
   import CalendarHero from './CalendarHero.svelte';
+  import CalendarRaceRow from './CalendarRaceRow.svelte';
   import { calendarSplit } from './visible-events';
-  import { getRaceView } from '@shared/utils';
 
-  $: ({ hero, rest } = $calendarSplit);
-  $: total = rest.length;
-  $: countLabel = total === 1 ? $t.calendar.raceCountOne : interpolate($t.calendar.raceCount, { count: total });
+  $: ({ hero, upcoming, pastByYear } = $calendarSplit);
+  $: isEmpty = !hero && upcoming.length === 0 && pastByYear.length === 0;
+
+  // Reactive so every count re-renders when the language changes.
+  $: countLabel = (count: number): string =>
+    count === 1 ? $t.calendar.raceCountOne : interpolate($t.calendar.raceCount, { count });
 
   let previousUserId: string | null | undefined = undefined;
   // A save the account rejects is shown above the list; the list itself stays visible.
@@ -76,12 +79,6 @@
     previousUserId = currentUserId;
   }
 
-  function open(e: MouseEvent, href: string) {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-    e.preventDefault();
-    navigate(href);
-  }
-
   onMount(() => {
     loadUserSelections();
     loadAll('Failed to load events');
@@ -95,7 +92,7 @@
     </div>
   {:else if $eventsStore.error}
     <Alert type="danger" message={$eventsStore.error} />
-  {:else if !hero && rest.length === 0}
+  {:else if isEmpty}
     <div class="empty-state">
       <h3>{$t.calendar.noEventsTitle}</h3>
       <p>{$t.calendar.noEventsDescription}</p>
@@ -114,36 +111,45 @@
       />
     {/if}
 
-    {#if rest.length > 0}
+    {#if upcoming.length > 0}
       <div class="list-head">
-        <h2 class="list-title">{hero ? $t.calendar.thenHeading : ''}</h2>
-        <span class="count">{countLabel}</span>
+        <h2 class="list-title">{$t.calendar.thenHeading}</h2>
+        <span class="count">{countLabel(upcoming.length)}</span>
       </div>
 
       <div class="timeline">
-        {#each rest as event (event.id)}
-          {@const view = getRaceView(event, $t)}
-          <RaceRow
-            title={event.title}
-            href={view.href}
-            day={view.day}
-            month={view.month}
-            meta={view.meta}
-            type={event.event_type?.name}
-            status={view.status}
-            registrationUrl={event.registration_url}
-            registerLabel={$t.calendar.registerAction}
-            opensLabel={view.opensLabel}
-            deadlineLabel={view.deadlineLabel}
+        {#each upcoming as event (event.id)}
+          <CalendarRaceRow
+            {event}
             saved={$selectedEventIds.has(event.id)}
-            saveLabel={$selectedEventIds.has(event.id) ? $t.calendar.saved : $t.calendar.save}
-            livestreamUrl={view.ongoing ? event.livestream_url : null}
-            livestreamLabel={$t.calendar.livestream}
-            on:click={(e) => open(e, view.href)}
+            on:navigate={(e) => navigate(e.detail)}
             on:save={() => save(event.id)}
           />
         {/each}
       </div>
+    {/if}
+
+    {#if pastByYear.length > 0}
+      <section class="previous" aria-labelledby="previous-races-heading">
+        <h2 class="list-title previous-title" id="previous-races-heading">{$t.calendar.previousHeading}</h2>
+        {#each pastByYear as group (group.year)}
+          <div class="list-head">
+            <h3 class="list-title">{group.year}</h3>
+            <span class="count">{countLabel(group.events.length)}</span>
+          </div>
+          <div class="timeline">
+            {#each group.events as event (event.id)}
+              <CalendarRaceRow
+                {event}
+                headingLevel={4}
+                saved={$selectedEventIds.has(event.id)}
+                on:navigate={(e) => navigate(e.detail)}
+                on:save={() => save(event.id)}
+              />
+            {/each}
+          </div>
+        {/each}
+      </section>
     {/if}
   {/if}
 </div>
@@ -194,6 +200,14 @@
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--color-text-muted);
+  }
+
+  .previous {
+    margin-block-start: var(--spacing-2xl);
+  }
+
+  .previous-title {
+    color: var(--color-text-primary);
   }
 
   .count {

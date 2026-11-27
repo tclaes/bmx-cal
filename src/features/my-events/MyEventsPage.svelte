@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { selectedEventIds, loadUserSelections, toggleEventSelection, selectedCount, selectEventsByType, deselectEventsByType, replaceSelection } from '@core/stores';
   import { EventsService } from '@core/services';
-  import { generateICalContent, downloadICalFile, getRaceView } from '@shared/utils';
+  import { generateICalContent, downloadICalFile, getRaceView, isPlainLeftClick } from '@shared/utils';
   import Button from '@ui/Button.svelte';
   import { RaceRow, TypeChip, Alert } from '@ui';
   import { navigate } from '../../router';
@@ -144,7 +144,7 @@
   });
 
   function openDetail(e: MouseEvent, href: string) {
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    if (!isPlainLeftClick(e)) return;
     e.preventDefault();
     navigate(href);
   }
@@ -321,19 +321,11 @@
         {@const view = getRaceView(event, $t)}
         {@const selected = $selectedEventIds.has(event.id)}
         <RaceRow
-          title={event.title}
-          href={view.href}
-          day={view.day}
-          month={view.month}
-          meta={view.meta}
-          type={event.event_type?.name}
-          status={view.status}
-          registrationUrl={event.registration_url}
-          registerLabel={$t.calendar.registerAction}
-          opensLabel={view.opensLabel}
-          deadlineLabel={view.deadlineLabel}
+          {event}
+          {view}
           saved={selected}
           saveLabel={selected ? $t.calendar.saved : $t.calendar.save}
+          registerLabel={$t.calendar.registerAction}
           on:click={(e) => openDetail(e, view.href)}
           on:save={() => handleToggle(event.id)}
         />
