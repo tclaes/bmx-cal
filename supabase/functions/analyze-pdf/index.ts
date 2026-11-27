@@ -1,8 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
-import { AiServiceError, geminiError } from "../_shared/ai-errors.ts";
-import { geminiGenerateContentUrl, geminiHeaders } from "../_shared/gemini.ts";
+import { AiServiceError, generateGeminiContent } from "../_shared/gemini.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -93,34 +92,25 @@ Return ONLY valid JSON array of events. If no events found, return empty array [
 Text to analyze:
 ${text}`;
 
-  const response = await fetch(
-    geminiGenerateContentUrl(),
+  const data = await generateGeminiContent(
+    geminiApiKey,
     {
-      method: 'POST',
-      headers: geminiHeaders(geminiApiKey),
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 16384,
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
         },
-      }),
-    }
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 16384,
+      },
+    },
+    { fallbackModel: Deno.env.get("GEMINI_FALLBACK_MODEL") },
   );
-
-  if (!response.ok) {
-    throw geminiError(response.status, await response.text());
-  }
-
-  const data = await response.json();
   const content = data.candidates[0].content.parts[0].text;
 
   const jsonMatch = content.match(/\[[\s\S]*\]/);

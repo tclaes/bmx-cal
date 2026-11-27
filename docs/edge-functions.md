@@ -21,7 +21,7 @@ Functions run on Supabase, not in the frontend build: a deploy takes effect for 
 | `send-contact-email` | Sends contact form submissions via email | false | Anyone (input validated, rate limited) | 400 invalid input, 429 too many requests |
 | `send-password-reset` | Triggers a password reset email | false | Anyone (input validated, rate limited) | 400 invalid input, 429 too many requests |
 
-The Gemini model for `analyze-image` and `analyze-pdf` is set once in `supabase/functions/_shared/gemini.ts` (`GEMINI_MODEL`). Update it there when Google retires a model.
+The Gemini model for `analyze-image` and `analyze-pdf` is set once in `supabase/functions/_shared/gemini.ts` (`GEMINI_MODEL`). Update it there when Google retires a model. Calls that fail with 429, 500, 503 or a network error are retried up to three times (1 s, then 2 s backoff). If the optional secret `GEMINI_FALLBACK_MODEL` is set, that model is tried next; leave it unset to disable the fallback. A wrong fallback name is harmless: the user still gets the primary model's "temporarily unavailable" message and the 404 shows in the logs.
 
 The scheduler authenticates with the service-role key or a per-function token stored in `cron_auth_tokens` (see [cron.md](cron.md)).
 
