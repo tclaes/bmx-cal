@@ -45,8 +45,15 @@ test('the open menu scrolls on a short screen so its last item is reachable', as
   expect(scrollHeight).toBeGreaterThan(clientHeight);
   expect(bottom).toBeLessThanOrEqual(480);
 
+  // Scroll the menu itself with the wheel, as a user would: the menu scrolls, the page behind it does not.
+  const pageScrollBefore = await page.evaluate(() => window.scrollY);
+  const box = (await menu.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, 1000);
+  await expect.poll(() => menu.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(pageScrollBefore);
+
   const french = menu.getByRole('button', { name: 'FR' });
-  await french.scrollIntoViewIfNeeded();
   await expect(french).toBeInViewport();
   await french.click();
 
