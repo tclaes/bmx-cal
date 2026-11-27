@@ -21,13 +21,13 @@
 - [x] 4.1 Show the user the exact settings from the design ("Branch protection"), then create `development` from `origin/master` and push it. Verify with `git ls-remote --heads origin development`.
 - [x] 4.2 Make `development` the default branch with `gh api -X PATCH repos/tclaes/bmx-cal -f default_branch=development`. Verify `gh api repos/tclaes/bmx-cal -q .default_branch`.
 - [x] 4.3 Apply branch protection to `master` (PR required, 0 approvals; required checks `Test`, `E2E (mocked Supabase)`, `Release check`; no force pushes or deletions; `enforce_admins` false) and to `development` (PR required, 0 approvals; required checks `Test`, `E2E (mocked Supabase)`; no force pushes or deletions). Verify both with `gh api repos/tclaes/bmx-cal/branches/<b>/protection`.
-- [ ] 4.4 Retarget open PR #12 to `development` with `gh pr edit 12 --base development`, and open this change's PR against `development`. Verify with `gh pr list --json number,baseRefName`.
+- [x] 4.4 Retarget open PR #12 to `development` with `gh pr edit 12 --base development`, and open this change's PR against `development`. Verify with `gh pr list --json number,baseRefName`.
 
 ## 5. Final checks
 
-- [ ] 5.1 Run `npm run check`, `npm run sheriff`, `npm run stylelint`, `npm test` and `npm run build`. Verify all pass, and that this change's PR into `development` runs `Test`, `E2E (mocked Supabase)` and `Playwright against local Supabase`.
+- [x] 5.1 Run `npm run check`, `npm run sheriff`, `npm run stylelint`, `npm test` and `npm run build`. Verify all pass, and that this change's PR into `development` runs `Test`, `E2E (mocked Supabase)` and `Playwright against local Supabase`.
 
 ## Workflow follow-up
 
-- Archive this change in its PR before it merges into `development`.
+- Archive this change in its PR before it merges into `development` (done).
 - Next: the first release PR `development` → `master`, bumping `1.0.0` → `1.1.0` with notes in nl/fr/en, merged with a merge commit. It is the first PR to run `Release check`.
