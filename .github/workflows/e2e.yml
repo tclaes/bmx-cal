@@ -2,7 +2,7 @@ name: E2E
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, development]
   workflow_dispatch:
 
 permissions:
