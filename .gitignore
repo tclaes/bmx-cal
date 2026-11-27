@@ -33,3 +33,6 @@ test-results/
 
 # Supabase CLI local state
 supabase/.temp/
+
+# Local Netlify CLI state (netlify link)
+.netlify

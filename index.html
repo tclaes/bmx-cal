@@ -43,9 +43,11 @@
         wait_for_update: 500
       });
       gtag('js', new Date());
-      gtag('config', 'G-QWPG5J24KY', { send_page_view: false });
     </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QWPG5J24KY"></script>
+    <!-- ga:start (kept only when VITE_GA_MEASUREMENT_ID is set, see vite.config.ts) -->
+    <script>gtag('config', '__GA_MEASUREMENT_ID__', { send_page_view: false });</script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=__GA_MEASUREMENT_ID__"></script>
+    <!-- ga:end -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4950654000854684" crossorigin="anonymous"></script>
 
     <script type="application/ld+json">
