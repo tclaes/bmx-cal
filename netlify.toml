@@ -8,7 +8,8 @@
   publish = "dist"
 
 # Deploy previews and branch deploys must not send traffic to Google Analytics.
-# An empty measurement ID turns analytics off (src/shared/utils/analytics.ts).
+# With an empty measurement ID the build drops the gtag tag from index.html
+# (vite.config.ts, plugin analytics-tag) and src/shared/utils/analytics.ts sends nothing.
 [context.deploy-preview.environment]
   VITE_GA_MEASUREMENT_ID = ""
 

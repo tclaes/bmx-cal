@@ -40,7 +40,7 @@ Use one place to deploy from. Once the domain has moved, stop publishing from bo
   - `VITE_SUPABASE_URL`
   - `VITE_SUPABASE_ANON_KEY`
   - `VITE_VAPID_PUBLIC_KEY`
-  - `VITE_GA_MEASUREMENT_ID` (production only; `netlify.toml` blanks it for previews and branch deploys)
+  - `VITE_GA_MEASUREMENT_ID` (production must have it: without it the build leaves out the Google Analytics tag. `netlify.toml` blanks it for previews and branch deploys)
 - [ ] Do not add `SUPABASE_SERVICE_ROLE_KEY`. The frontend does not use it, and every `VITE_*` value ends up in the public bundle.
 - [ ] Trigger a deploy and test it on `<site>.netlify.app`: sign in, open the calendar, check `/version.json` and its headers (see "Checking a deploy" in `docs/releases.md`).
 
@@ -70,7 +70,7 @@ Expect `server: Netlify`, a 301 from `www` to the apex, and the version noted in
 
 #### 4. Supabase
 
-- [ ] **Authentication → URL Configuration**: keep the Site URL at `https://bmxkalender.be`. Add `https://*--<site>.netlify.app/**` to the redirect URLs if sign-up confirmation should work on deploy previews.
+- [ ] **Authentication → URL Configuration**: keep the Site URL at `https://bmxkalender.be`. Sign-up does not pass `emailRedirectTo`, so confirmation links always go to the Site URL, also when the account was created on a deploy preview. No preview redirect URLs are needed.
 - [ ] Password reset links always use the `SITE_URL` secret (see `docs/security-deployment.md`), so they point at production even when requested from a preview.
 
 #### 5. After the switch

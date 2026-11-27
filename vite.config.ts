@@ -48,9 +48,31 @@ function releaseManifest(): Plugin {
   }
 }
 
+const GA_BLOCK = /[ \t]*<!-- ga:start[\s\S]*?<!-- ga:end -->\n?/
+
+/**
+ * Fills the Google Analytics tag in index.html from VITE_GA_MEASUREMENT_ID,
+ * or removes it when the variable is empty (local dev, deploy previews), so
+ * those builds never load gtag.js or send hits.
+ */
+function analyticsTag(): Plugin {
+  let measurementId = ''
+  return {
+    name: 'analytics-tag',
+    configResolved(config) {
+      measurementId = String(config.env.VITE_GA_MEASUREMENT_ID ?? '').trim()
+    },
+    transformIndexHtml(html) {
+      if (!GA_BLOCK.test(html)) throw new Error('analytics-tag: ga:start/ga:end block missing in index.html')
+      if (!measurementId) return html.replace(GA_BLOCK, '')
+      return html.split('__GA_MEASUREMENT_ID__').join(measurementId)
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte(), releaseManifest()],
+  plugins: [svelte(), releaseManifest(), analyticsTag()],
   resolve: {
     // Svelte resolves to its SSR build under vitest unless the browser condition is set;
     // without it onMount never runs in component tests.
