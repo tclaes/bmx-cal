@@ -7,6 +7,13 @@
   command = "npm run build"
   publish = "dist"
 
+# Netlify's secrets scan treats every env var as a secret. The VITE_* values are
+# public by design (Vite inlines them into the client bundle) and also appear in
+# the repo (push.service.ts fallback key, cron migrations), so they are excluded.
+# Never add server-side keys such as SUPABASE_SERVICE_ROLE_KEY to this list.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY,VITE_VAPID_PUBLIC_KEY,VITE_GA_MEASUREMENT_ID"
+
 # Deploy previews and branch deploys must not send traffic to Google Analytics.
 # With an empty measurement ID the build drops the gtag tag from index.html
 # (vite.config.ts, plugin analytics-tag) and src/shared/utils/analytics.ts sends nothing.

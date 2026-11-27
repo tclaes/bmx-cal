@@ -41,6 +41,7 @@ Use one place to deploy from. Once the domain has moved, stop publishing from bo
   - `VITE_SUPABASE_ANON_KEY`
   - `VITE_VAPID_PUBLIC_KEY`
   - `VITE_GA_MEASUREMENT_ID` (production must have it: without it the build leaves out the Google Analytics tag. `netlify.toml` blanks it for previews and branch deploys)
+- [ ] Netlify's secrets scan would fail the build on these values, because they also appear in the repo. `netlify.toml` excludes exactly these four keys through `SECRETS_SCAN_OMIT_KEYS`. Any other variable you add is still scanned.
 - [ ] Do not add `SUPABASE_SERVICE_ROLE_KEY`. The frontend does not use it, and every `VITE_*` value ends up in the public bundle.
 - [ ] Trigger a deploy and test it on `<site>.netlify.app`: sign in, open the calendar, check `/version.json` and its headers (see "Checking a deploy" in `docs/releases.md`).
 
