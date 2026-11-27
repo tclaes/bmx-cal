@@ -1,0 +1,131 @@
+/*
+ * Role-based color tokens. Every value comes from the palette in `palette.css`
+ * (through the `--palette-` primitives, mixed with `color-mix()` for
+ * translucent variants); raw color values are not allowed here.
+ * Components use these tokens, never the palette.
+ */
+:root {
+  /* Surfaces (design B "Startlicht", dark) */
+  --color-bg-primary: var(--palette-ink-900);
+  --color-bg-secondary: var(--palette-ink-800);
+  --color-bg-tertiary: var(--palette-ink-850);
+
+  /* Text */
+  --color-text-primary: var(--palette-ink-50);
+  --color-text-secondary: var(--palette-ink-300);
+  --color-text-muted: var(--palette-ink-400);
+  --color-text-on-accent: var(--palette-ink-950);
+
+  /* Cyan: primary brand colour */
+  --color-primary: var(--palette-cyan-500);
+  --color-primary-hover: var(--palette-cyan-400);
+  --color-primary-light: color-mix(in srgb, var(--palette-cyan-500) 16%, transparent);
+  --color-cyan-soft: var(--palette-cyan-200);
+
+  /* Orange: accent / calls to action */
+  --color-accent: var(--palette-orange-500);
+  --color-accent-hover: var(--palette-orange-400);
+  --color-accent-strong: var(--palette-orange-600);
+  --color-secondary: var(--palette-ink-400);
+  --color-secondary-hover: var(--palette-ink-300);
+  --color-secondary-light: var(--palette-ink-800);
+
+  /* Start-light (registration indicator) */
+  --color-start-green: var(--palette-green-400);
+  --color-success: var(--palette-green-400);
+  --color-success-light: color-mix(in srgb, var(--palette-green-400) 16%, transparent);
+  --color-warning: var(--palette-orange-500);
+  --color-warning-light: color-mix(in srgb, var(--palette-orange-500) 16%, transparent);
+  --color-danger: var(--palette-red-400);
+  --color-danger-hover: var(--palette-red-300);
+  --color-danger-light: color-mix(in srgb, var(--palette-red-400) 16%, transparent);
+  --color-error: var(--color-danger);
+  --color-border: var(--palette-ink-650);
+  --color-border-hover: var(--color-primary);
+  --color-surface-secondary: var(--color-bg-secondary);
+  --color-surface-hover: var(--palette-ink-700);
+  --color-primary-dark: var(--color-primary-hover);
+  --color-primary-100: var(--color-primary-light);
+  --color-primary-200: color-mix(in srgb, var(--palette-cyan-500) 32%, transparent);
+  --color-primary-700: var(--color-primary-hover);
+  --color-border-light: var(--palette-ink-750);
+
+  /* Race types: label background / label text / stripe / dot ring */
+  --race-cv-bg: var(--palette-yellow-300);
+  --race-cv-fg: var(--palette-near-black);
+  --race-cv-stripe: var(--palette-near-black);
+  --race-cv-ring: var(--palette-yellow-300);
+  --race-tc-bg: var(--palette-blue-50);
+  --race-tc-fg: var(--palette-near-black);
+  --race-tc-stripe:
+    linear-gradient(
+      to right,
+      var(--palette-near-black) 0 33%,
+      var(--palette-yellow-300) 33% 66%,
+      var(--palette-red-600) 66%
+    );
+  --race-tc-ring: var(--palette-blue-50);
+  --race-cw-bg: var(--palette-red-700);
+  --race-cw-fg: var(--palette-white);
+  --race-cw-stripe: var(--palette-yellow-400);
+  --race-cw-ring: var(--palette-red-400);
+  --race-3nc-bg: var(--palette-white);
+  --race-3nc-fg: var(--palette-near-black);
+  --race-3nc-stripe: var(--palette-near-black);
+  --race-3nc-ring: var(--palette-white);
+  --race-ec-bg: var(--palette-blue-600);
+  --race-ec-fg: var(--palette-white);
+  --race-ec-stripe: var(--palette-white);
+  --race-ec-ring: var(--palette-blue-300);
+  --race-wc-bg: var(--palette-white);
+  --race-wc-fg: var(--palette-near-black);
+  --race-wc-stripe:
+    linear-gradient(
+      to right,
+      var(--palette-red-600),
+      var(--palette-orange-500),
+      var(--palette-yellow-300),
+      var(--palette-green-400),
+      var(--palette-sky-500),
+      var(--palette-purple-500)
+    );
+  --race-wc-ring: var(--palette-sky-500);
+
+  /* Next race hero */
+  --hero-bg: var(--color-bg-secondary);
+
+  /* Diagonal stripes on the right-hand side only: a solid layer with a slanted edge
+     covers the stripes on the left. */
+  --hero-stripe:
+    linear-gradient(110deg, var(--hero-bg) 0 64%, transparent 64%),
+    repeating-linear-gradient(
+      110deg,
+      color-mix(in srgb, var(--palette-white) 4%, transparent) 0 30px,
+      transparent 30px 60px
+    );
+
+  /* Unknown race type fallback */
+  --race-unknown-bg: var(--palette-ink-650);
+  --race-unknown-fg: var(--palette-ink-50);
+  --race-unknown-stripe: var(--palette-ink-400);
+  --race-unknown-ring: var(--palette-ink-400);
+
+  /* Utilities */
+  --color-white: var(--palette-white);
+  --color-shadow: var(--palette-black);
+  --color-overlay: color-mix(in srgb, var(--palette-black) 50%, transparent);
+  --color-focus-ring: color-mix(in srgb, var(--color-primary) 30%, transparent);
+
+  /* Badge variants: white text on a solid background */
+  --badge-fg: var(--palette-white);
+  --badge-default-bg: var(--palette-blue-500);
+  --badge-success-bg: var(--palette-green-700);
+  --badge-warning-bg: var(--palette-amber-700);
+  --badge-error-bg: var(--palette-red-800);
+
+  /* Registration status text colors */
+  --color-status-closed: var(--palette-gray-500);
+  --color-status-opens-soon: var(--palette-amber-700);
+  --color-status-open: var(--palette-emerald-700);
+  --color-status-register-now: var(--palette-blue-700);
+}

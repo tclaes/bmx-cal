@@ -17,6 +17,12 @@ When adding new features:
 
 Every `margin*`, `padding*`, `gap`, `row-gap` and `column-gap` value (and the legacy `grid-*gap` aliases) uses the `--spacing-*` tokens from `src/styles/variables.css` (`--spacing-xxs` 2px up to `--spacing-3xl` 64px), or a `calc()` of them. `0`, `auto`, `inherit` and percentages are fine, and so is a `calc()` that mixes spacing tokens with other design tokens. Snap an off-scale value to the nearest token instead of adding a new one. `npm run stylelint` fails on any `px`, `rem` or `em` literal in these properties. When a literal really is needed (for example the visually-hidden `margin: -1px`), put `/* stylelint-disable-next-line declaration-property-value-disallowed-list -- <reason> */` above it.
 
+## Colors
+
+Colors have two layers. `src/styles/palette.css` is the palette: `--palette-*` primitives named after the color (`--palette-cyan-500`), each raw hex value once. It is the only file allowed to contain raw color values. `src/styles/colors.css` defines the role-based tokens and builds them only from the palette (`var(--palette-*)`, `color-mix()` for alpha). Components, other stylesheets and non-test `.ts` files use `var(--color-*)` (or the `--race-*`, `--badge-*`, `--hero-*` groups). Allowed keywords: `transparent`, `currentColor`, `inherit`, `none`. For a translucent variant use `color-mix(in srgb, var(--color-primary) 10%, transparent)`. Never use `--palette-*` outside `colors.css`. If no token fits, add a semantic token to `colors.css` (and a primitive to `palette.css` for a new color) instead of writing a literal.
+
+`npm run stylelint` fails on hex colors, `rgb()/hsl()`-style functions and named colors outside `palette.css`; `src/tests/no-color-literals.test.ts` covers TypeScript and the palette rules.
+
 ## End-to-end tests
 
 There are two Playwright suites:

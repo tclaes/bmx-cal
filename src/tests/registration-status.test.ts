@@ -59,7 +59,7 @@ describe('getRegistrationStatus', () => {
     });
     expect(result).not.toBeNull();
     expect(result!.label).toBe('Registration Closed');
-    expect(result!.color).toBe('#6b7280');
+    expect(result!.color).toBe('var(--color-status-closed)');
     expect(result!.state).toBe('closed');
   });
 
@@ -83,7 +83,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Opens Soon');
-    expect(result!.color).toBe('#b45309');
+    expect(result!.color).toBe('var(--color-status-opens-soon)');
     expect(result!.state).toBe('soon');
   });
 
@@ -107,7 +107,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Open');
-    expect(result!.color).toBe('#047857');
+    expect(result!.color).toBe('var(--color-status-open)');
     expect(result!.state).toBe('open');
   });
 
@@ -120,7 +120,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Opens Soon');
-    expect(result!.color).toBe('#b45309');
+    expect(result!.color).toBe('var(--color-status-opens-soon)');
   });
 
   it('returns Registration Open when status is open and deadline is in the future', () => {
@@ -132,7 +132,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Registration Open');
-    expect(result!.color).toBe('#047857');
+    expect(result!.color).toBe('var(--color-status-open)');
   });
 
   it('returns Register Now when status is null and no deadline', () => {
@@ -144,7 +144,7 @@ describe('getRegistrationStatus', () => {
       date: FUTURE_EVENT_DATE,
     });
     expect(result!.label).toBe('Register Now');
-    expect(result!.color).toBe('#1d4ed8');
+    expect(result!.color).toBe('var(--color-status-register-now)');
   });
 
   it('returns Registration Closed via deadline fallback when status is null but deadline passed', () => {
