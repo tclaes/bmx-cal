@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
+import { AiServiceError, geminiError } from "../_shared/ai-errors.ts";
+import { geminiGenerateContentUrl } from "../_shared/gemini.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -92,7 +94,7 @@ Text to analyze:
 ${text}`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+    geminiGenerateContentUrl(geminiApiKey),
     {
       method: 'POST',
       headers: {
@@ -117,8 +119,7 @@ ${text}`;
   );
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Gemini API error: ${error}`);
+    throw geminiError(response.status, await response.text());
   }
 
   const data = await response.json();
@@ -179,6 +180,10 @@ Deno.serve(async (req: Request) => {
         extractedText: extractedText.substring(0, 500),
       });
   } catch (error) {
+    if (error instanceof AiServiceError) {
+      console.error("Error processing PDF:", error.detail);
+      return jsonResponse({ error: error.message }, error.status);
+    }
     console.error("Error processing PDF:", error);
     return jsonResponse({
         error: error.message || "Failed to process PDF",
