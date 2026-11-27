@@ -67,3 +67,7 @@ references `docs/releases.md`
 ## Frontend hosting and deploys
 
 references `docs/deploy.md`
+
+## Consent (ads & analytics)
+
+references `docs/consent.md`

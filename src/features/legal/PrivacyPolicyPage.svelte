@@ -92,9 +92,13 @@
     <section>
       <h2>4. Cookies and similar technologies</h2>
       <p>
-        The first time you visit the site we ask you to accept or reject
-        non-essential cookies. You can change your choice at any time by
-        clicking <em>Cookie settings</em> in the footer.
+        The first time you visit the site we ask for your consent in two
+        steps. Advertising consent is collected through Google's consent
+        message, a Google-certified consent management platform that
+        implements the IAB Transparency &amp; Consent Framework (TCF). After
+        that we ask whether you accept analytics cookies. You can change your
+        choices at any time by clicking <em>Ad preferences</em> or
+        <em>Cookie settings</em> in the footer.
       </p>
       <ul>
         <li>
@@ -109,8 +113,9 @@
           <strong>Advertising</strong>: Google AdSense and its partners may
           set cookies such as <code>__gads</code> and <code>IDE</code> for ad
           personalisation and measurement. For users in the EEA, UK and
-          Switzerland we use Google Consent Mode; ads are non-personalised
-          unless you opt in.
+          Switzerland, AdSense only uses these cookies for the purposes you
+          accept in Google's consent message; your choice is also passed on
+          through Google Consent Mode.
         </li>
       </ul>
       <p>

@@ -122,7 +122,7 @@ export async function mockSupabase(page: Page, data: MockData = {}): Promise<Sup
       sessionStorage.setItem('e2e-seeded', 'true');
       localStorage.setItem(
         'bmx-cookie-consent',
-        JSON.stringify({ analytics: 'denied', ads: 'denied', decidedAt: '2025-01-01T00:00:00Z' }),
+        JSON.stringify({ analytics: 'denied', decidedAt: '2025-01-01T00:00:00Z' }),
       );
       localStorage.setItem('pwa-install-dismissed', 'true');
       if (!localStorage.getItem('bmx-locale')) localStorage.setItem('bmx-locale', 'en');

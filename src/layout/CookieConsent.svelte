@@ -7,20 +7,28 @@
     rejectAll,
     applyConsentToGoogle,
   } from './cookie-consent';
+  import { watchAdConsent } from './ad-consent';
   import { navigate } from '../router';
 
   let visible = false;
 
   onMount(() => {
-    const state = loadConsent();
-    applyConsentToGoogle(state);
-    visible = !hasDecided(state);
+    applyConsentToGoogle(loadConsent());
+
+    // Google's certified CMP asks for advertising consent first; only show our
+    // analytics banner once that choice is made, so the two never overlap.
+    const stopWatching = watchAdConsent(() => {
+      if (!hasDecided(loadConsent())) visible = true;
+    });
 
     const handler = () => {
       visible = true;
     };
     window.addEventListener('open-cookie-settings', handler);
-    return () => window.removeEventListener('open-cookie-settings', handler);
+    return () => {
+      stopWatching();
+      window.removeEventListener('open-cookie-settings', handler);
+    };
   });
 
   function onAccept() {
@@ -50,21 +58,21 @@
   >
     <div class="banner-inner">
       <div class="banner-text">
-        <h2 id="cookie-title">We value your privacy</h2>
+        <h2 id="cookie-title">Analytics cookies</h2>
         <p id="cookie-desc">
           We use essential cookies to make the site work. With your consent
-          we also use analytics and advertising cookies (Google Analytics and
-          Google AdSense) to measure traffic and fund the project. You can
-          change your mind at any time from the footer. See our
+          we also use Google Analytics to measure traffic. Advertising choices
+          are made in Google's separate consent window. You can change both at
+          any time from the footer. See our
           <a href="/privacy-policy" on:click={openPrivacy}>Privacy Policy</a>.
         </p>
       </div>
       <div class="banner-actions">
         <button type="button" class="btn btn--ghost" on:click={onReject}>
-          Reject non-essential
+          Reject analytics
         </button>
         <button type="button" class="btn btn--primary" on:click={onAccept}>
-          Accept all
+          Accept analytics
         </button>
       </div>
     </div>

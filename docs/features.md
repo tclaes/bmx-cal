@@ -9,7 +9,8 @@
 - Privacy policy and terms of service
 - Multi-language support: English, Dutch, French (auto-detected, user-switchable)
 - PWA install prompt and update notifications
-- Cookie consent banner with granular settings
+- Advertising consent via Google's certified CMP (IAB TCF v2.2), bridged to Google Consent Mode v2 (see `docs/consent.md`)
+- Analytics cookie banner, shown after the ad-consent choice
 - AdSense integration with route-level ad suppression on utility/auth screens
 
 ### Authenticated Users

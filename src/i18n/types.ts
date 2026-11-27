@@ -41,6 +41,7 @@ export interface Translations {
     privacy: string;
     terms: string;
     cookieSettings: string;
+    adPreferences: string;
     updateAvailable: string;
     latestVersion: string;
     updateFailed: string;

@@ -43,6 +43,7 @@ export const nl: Translations = {
     privacy: 'Privacybeleid',
     terms: 'Voorwaarden',
     cookieSettings: 'Cookie-instellingen',
+    adPreferences: 'Advertentievoorkeuren',
     updateAvailable: 'Update beschikbaar! Herlaad de pagina.',
     latestVersion: 'Je gebruikt de nieuwste versie.',
     updateFailed: 'Controleren op updates mislukt.',
