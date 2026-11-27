@@ -7,7 +7,8 @@
   command = "npm run build"
   publish = "dist"
 
-# Netlify's secrets scan treats every env var as a secret. The VITE_* values are
+# Netlify's secrets scan fails the build when a scanned env var's value shows up
+# in the repo or build output (the first deploy failed this way). The VITE_* values are
 # public by design (Vite inlines them into the client bundle) and also appear in
 # the repo (push.service.ts fallback key, cron migrations), so they are excluded.
 # Never add server-side keys such as SUPABASE_SERVICE_ROLE_KEY to this list.
