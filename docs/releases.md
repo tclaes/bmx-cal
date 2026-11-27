@@ -37,8 +37,8 @@ Every release reaches production through a pull request from `development` into 
 1. Bump the version and write the notes, as described in the two sections below, on a branch `chore/release-<version>` from `development`. Open it against `development` and squash-merge it. `development` only accepts changes through a PR, so the bump cannot be pushed onto the release PR itself.
 2. Open the release PR: `gh pr create --base master --head development --title "Release 1.4.0"`.
 3. Wait for `Release check`, `Test` and `E2E (mocked Supabase)` to pass. `Release check` fails until the version is higher than master's.
-4. Merge with a **merge commit** (not squash), so `master` and `development` keep the same history. Netlify then deploys `master`.
-5. Deploy any migrations and edge functions the release needs, following "Release order" in `docs/deploy.md`.
+4. If the release needs migrations or edge functions, get them live **before** the frontend goes out, following "Release order" in `docs/deploy.md`: either they were already released and deployed in an earlier, backward-compatible release, or lock Netlify's auto publishing before the next step and deploy them right after merging.
+5. Merge with a **merge commit** (not squash), so `master` and `development` keep the same history. Netlify then deploys `master` (or holds the deploy if you locked publishing in step 4; publish it once the backend is live).
 
 ### Hotfix
 
@@ -46,7 +46,7 @@ For an urgent fix that cannot wait for the next release:
 
 1. Branch `hotfix/<name>` from `master`, fix it, and bump the patch version (usually with `minVersion`, see "Crucial bug fix" below).
 2. Open the PR into `master`. `Release check` accepts `hotfix/*` branches. Merge with a merge commit.
-3. Open a PR from `master` into `development` and merge it with a merge commit, so the fix and the new version are not lost. If this step is skipped, the next release PR fails `Release check`, because its version is not higher than master's.
+3. Open a PR from `master` into `development` and merge it with a merge commit, so the fix and the new version are not lost. Nothing checks that this step happened: `Release check` only compares version numbers, so a next release that bumps past the hotfix version (for example `1.2.0` after a `1.1.1` hotfix) still passes. Do this step right after the hotfix merges, and before opening the next release PR.
 
 ### Feature release (optional update)
 

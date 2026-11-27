@@ -17,6 +17,11 @@ describe('compareVersions', () => {
     expect(() => compareVersions('1.2', '1.0.0')).toThrow('not a plain x.y.z version');
     expect(() => compareVersions('v1.0.0', '1.0.0')).toThrow();
   });
+
+  it('limits each part to nine digits so the comparison stays exact', () => {
+    expect(compareVersions('1.0.999999999', '1.0.999999998')).toBeGreaterThan(0);
+    expect(() => compareVersions('1.0.9007199254740993', '1.0.0')).toThrow('not a plain x.y.z version');
+  });
 });
 
 describe('isAllowedSource', () => {
@@ -60,6 +65,24 @@ describe('checkRelease', () => {
 
   it('reports both problems at once', () => {
     expect(release('fix/x', '1.0.0', '1.0.0')).toHaveLength(2);
+  });
+
+  it('passes a branch from this repository', () => {
+    expect(
+      checkRelease({ headRef: 'development', headRepo: 'tclaes/bmx-cal', baseRepo: 'tclaes/bmx-cal', baseVersion: '1.0.0', headVersion: '1.1.0' }),
+    ).toEqual([]);
+  });
+
+  it('rejects a fork branch named development', () => {
+    const problems = checkRelease({
+      headRef: 'development',
+      headRepo: 'someone/bmx-cal',
+      baseRepo: 'tclaes/bmx-cal',
+      baseVersion: '1.0.0',
+      headVersion: '1.1.0',
+    });
+    expect(problems).toEqual(['Pull requests into master must come from a branch in tclaes/bmx-cal, not from someone/bmx-cal.']);
+    expect(isAllowedSource('hotfix/x', 'someone/bmx-cal', 'tclaes/bmx-cal')).toBe(false);
   });
 
   it('reports an invalid version instead of throwing', () => {
