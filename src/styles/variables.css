@@ -41,6 +41,11 @@
   --transition-fast: 150ms ease-in-out;
   --transition-base: 200ms ease-in-out;
   --transition-slow: 300ms ease-in-out;
+
+  /* Height of the pinned navigation bar. Fallback only: Navigation.svelte
+     overwrites it on <html> with the measured bar height. */
+  --header-height: 87px;
+  --z-index-header: 100;
   --z-index-dropdown: 1000;
   --z-index-modal: 2000;
   --z-index-toast: 3000;

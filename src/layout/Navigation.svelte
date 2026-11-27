@@ -6,9 +6,28 @@
   import { locale, t } from '../i18n';
   import type { Locale } from '../i18n';
   import Logo from '@ui/Logo.svelte';
+  import { onMount } from 'svelte';
 
   let menuOpen = false;
   let navEl: HTMLElement;
+  let barEl: HTMLElement;
+
+  // Publish the bar's height as --header-height so offsets (scroll padding, sticky
+  // sidebar, mobile menu cap) clear the pinned header. Only the bar row is measured,
+  // so opening the mobile menu does not change it.
+  onMount(() => {
+    if (typeof ResizeObserver === 'undefined') return;
+    const root = document.documentElement;
+    const observer = new ResizeObserver(() => {
+      const border = parseFloat(getComputedStyle(navEl).borderBottomWidth) || 0;
+      root.style.setProperty('--header-height', `${barEl.offsetHeight + border}px`);
+    });
+    observer.observe(barEl, { box: 'border-box' });
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty('--header-height');
+    };
+  });
 
   const locales: Locale[] = ['en', 'nl', 'fr'];
 
@@ -58,7 +77,7 @@
 <svelte:window on:keydown={handleKeydown} on:resize={handleResize} />
 
 <nav class="navigation" aria-label="Main navigation" bind:this={navEl} on:click={handleOutsideClick}>
-  <div class="nav-container">
+  <div class="nav-container" bind:this={barEl}>
     <a class="nav-brand" href="/" on:click={(e) => handleNav(e, '/')} aria-label={$t.nav.home}>
       <Logo size={48} />
     </a>
@@ -213,9 +232,6 @@
   .navigation {
     background-color: var(--color-bg-primary);
     border-bottom: 1px solid var(--color-border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
     box-shadow: var(--shadow-sm);
   }
 
@@ -378,6 +394,21 @@
     border-top: 1px solid var(--color-border);
     background-color: var(--color-bg-primary);
     animation: slide-down 0.15s ease;
+
+    /* The menu opens inside the pinned header: keep it within the viewport and let
+       it scroll on its own so the last items stay reachable on short screens. */
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* dvh follows the mobile address bar. Guarded with @supports because a
+     declaration containing var() is only rejected at computed-value time, so an
+     unsupported unit would drop the vh fallback above instead of keeping it. */
+  @supports (height: 100dvh) {
+    .mobile-menu {
+      max-height: calc(100dvh - var(--header-height));
+    }
   }
 
   @keyframes slide-down {
