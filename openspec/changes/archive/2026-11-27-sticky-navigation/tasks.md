@@ -36,4 +36,4 @@
 
 - Reference GitHub issue #54 in the PR so merging it closes the issue.
 - Delete the superseded branch `claude/sticky-navbar-desktop-0fb87f` once this change is merged.
-- Archive the change after merge.
+- Archive the change in this PR before it merges (done). If review changes behaviour afterwards, update `openspec/specs/site-navigation/spec.md` and this archived change to match.

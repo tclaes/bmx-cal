@@ -50,7 +50,7 @@ references `docs/contribute.md`
 
 ## OpenSpec
 
-Archive each OpenSpec change (`/opsx:archive`) as the last commit of the PR that implements it, before merging. See "OpenSpec changes" in `docs/contribute.md`.
+Archive each OpenSpec change (`/opsx:archive`, syncing its delta specs) in the PR that implements it, once the implementation is done and before merging, never in a follow-up PR. Later review fixes may follow the archive; keep the main spec in sync. See "OpenSpec changes" in `docs/contribute.md`.
 
 ## Local test environment
 
