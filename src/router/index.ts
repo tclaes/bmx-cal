@@ -1,6 +1,6 @@
 import navaid from 'navaid';
 import { writable } from 'svelte/store';
-import { trackPageView } from '@shared/utils/analytics';
+import { trackPageView } from '@shared/utils';
 import { routes } from './routes';
 
 export const currentRoute = writable<string>('/');

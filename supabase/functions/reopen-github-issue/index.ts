@@ -1,11 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 
 interface UpdatePayload {
   github_issue_url: string;
@@ -13,17 +9,13 @@ interface UpdatePayload {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = getAuthHeader(req);
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     const supabaseClient = createClient(
@@ -33,31 +25,22 @@ Deno.serve(async (req: Request) => {
     );
 
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user || user.app_metadata?.role !== "admin") {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (authError || !user || !isAdmin(user)) {
+      return jsonResponse({ error: "Unauthorized" }, 403);
     }
 
     const githubToken = Deno.env.get("GITHUB_TOKEN");
     const githubRepo = Deno.env.get("GITHUB_REPO");
 
     if (!githubToken || !githubRepo) {
-      return new Response(
-        JSON.stringify({ error: "GitHub integration not configured" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "GitHub integration not configured" }, 503);
     }
 
     const payload: UpdatePayload = await req.json();
 
     const match = payload.github_issue_url.match(/\/issues\/(\d+)$/);
     if (!match) {
-      return new Response(
-        JSON.stringify({ error: "Invalid GitHub issue URL" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Invalid GitHub issue URL" }, 400);
     }
 
     const issueNumber = match[1];
@@ -79,20 +62,11 @@ Deno.serve(async (req: Request) => {
 
     if (!response.ok) {
       const text = await response.text();
-      return new Response(
-        JSON.stringify({ error: `GitHub API error: ${response.status}`, detail: text }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: `GitHub API error: ${response.status}`, detail: text }, 502);
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ success: true });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: err instanceof Error ? err.message : "Unknown error" }, 500);
   }
 });

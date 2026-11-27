@@ -1,10 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
+import { AiServiceError, GEMINI_FALLBACK_MODEL, generateGeminiContent } from "../_shared/gemini.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -95,37 +92,25 @@ Return ONLY valid JSON array of events. If no events found, return empty array [
 Text to analyze:
 ${text}`;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+  const data = await generateGeminiContent(
+    geminiApiKey,
     {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 16384,
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
         },
-      }),
-    }
+      ],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 16384,
+      },
+    },
+    { fallbackModel: Deno.env.get("GEMINI_FALLBACK_MODEL") ?? GEMINI_FALLBACK_MODEL },
   );
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Gemini API error: ${error}`);
-  }
-
-  const data = await response.json();
   const content = data.candidates[0].content.parts[0].text;
 
   const jsonMatch = content.match(/\[[\s\S]*\]/);
@@ -138,30 +123,17 @@ ${text}`;
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     if (req.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
-        {
-          status: 405,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "Method not allowed" }, 405);
     }
 
     // The anon key satisfies verify_jwt, so the caller must be identified here:
     // this endpoint spends paid AI quota and is an admin-only import tool.
-    const authHeader = req.headers.get("Authorization") ?? "";
+    const authHeader = getAuthHeader(req);
     const { createClient } = await import("npm:@supabase/supabase-js@2");
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -169,40 +141,19 @@ Deno.serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
     const { data: userData } = await userClient.auth.getUser();
-    if (userData?.user?.app_metadata?.role !== "admin") {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!isAdmin(userData?.user)) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     const formData = await req.formData();
     const pdfFile = formData.get("file") as File;
 
     if (!pdfFile) {
-      return new Response(
-        JSON.stringify({ error: "No PDF file provided" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "No PDF file provided" }, 400);
     }
 
     if (pdfFile.type !== "application/pdf") {
-      return new Response(
-        JSON.stringify({ error: "File must be a PDF" }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      return jsonResponse({ error: "File must be a PDF" }, 400);
     }
 
     const pdfBuffer = await pdfFile.arrayBuffer();
@@ -211,33 +162,19 @@ Deno.serve(async (req: Request) => {
 
     const events = await analyzeTextWithAI(extractedText);
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         success: true,
         events,
         extractedText: extractedText.substring(0, 500),
-      }),
-      {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      });
   } catch (error) {
+    if (error instanceof AiServiceError) {
+      console.error("Error processing PDF:", error.detail);
+      return jsonResponse({ error: error.message }, error.status);
+    }
     console.error("Error processing PDF:", error);
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         error: error.message || "Failed to process PDF",
-      }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+      }, 500);
   }
 });

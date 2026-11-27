@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import { notificationPreferenceService } from '../services/notification-preference.service';
+import { notificationPreferenceService } from '@core/services';
 
 interface NotificationPrefState {
   preferredEventTypeIds: Set<string>;

@@ -1,11 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, getBearerToken, isScheduledBearer, isAdmin } from "../_shared/auth.ts";
 
 const ORGANIZER_URLS = [
   "https://registration.jstiming.com/organizers/98eff7e5-2cb8-49b0-acbd-ba70b036fb04",
@@ -258,9 +254,8 @@ async function storeSyncLog(
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -272,8 +267,8 @@ Deno.serve(async (req: Request) => {
 
     // Only the scheduled cron run (service-role bearer) or a platform admin may
     // trigger a sync; it writes with the service role and calls a third party.
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
+    const authHeader = getAuthHeader(req);
+    const bearer = getBearerToken(req);
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -286,17 +281,14 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     const cronToken = tokenRow?.token ?? "";
 
-    if (bearer !== supabaseKey && !(cronToken.length > 0 && bearer === cronToken)) {
+    if (!isScheduledBearer(bearer, { serviceRoleKey: supabaseKey, cronToken })) {
       const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
       const { data: userData } = await userClient.auth.getUser();
-      if (userData?.user?.app_metadata?.role !== "admin") {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      if (!isAdmin(userData?.user)) {
+        return jsonResponse({ error: "Unauthorized" }, 401);
       }
     }
 
@@ -340,20 +332,14 @@ Deno.serve(async (req: Request) => {
     const totalUpdated = results.reduce((s, r) => s + r.updated, 0);
     const totalErrors = results.reduce((s, r) => s + r.errors.length, 0);
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse({
         success: true,
         ran_at: new Date().toISOString(),
         summary: { total_updated: totalUpdated, total_errors: totalErrors },
         results,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      });
   } catch (error) {
     console.error("Fatal error:", error);
-    return new Response(
-      JSON.stringify({ success: false, error: String(error) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ success: false, error: String(error) }, 500);
   }
 });

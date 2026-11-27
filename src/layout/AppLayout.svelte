@@ -2,11 +2,13 @@
   import { onMount } from 'svelte';
   import { startRouter } from '../router';
   import RouteOutlet from '../router/RouteOutlet.svelte';
-  import { authStore } from '@core/stores';
+  import { authStore, selectedEventIds } from '@core/stores';
   import { AuthService } from '@core/services';
   import Navigation from './Navigation.svelte';
   import Footer from './Footer.svelte';
   import UpdatePrompt from './UpdatePrompt.svelte';
+  import UpdateRequired from './UpdateRequired.svelte';
+  import WhatsNew from './WhatsNew.svelte';
   import InstallPrompt from './InstallPrompt.svelte';
   import CookieConsent from './CookieConsent.svelte';
   import { locale } from '../i18n';
@@ -31,8 +33,9 @@
     }
 
     try {
-      AuthService.onAuthStateChange((user) => {
+      AuthService.onAuthStateChange((user, event) => {
         authStore.setUser(user);
+        if (event === 'SIGNED_OUT') selectedEventIds.set(new Set());
       });
     } catch (e) {
       console.error('Auth state change listener registration failed:', e);
@@ -51,7 +54,9 @@
   });
 </script>
 
+<UpdateRequired />
 <UpdatePrompt />
+<WhatsNew />
 <InstallPrompt />
 <CookieConsent />
 
@@ -61,7 +66,8 @@
     <Navigation />
   </header>
 
-  <main id="main-content" class="main-content">
+  <!-- tabindex="-1": the skip link can move focus here without adding a tab stop. -->
+  <main id="main-content" class="main-content" tabindex="-1">
     <RouteOutlet />
   </main>
 
@@ -76,12 +82,20 @@
     background-color: var(--color-bg-primary);
   }
 
+  /* The header, not the nav inside it, is sticky: a sticky element only sticks
+     within its parent, and .app spans the whole page. */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-index-header);
+  }
+
   .skip-link {
     position: absolute;
     top: -40px;
     left: 0;
     background: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     padding: var(--spacing-sm);
     text-decoration: none;
     z-index: 10000;
@@ -95,5 +109,10 @@
   .main-content {
     flex: 1;
     min-height: calc(100vh - 60px);
+  }
+
+  /* Focus lands here only from the skip link; the whole page region needs no ring. */
+  .main-content:focus {
+    outline: none;
   }
 </style>

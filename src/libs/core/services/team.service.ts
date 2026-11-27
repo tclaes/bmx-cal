@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 import type { Team, TeamMember, TeamManager } from '@types';
 
 export interface TeamMemberWithEmail extends TeamMember {

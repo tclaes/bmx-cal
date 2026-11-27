@@ -96,14 +96,13 @@
   .dropdown-menu {
     position: absolute;
     inset-block-start: 100%;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
+    inset-inline: 0;
     margin-block-start: var(--spacing-xs);
     padding: var(--spacing-xs);
     background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-md);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-shadow) 10%, transparent);
     z-index: 1000;
     max-height: 300px;
     overflow-y: auto;

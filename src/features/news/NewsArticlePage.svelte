@@ -25,8 +25,17 @@
     }
   }
 
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function renderContent(content: string): string {
-    let html = content
+    let html = escapeHtml(content)
       .replace(/^# (.+)$/gm, '<h1 class="md-h1">$1</h1>')
       .replace(/^## (.+)$/gm, '<h2 class="md-h2">$1</h2>')
       .replace(/^### (.+)$/gm, '<h3 class="md-h3">$1</h3>')

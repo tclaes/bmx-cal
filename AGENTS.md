@@ -40,9 +40,29 @@ references `docs/cron.md`
 
 references `docs/file-import.md`
 
+## Coding styles
+
+references `docs/coding-styles.md`
+
 ## Contribute
 
 references `docs/contribute.md`
+
+## OpenSpec
+
+Archive each OpenSpec change (`/opsx:archive`, syncing its delta specs) in the PR that implements it, once the implementation is done and before merging, never in a follow-up PR. Later review fixes may follow the archive; keep the main spec in sync. See "OpenSpec changes" in `docs/contribute.md`.
+
+## Local test environment
+
+references `docs/test-env.md`
+
+## Releases and app updates
+
+references `docs/releases.md`
+
+## Frontend hosting and deploys
+
+references `docs/deploy.md`
 
 ## Consent (ads & analytics)
 

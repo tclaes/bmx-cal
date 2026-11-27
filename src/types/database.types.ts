@@ -157,3 +157,10 @@ export interface PushSubscription {
   created_at: string;
   updated_at: string;
 }
+
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  updated_at: string;
+  updated_by: string | null;
+}

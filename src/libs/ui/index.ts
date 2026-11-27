@@ -9,3 +9,8 @@ export { default as Badge } from './Badge.svelte';
 export { default as FileUpload } from './FileUpload.svelte';
 export { default as Dropdown } from './Dropdown.svelte';
 export { default as CheckboxItem } from './CheckboxItem.svelte';
+export { default as Logo } from './Logo.svelte';
+export { default as TypeLabel } from './TypeLabel.svelte';
+export { default as StartLight } from './StartLight.svelte';
+export { default as RaceRow } from './RaceRow.svelte';
+export { default as TypeChip } from './TypeChip.svelte';

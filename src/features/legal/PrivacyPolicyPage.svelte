@@ -272,14 +272,14 @@
   }
 
   a:hover {
-    color: var(--color-primary-dark, #1d4ed8);
+    color: var(--color-primary-dark);
   }
 
   code {
     font-family: monospace;
     font-size: 0.95em;
     background-color: var(--color-bg-secondary);
-    padding-inline: 0.25em;
+    padding-inline: var(--spacing-xs);
     border-radius: var(--border-radius-sm);
   }
 </style>

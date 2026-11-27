@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import type { Location } from '@types';
   import { EventsService } from '@core/services';
   import Input from '@ui/Input.svelte';
@@ -136,13 +136,13 @@
   }
 
   .required {
-    color: var(--color-error, #dc2626);
-    margin-left: 2px;
+    color: var(--color-error);
+    margin-left: var(--spacing-xxs);
   }
 
   .location-select {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: var(--spacing-sm) var(--spacing-sm-plus);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm, 4px);
     font-size: var(--font-size-sm);

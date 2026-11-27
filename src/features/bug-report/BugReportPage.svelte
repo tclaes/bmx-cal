@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Card, Input, Button, Alert } from '@ui';
   import { authStore } from '@core/stores';
-  import { toUserMessage } from '@shared/utils/error-message';
+  import { toUserMessage } from '@shared/utils';
   import { bugReportService } from './bug-report.service';
 
   const MAX_DESCRIPTION_LENGTH = 5000;
@@ -211,7 +211,7 @@
   }
 
   .required {
-    color: var(--color-error, #dc2626);
+    color: var(--color-error);
   }
 
   .optional {
@@ -222,7 +222,7 @@
 
   .textarea {
     width: 100%;
-    padding: 0.625rem 0.75rem;
+    padding: var(--spacing-sm-plus);
     font-size: var(--font-size-sm);
     font-family: inherit;
     color: var(--color-text-primary);
@@ -319,7 +319,7 @@
   .success-icon {
     width: 56px;
     height: 56px;
-    color: var(--color-success, #16a34a);
+    color: var(--color-success);
   }
 
   .success-icon svg {

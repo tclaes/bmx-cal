@@ -4,6 +4,7 @@ import { en } from './locales/en';
 import { nl } from './locales/nl';
 import { fr } from './locales/fr';
 
+export type { Translations };
 export type Locale = 'en' | 'nl' | 'fr';
 
 const STORAGE_KEY = 'bmx-locale';

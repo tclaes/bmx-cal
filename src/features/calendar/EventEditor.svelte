@@ -257,7 +257,7 @@
 
   textarea {
     width: 100%;
-    padding: 0.5rem 0.75rem;
+    padding: var(--spacing-sm) var(--spacing-sm-plus);
     border: 1px solid var(--color-border);
     border-radius: var(--border-radius-sm);
     font-family: inherit;

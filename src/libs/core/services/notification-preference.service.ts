@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 import type { EventType } from '@types';
 
 export interface NotificationPreference {

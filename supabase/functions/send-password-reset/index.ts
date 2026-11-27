@@ -1,11 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 
 // Password reset links may only ever point at an origin we control. The request
 // body and the Origin header are attacker-controlled, so they are never trusted.
@@ -50,9 +45,8 @@ function escapeHtml(value: string): string {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -60,10 +54,7 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!resendApiKey) {
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Email service not configured" }, 503);
     }
 
     const clientIp =
@@ -72,19 +63,13 @@ Deno.serve(async (req: Request) => {
       "unknown";
 
     if (isRateLimited(clientIp)) {
-      return new Response(
-        JSON.stringify({ error: "Too many requests. Please try again later." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Too many requests. Please try again later." }, 429);
     }
 
     const { email } = await req.json();
 
     if (!email?.trim()) {
-      return new Response(
-        JSON.stringify({ error: "Email is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Email is required" }, 400);
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -99,10 +84,7 @@ Deno.serve(async (req: Request) => {
         linkError.message?.toLowerCase().includes("not found") ||
         linkError.message?.toLowerCase().includes("user not found")
       ) {
-        return new Response(
-          JSON.stringify({ success: true }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ success: true });
       }
       throw linkError;
     }
@@ -152,15 +134,9 @@ Deno.serve(async (req: Request) => {
       throw new Error(`Failed to send email: ${JSON.stringify(errorData)}`);
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ success: true });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 });

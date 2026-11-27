@@ -3,7 +3,6 @@ import CalendarView from '@features/calendar/CalendarView.svelte';
 import AdminDashboard from '@features/admin/AdminDashboard.svelte';
 import Login from '@features/admin/Login.svelte';
 import MyEventsPage from '@features/my-events/MyEventsPage.svelte';
-import MyEventsDemoPage from '@features/my-events/MyEventsDemoPage.svelte';
 import RegisterPage from '@features/auth/RegisterPage.svelte';
 import LoginPage from '@features/auth/LoginPage.svelte';
 import ForgotPasswordPage from '@features/auth/ForgotPasswordPage.svelte';
@@ -17,6 +16,7 @@ import GuidePage from '@features/guide/GuidePage.svelte';
 import FaqPage from '@features/guide/FaqPage.svelte';
 import RaceDayPage from '@features/guide/RaceDayPage.svelte';
 import TracksPage from '@features/guide/TracksPage.svelte';
+import EventDetailPage from '@features/calendar/EventDetailPage.svelte';
 import NewsPage from '@features/news/NewsPage.svelte';
 import NewsArticlePage from '@features/news/NewsArticlePage.svelte';
 import PrivacyPolicyPage from '@features/legal/PrivacyPolicyPage.svelte';
@@ -53,8 +53,6 @@ export const routes: RouteDefinition[] = [
   {
     path: '/my-events',
     component: MyEventsPage,
-    access: 'authenticated',
-    fallback: MyEventsDemoPage,
     meta: {
       title: 'Create my BMX calendar - BMX Calendar',
       description:
@@ -140,6 +138,11 @@ export const routes: RouteDefinition[] = [
       description:
         'Stay up to date with the latest features, improvements, and announcements from BMX Calendar.',
     },
+  },
+  {
+    path: '/events/:id',
+    component: EventDetailPage,
+    prefix: true,
   },
   {
     path: '/news/:slug',

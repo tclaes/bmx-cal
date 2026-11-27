@@ -1,0 +1,61 @@
+/*
+ * Color palette: the only file allowed to contain raw color values.
+ * Each value appears once, as a `--palette-*` primitive. Primitives describe
+ * the color, not its use. Only `colors.css` may reference them; components use
+ * the role-based tokens defined there.
+ */
+:root {
+  /* Neutrals */
+  --palette-white: #fff;
+  --palette-black: #000;
+  --palette-near-black: #111;
+  --palette-ink-50: #f3f5f7;
+  --palette-ink-300: #b4bcc8;
+  --palette-ink-400: #9aa3b2;
+  --palette-ink-650: #2c333d;
+  --palette-ink-700: #262d37;
+  --palette-ink-750: #232932;
+  --palette-ink-800: #1e232b;
+  --palette-ink-850: #1a1e25;
+  --palette-ink-900: #14171c;
+  --palette-ink-950: #0b1015;
+  --palette-gray-500: #6b7280;
+
+  /* Cyan */
+  --palette-cyan-200: #8fd0f2;
+  --palette-cyan-400: #4db8ee;
+  --palette-cyan-500: #1c9ad6;
+  --palette-sky-500: #2aa5e0;
+
+  /* Blue */
+  --palette-blue-50: #def;
+  --palette-blue-300: #6c8ff0;
+  --palette-blue-500: #3b82f6;
+  --palette-blue-600: #1f4fd8;
+  --palette-blue-700: #1d4ed8;
+
+  /* Purple */
+  --palette-purple-500: #8a4fd8;
+
+  /* Orange and amber */
+  --palette-orange-400: #ff8a3d;
+  --palette-orange-500: #ff7a2b;
+  --palette-orange-600: #f26b1d;
+  --palette-amber-700: #b45309;
+
+  /* Yellow */
+  --palette-yellow-300: #ffe922;
+  --palette-yellow-400: #ffd500;
+
+  /* Green */
+  --palette-green-400: #35d07f;
+  --palette-green-700: #15803d;
+  --palette-emerald-700: #047857;
+
+  /* Red */
+  --palette-red-300: #ff7378;
+  --palette-red-400: #f0555b;
+  --palette-red-600: #e11d2a;
+  --palette-red-700: #c81e2b;
+  --palette-red-800: #b91c1c;
+}

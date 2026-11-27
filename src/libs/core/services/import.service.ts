@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 import type { ImportLog, ImportResult, CreateEventInput, ParsedEvent } from '@types';
 import { EventsService } from './events.service';
 

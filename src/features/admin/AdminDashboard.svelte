@@ -4,12 +4,13 @@
   import { Card, Button, LoadingSpinner, Alert } from '@ui';
   import { authStore } from '@core/stores';
   import { EventsService } from '@core/services';
-  import { supabase } from '@data/supabase';
+  import { supabase } from '@data';
   import { groupEventsByYear, getDefaultOpenYears } from './event-grouping';
   import type { EventWithType, Team } from '@types';
-  import DocumentUpload from './DocumentUpload.svelte';
+  import { DocumentUpload } from '@shared';
   import BugReportsPanel from './BugReportsPanel.svelte';
-  import TeamMemberManager from './TeamMemberManager.svelte';
+  import FeatureFlagsPanel from './FeatureFlagsPanel.svelte';
+  import TeamMemberManager from '@features/team-manager/TeamMemberManager.svelte';
 
   let events: EventWithType[] = [];
   let loading = false;
@@ -135,6 +136,20 @@
         </summary>
         <div class="collapsible-body">
           <BugReportsPanel />
+        </div>
+      </details>
+    </Card>
+
+    <Card padding="none" shadow="md">
+      <details class="collapsible-section">
+        <summary class="collapsible-header">
+          <span class="collapsible-title">Feature flags</span>
+          <svg class="collapsible-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </summary>
+        <div class="collapsible-body">
+          <FeatureFlagsPanel />
         </div>
       </details>
     </Card>
@@ -305,7 +320,7 @@
   }
 
   .collapsible-header:hover {
-    background: var(--color-surface-secondary, #f8f9fa);
+    background: var(--color-surface-secondary);
   }
 
   .collapsible-title {
@@ -387,14 +402,14 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: var(--color-surface-secondary, #f8f9fa);
+    background: var(--color-surface-secondary);
     cursor: pointer;
     transition: background-color 0.15s ease;
     user-select: none;
   }
 
   .year-toggle:hover {
-    background: var(--color-surface-hover, #f0f1f2);
+    background: var(--color-surface-hover);
   }
 
   .year-label {

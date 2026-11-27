@@ -1,10 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
-};
+import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
+import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
 
 interface IssueStatusResult {
   github_issue_url: string;
@@ -12,24 +8,20 @@ interface IssueStatusResult {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 200, headers: corsHeaders });
-  }
+  const preflight = handlePreflight(req);
+  if (preflight) return preflight;
 
   try {
     const githubToken = Deno.env.get("GITHUB_TOKEN");
     const githubRepo = Deno.env.get("GITHUB_REPO");
 
     if (!githubToken || !githubRepo) {
-      return new Response(
-        JSON.stringify({ error: "GitHub integration not configured" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "GitHub integration not configured" }, 503);
     }
 
     // Same admin gate as create-github-issue / reopen-github-issue: the anon key
     // satisfies verify_jwt, so the caller has to be identified here.
-    const authHeader = req.headers.get("Authorization") ?? "";
+    const authHeader = getAuthHeader(req);
     const { createClient } = await import("npm:@supabase/supabase-js@2");
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -37,20 +29,14 @@ Deno.serve(async (req: Request) => {
       { global: { headers: { Authorization: authHeader } } }
     );
     const { data: userData } = await supabaseClient.auth.getUser();
-    if (userData?.user?.app_metadata?.role !== "admin") {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!isAdmin(userData?.user)) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
     const { urls }: { urls: string[] } = await req.json();
 
     if (!Array.isArray(urls) || urls.length === 0) {
-      return new Response(
-        JSON.stringify({ results: [] }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ results: [] });
     }
 
     const results: IssueStatusResult[] = await Promise.all(
@@ -85,14 +71,8 @@ Deno.serve(async (req: Request) => {
       })
     );
 
-    return new Response(
-      JSON.stringify({ results }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ results });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 });

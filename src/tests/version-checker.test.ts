@@ -1,150 +1,198 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   compareVersions,
-  meetsMinVersion,
-  getStoredVersion,
-  storeCurrentVersion,
-  checkForUpdate,
-  isVersionOutdated,
+  shouldShowReleaseNotes,
+  toLocalizedText,
+  pickLocalized,
+  isValidManifest,
+  isValidVersion,
+  isOverrideActive,
+  resolveUpdateState,
 } from '@shared/utils/version-checker';
 
-vi.mock('@config/version', () => ({
-  APP_VERSION: '0.0.2',
-  MIN_VERSION: '0.0.1',
-  FORCE_UPDATE: true,
-  RELEASE_NOTES: 'Test release notes',
-}));
-
-describe('version-checker', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    vi.resetModules();
+describe('compareVersions', () => {
+  it('orders versions numerically per part', () => {
+    expect(compareVersions('1.10.0', '1.9.0')).toBe(1);
+    expect(compareVersions('1.2.3', '1.2.4')).toBe(-1);
+    expect(compareVersions('2.0.0', '2.0.0')).toBe(0);
   });
 
-  afterEach(() => {
-    localStorage.clear();
+  it('treats missing parts as 0', () => {
+    expect(compareVersions('1.0', '1.0.0')).toBe(0);
   });
 
-  describe('compareVersions', () => {
-    it('should return 0 for equal versions', () => {
-      expect(compareVersions('1.0.0', '1.0.0')).toBe(0);
-      expect(compareVersions('2.5.3', '2.5.3')).toBe(0);
-    });
-
-    it('should return 1 when first version is greater', () => {
-      expect(compareVersions('2.0.0', '1.0.0')).toBe(1);
-      expect(compareVersions('1.1.0', '1.0.0')).toBe(1);
-      expect(compareVersions('1.0.1', '1.0.0')).toBe(1);
-    });
-
-    it('should return -1 when first version is less', () => {
-      expect(compareVersions('1.0.0', '2.0.0')).toBe(-1);
-      expect(compareVersions('1.0.0', '1.1.0')).toBe(-1);
-      expect(compareVersions('1.0.0', '1.0.1')).toBe(-1);
-    });
-
-    it('should handle versions with different number of parts', () => {
-      expect(compareVersions('1.0', '1.0.0')).toBe(0);
-      expect(compareVersions('1.1', '1.0.5')).toBe(1);
-      expect(compareVersions('1', '1.0.0')).toBe(0);
-    });
+  it('treats a part with a suffix as 0, not as its numeric prefix', () => {
+    expect(compareVersions('1.2.3-beta', '1.2.3')).toBe(-1);
   });
 
-  describe('meetsMinVersion', () => {
-    it('should return true when current version meets minimum', () => {
-      expect(meetsMinVersion('2.0.0', '1.0.0')).toBe(true);
-      expect(meetsMinVersion('1.0.0', '1.0.0')).toBe(true);
-      expect(meetsMinVersion('1.5.0', '1.0.0')).toBe(true);
-    });
+  it('treats non-numeric parts as 0 instead of NaN', () => {
+    expect(compareVersions('1.x.0', '1.0.0')).toBe(0);
+    expect(compareVersions('abc', '0.0.1')).toBe(-1);
+  });
+});
 
-    it('should return false when current version is below minimum', () => {
-      expect(meetsMinVersion('0.9.0', '1.0.0')).toBe(false);
-      expect(meetsMinVersion('1.0.0', '1.1.0')).toBe(false);
-    });
+describe('isValidVersion / isValidManifest', () => {
+  it('accepts x.y.z only', () => {
+    expect(isValidVersion('1.2.3')).toBe(true);
+    expect(isValidVersion('1.2')).toBe(false);
+    expect(isValidVersion('<html>')).toBe(false);
+    expect(isValidVersion(null)).toBe(false);
   });
 
-  describe('getStoredVersion and storeCurrentVersion', () => {
-    it('should return null when no version is stored', () => {
-      expect(getStoredVersion()).toBe(null);
-    });
-
-    it('should store and retrieve version', () => {
-      storeCurrentVersion();
-      const stored = getStoredVersion();
-      expect(stored).toBe('0.0.2');
-    });
-
-    it('should handle localStorage errors gracefully', () => {
-      const mockGetItem = vi.spyOn(Storage.prototype, 'getItem');
-      mockGetItem.mockImplementation(() => {
-        throw new Error('localStorage unavailable');
-      });
-
-      expect(getStoredVersion()).toBe(null);
-
-      mockGetItem.mockRestore();
-    });
+  it('does not reject a manifest over its notes, which the decision never reads', () => {
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: null })).toBe(true);
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: ['x'] })).toBe(true);
   });
 
-  describe('checkForUpdate', () => {
-    it('should detect no update on first use', () => {
-      const result = checkForUpdate();
-      expect(result.hasUpdate).toBe(false);
-      expect(result.stored).toBe(null);
-      expect(result.current).toBe('0.0.2');
-    });
-
-    it('should detect update when stored version is lower', () => {
-      localStorage.setItem('app_version', '0.0.1');
-      const result = checkForUpdate();
-      expect(result.hasUpdate).toBe(true);
-      expect(result.stored).toBe('0.0.1');
-      expect(result.current).toBe('0.0.2');
-    });
-
-    it('should not detect update when versions match', () => {
-      localStorage.setItem('app_version', '0.0.2');
-      const result = checkForUpdate();
-      expect(result.hasUpdate).toBe(false);
-      expect(result.stored).toBe('0.0.2');
-    });
-
-    it('should not detect update when stored version is newer', () => {
-      localStorage.setItem('app_version', '0.0.3');
-      const result = checkForUpdate();
-      expect(result.hasUpdate).toBe(false);
-      expect(result.stored).toBe('0.0.3');
-    });
-
-    it('should include force update flag', () => {
-      const result = checkForUpdate();
-      expect(result.forceUpdate).toBe(true);
-    });
-
-    it('should include min version', () => {
-      const result = checkForUpdate();
-      expect(result.minVersion).toBe('0.0.1');
-    });
+  it('accepts a complete manifest', () => {
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0', notes: { nl: 'x' } })).toBe(true);
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.0.0' })).toBe(true);
   });
 
-  describe('isVersionOutdated', () => {
-    it('should return false for first time users', () => {
-      expect(isVersionOutdated()).toBe(false);
-    });
+  it('rejects a manifest that requires a version newer than itself', () => {
+    expect(isValidManifest({ version: '1.4.0', minVersion: '1.5.0' })).toBe(false);
+  });
 
-    it('should return false when stored version meets minimum', () => {
-      localStorage.setItem('app_version', '0.0.1');
-      expect(isVersionOutdated()).toBe(false);
-    });
+  it('rejects version parts longer than 9 digits', () => {
+    expect(isValidVersion('1.2.123456789')).toBe(true);
+    expect(isValidVersion('1.2.1234567890')).toBe(false);
+  });
 
-    it('should return true when stored version is below minimum', () => {
-      localStorage.setItem('app_version', '0.0.0');
-      expect(isVersionOutdated()).toBe(true);
-    });
+  it('rejects invalid manifests', () => {
+    expect(isValidManifest(null)).toBe(false);
+    expect(isValidManifest('<!doctype html>')).toBe(false);
+    expect(isValidManifest({ version: '1.4.0' })).toBe(false);
+    expect(isValidManifest({ version: 'latest', minVersion: '1.0.0' })).toBe(false);
+  });
+});
 
-    it('should return false when stored version exceeds minimum', () => {
-      localStorage.setItem('app_version', '0.0.2');
-      expect(isVersionOutdated()).toBe(false);
-    });
+describe('resolveUpdateState', () => {
+  it('feature release → optional', () => {
+    expect(resolveUpdateState({ running: '1.3.0', deployed: '1.4.0', publishedMin: '1.0.0' })).toBe('optional');
+  });
+
+  it('crucial fix → mandatory', () => {
+    expect(resolveUpdateState({ running: '1.3.0', deployed: '1.3.1', publishedMin: '1.3.1' })).toBe('mandatory');
+  });
+
+  it('up to date → none', () => {
+    expect(resolveUpdateState({ running: '1.4.0', deployed: '1.4.0', publishedMin: '1.4.0' })).toBe('none');
+  });
+
+  it('running newer than deployed (rollback) → none', () => {
+    expect(resolveUpdateState({ running: '1.5.0', deployed: '1.4.0', publishedMin: '1.0.0' })).toBe('none');
+  });
+
+  it('override higher than published minimum → mandatory', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.4.0', publishedMin: '1.2.0', overrideMin: '1.4.0',
+    })).toBe('mandatory');
+  });
+
+  it('override lower than published minimum → published minimum applies', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.4.0', publishedMin: '1.4.0', overrideMin: '1.2.0',
+    })).toBe('mandatory');
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.4.0', publishedMin: '1.0.0', overrideMin: '1.2.0',
+    })).toBe('optional');
+  });
+
+  it('override higher than deployed does not weaken a published mandatory minimum', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.3.1', publishedMin: '1.3.1', overrideMin: '2.0.0',
+    })).toBe('mandatory');
+  });
+
+  it('override higher than deployed → never blocks', () => {
+    expect(resolveUpdateState({
+      running: '1.4.0', deployed: '1.4.0', publishedMin: '1.0.0', overrideMin: '2.0.0',
+    })).toBe('none');
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.4.0', publishedMin: '1.0.0', overrideMin: '2.0.0',
+    })).toBe('optional');
+  });
+
+  it('invalid override is ignored', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.4.0', publishedMin: '1.0.0', overrideMin: 'oops',
+    })).toBe('optional');
+  });
+
+  it('dismissed for the deployed version → none', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.4.0', publishedMin: '1.0.0', dismissedVersion: '1.4.0',
+    })).toBe('none');
+  });
+
+  it('dismissed an older version → optional again for the newer one', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.5.0', publishedMin: '1.0.0', dismissedVersion: '1.4.0',
+    })).toBe('optional');
+  });
+
+  it('dismissal never hides a mandatory update', () => {
+    expect(resolveUpdateState({
+      running: '1.3.0', deployed: '1.3.1', publishedMin: '1.3.1', dismissedVersion: '1.3.1',
+    })).toBe('mandatory');
+  });
+});
+
+describe('isOverrideActive', () => {
+  it('is true only when the override raises the minimum', () => {
+    expect(isOverrideActive('1.0.0', '1.2.0', '1.4.0')).toBe(true);
+    expect(isOverrideActive('1.2.0', '1.0.0', '1.4.0')).toBe(false);
+    expect(isOverrideActive('1.2.0', null, '1.4.0')).toBe(false);
+  });
+
+  it('ignores an override above the deployed version', () => {
+    expect(isOverrideActive('1.0.0', '2.0.0', '1.4.0')).toBe(false);
+    expect(isOverrideActive('1.0.0', '1.4.0', '1.4.0')).toBe(true);
+  });
+});
+
+describe('shouldShowReleaseNotes', () => {
+  it('never shows notes on a first visit', () => {
+    expect(shouldShowReleaseNotes(null, '1.4.0', 'Nieuw')).toBe(false);
+  });
+
+  it('does not show empty notes', () => {
+    expect(shouldShowReleaseNotes('1.3.0', '1.4.0', undefined)).toBe(false);
+    expect(shouldShowReleaseNotes('1.3.0', '1.4.0', '   ')).toBe(false);
+  });
+
+  it('shows notes after updating from an older version', () => {
+    expect(shouldShowReleaseNotes('1.3.0', '1.4.0', 'Nieuw')).toBe(true);
+  });
+
+  it('does not show notes again for the same or an older version', () => {
+    expect(shouldShowReleaseNotes('1.4.0', '1.4.0', 'Nieuw')).toBe(false);
+    expect(shouldShowReleaseNotes('1.5.0', '1.4.0', 'Nieuw')).toBe(false);
+  });
+});
+
+describe('pickLocalized', () => {
+  it('prefers the requested language, then en, nl, fr', () => {
+    expect(pickLocalized({ nl: 'Fix', en: 'Fix EN' }, 'nl')).toBe('Fix');
+    expect(pickLocalized({ nl: 'Fix', en: 'Fix EN' }, 'fr')).toBe('Fix EN');
+    expect(pickLocalized({ fr: 'Correctif' }, 'nl')).toBe('Correctif');
+  });
+
+  it('returns undefined without any text', () => {
+    expect(pickLocalized(null, 'nl')).toBeUndefined();
+    expect(pickLocalized({}, 'nl')).toBeUndefined();
+  });
+});
+
+describe('toLocalizedText', () => {
+  it('keeps only non-blank strings for supported locales', () => {
+    expect(toLocalizedText({ nl: 'Fix', fr: '  ', en: 42, de: 'Hallo' })).toEqual({ nl: 'Fix' });
+  });
+
+  it('returns null for anything that is not a usable object', () => {
+    expect(toLocalizedText(null)).toBeNull();
+    expect(toLocalizedText('Fix')).toBeNull();
+    expect(toLocalizedText(['Fix'])).toBeNull();
+    expect(toLocalizedText({ nl: '' })).toBeNull();
   });
 });

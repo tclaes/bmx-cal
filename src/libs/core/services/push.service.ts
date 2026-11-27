@@ -1,4 +1,4 @@
-import { supabase } from '@data/supabase';
+import { supabase } from '@data';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY
   || 'BLMu0x1a_rMoWMFSRMl0ibywqFYJU8-upD-zLnLZ1RllJGUMv4hHef-l6x5rISo5Upg7M93W3X_DGSoFa35XNCY';

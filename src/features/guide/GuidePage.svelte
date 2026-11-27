@@ -175,7 +175,7 @@
     letter-spacing: 0.08em;
     color: var(--color-primary);
     background-color: var(--color-primary-light);
-    padding-block: 2px;
+    padding-block: var(--spacing-xxs);
     padding-inline: var(--spacing-sm);
     border-radius: var(--border-radius-full);
     margin-block-end: var(--spacing-sm);
@@ -227,7 +227,7 @@
   }
 
   .toc a:hover {
-    color: var(--color-primary-dark, #1d4ed8);
+    color: var(--color-primary-dark);
   }
 
   section h2 {
@@ -292,7 +292,7 @@
   }
 
   .links-list a:hover {
-    color: var(--color-primary-dark, #1d4ed8);
+    color: var(--color-primary-dark);
   }
 
   .related-section h2 {
@@ -322,7 +322,7 @@
 
   .related-card:hover {
     border-color: var(--color-primary);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 8%, transparent);
   }
 
   .related-card strong {
@@ -356,7 +356,7 @@
   .btn-primary {
     padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-text-on-accent);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     border-radius: var(--border-radius-md);
@@ -365,7 +365,7 @@
   }
 
   .btn-primary:hover {
-    background-color: #1d4ed8;
+    background-color: var(--color-primary-hover);
   }
 
   .btn-secondary {

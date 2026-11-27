@@ -1,4 +1,5 @@
 export type {
+  FeatureFlag,
   Event,
   EventType,
   EventWithType,
