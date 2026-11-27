@@ -51,7 +51,7 @@ export function checkRelease({ headRef, baseVersion, headVersion }) {
   try {
     if (compareVersions(headVersion, baseVersion) <= 0) {
       problems.push(
-        `src/config/release.json version must be higher than master's: master has ${baseVersion}, this PR has ${headVersion}. Bump it (and package.json) on this PR.`,
+        `src/config/release.json version must be higher than master's: master has ${baseVersion}, this PR has ${headVersion}. Bump it (and package.json): for a release through a chore/release-<version> PR into development, for a hotfix on the hotfix branch.`,
       );
     }
   } catch (error) {
