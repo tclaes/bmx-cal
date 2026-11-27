@@ -36,6 +36,22 @@ test('the calendar sidebar stays below the header', async ({ page, backend }) =>
   expect(sidebar!.y).toBeGreaterThanOrEqual(banner!.y + banner!.height);
 });
 
+test('the skip link moves focus to the main content below the header', async ({ page, backend }) => {
+  await backend({ tables: { events, event_types: [race] } });
+  await page.goto('/');
+  await expect(page.getByText('Race 40')).toBeVisible();
+
+  await page.keyboard.press('Tab');
+  const skip = page.getByRole('link', { name: 'Skip to main content' });
+  await expect(skip).toBeFocused();
+  await page.keyboard.press('Enter');
+
+  const main = page.getByRole('main');
+  await expect(main).toBeFocused();
+  const banner = (await page.getByRole('banner').boundingBox())!;
+  expect((await main.boundingBox())!.y).toBeGreaterThanOrEqual(banner.y + banner.height - 1);
+});
+
 test('an in-page link brings its section to rest below the header', async ({ page, backend }) => {
   await backend();
   await page.goto('/guide');

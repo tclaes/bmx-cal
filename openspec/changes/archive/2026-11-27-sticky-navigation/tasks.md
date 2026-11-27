@@ -12,7 +12,7 @@
 
 ## 3. Measure the bar height
 
-- [x] 3.1 In `Navigation.svelte`, observe `.nav-container` with a `ResizeObserver` and write its border-box height plus the nav's 1px bottom border to `document.documentElement.style` as `--header-height`. Disconnect on destroy, and skip it when `ResizeObserver` is not available. Verify in devtools that the value is about 87px at 1280px and 375px, that it grows when the desktop links wrap (signed in as admin at 1024–1100px), and that it does not change when the mobile menu opens.
+- [x] 3.1 In `Navigation.svelte`, observe `.nav-container` with a `ResizeObserver` and write its border-box height plus the nav's 1px bottom border to `document.documentElement.style` as `--header-height`. Disconnect on destroy, and skip it when `ResizeObserver` is not available. Verify in devtools that the value is about 87px at 1280px and 375px, that it follows the bar when the bar's height changes, and that it does not change when the mobile menu opens.
 - [x] 3.2 Confirm `npm test` still passes in jsdom, where `ResizeObserver` may be missing, so the guard is exercised.
 
 ## 4. Keep targets and sticky elements clear of the bar
@@ -30,7 +30,7 @@
 
 - [x] 6.1 While scrolled, open a dropdown (calendar filters), a modal and a toast, and check that the cookie banner shows. Verify each renders above the bar. Confirm the existing `e2e/specs/a11y.spec.ts` axe checks still pass.
 - [x] 6.2 Run `npm run check`, `npm run sheriff`, `npm run stylelint`, `npm test`, `npm run build` and `npm run test:e2e:mock`. Verify all pass.
-- [x] 6.3 Check en, nl and fr at 375px, 1023px, 1024px and 1280px, with the mobile menu open and closed. Verify the behaviour matches every scenario in `specs/site-navigation/spec.md`.
+- [x] 6.3 Check en, nl and fr at 375px, 1023px, 1024px and 1280px, with the mobile menu open and closed. Verify the behaviour matches every scenario in `openspec/specs/site-navigation/spec.md`.
 
 ## Workflow follow-up
 

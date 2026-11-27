@@ -66,7 +66,8 @@
     <Navigation />
   </header>
 
-  <main id="main-content" class="main-content">
+  <!-- tabindex="-1": the skip link can move focus here without adding a tab stop. -->
+  <main id="main-content" class="main-content" tabindex="-1">
     <RouteOutlet />
   </main>
 
@@ -108,5 +109,10 @@
   .main-content {
     flex: 1;
     min-height: calc(100vh - 60px);
+  }
+
+  /* Focus lands here only from the skip link; the whole page region needs no ring. */
+  .main-content:focus {
+    outline: none;
   }
 </style>

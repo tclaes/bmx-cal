@@ -397,10 +397,18 @@
 
     /* The menu opens inside the pinned header: keep it within the viewport and let
        it scroll on its own so the last items stay reachable on short screens. */
-    max-height: 100vh;
-    max-height: calc(100dvh - var(--header-height));
+    max-height: calc(100vh - var(--header-height));
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  /* dvh follows the mobile address bar. Guarded with @supports because a
+     declaration containing var() is only rejected at computed-value time, so an
+     unsupported unit would drop the vh fallback above instead of keeping it. */
+  @supports (height: 100dvh) {
+    .mobile-menu {
+      max-height: calc(100dvh - var(--header-height));
+    }
   }
 
   @keyframes slide-down {

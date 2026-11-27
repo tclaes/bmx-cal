@@ -5,7 +5,7 @@
 `AppLayout.svelte` renders `<header><Navigation /></header>` as a child of `.app`, a column flex container with `min-height: 100vh`. Inside `Navigation.svelte`, `<nav class="navigation">` has `position: sticky; top: 0; z-index: 100`. Sticky positioning only works within the parent's box, and `<header>` is exactly as tall as the nav, so nothing sticks. No ancestor of the header sets `overflow` to anything other than `visible`, so moving the sticky rule up one level is enough.
 
 The nav has two parts:
-- `.nav-container`: the bar row (logo, desktop links or hamburger). It measures 87px tall at both widths (16px top padding, the logo with its padding, and a 1px bottom border). The desktop links can wrap at widths just above 1024px when admin and team-manager links are present, which makes it taller.
+- `.nav-container`: the bar row (logo, desktop links or hamburger). It measures 87px tall at both widths (16px top padding, the logo with its padding, and a 1px bottom border). The desktop links do not wrap: `.nav-links` is a single non-wrapping flex row and `.nav-link` sets `white-space: nowrap`, so with many links (admin, team manager) at widths just above 1024px the row grows sideways, not taller.
 - `.mobile-menu`: rendered below the bar when the hamburger is open (under 1024px), part of the normal page flow inside the nav. Its last items are sign in/out and the language switcher.
 
 Other values involved:
@@ -28,7 +28,7 @@ Other values involved:
 ### Make `<header>` sticky, not `<nav>`
 Move `position: sticky; top: 0` and the z-index to `header` in `AppLayout.svelte`, and remove them from `.navigation`. `.navigation` keeps its background, border and shadow, so the pinned bar is opaque.
 - *Alternative: drop the `<header>` wrapper and keep the sticky rule on `<nav>`.* Rejected: it loses the `banner` landmark that screen readers and the E2E page objects rely on.
-- *Alternative: `position: fixed` plus top padding on the body.* Rejected: it needs a hardcoded height and breaks when the bar wraps or the font scales.
+- *Alternative: `position: fixed` plus top padding on the body.* Rejected: it needs a hardcoded height and breaks as soon as anything changes the bar's height.
 
 ### Pin at every width
 There is no media query on the sticky rule. This follows the issue and the explicit decision to pin on mobile too, where long pages make scrolling back up the most painful.
@@ -36,7 +36,7 @@ There is no media query on the sticky rule. This follows the issue and the expli
 ### `--header-height`: measured, with a static fallback
 Add `--header-height: 87px` to `src/styles/variables.css` as the fallback. In `Navigation.svelte`, a `ResizeObserver` on `.nav-container` writes the measured border-box height (observed with `box: 'border-box'` so padding changes are caught too) (plus the nav's 1px border) to `document.documentElement.style` as `--header-height`, and disconnects on destroy.
 - Measure the **bar row only**, not the whole header. Opening the mobile menu makes the header taller. If that changed `--header-height`, the menu's own `max-height` would depend on itself, and the anchor offsets would jump while the menu is open.
-- *Alternative: a static token derived from the spacing tokens and the logo size.* Rejected as the only source: it goes wrong when the desktop links wrap, the user zooms text, or the locale makes labels longer. It is kept as the value used before the first measurement and in tests without `ResizeObserver`.
+- *Alternative: a static token derived from the spacing tokens and the logo size.* Rejected as the only source: it goes wrong as soon as the bar's height changes for any reason other than the tokens it was derived from, such as the logo size or the bar's padding changing. It is kept as the value used before the first measurement and in tests without `ResizeObserver`.
 
 ### Consumers of `--header-height`
 - `html { scroll-padding-top: calc(var(--header-height) + var(--spacing-sm)); }` in the global styles. This covers in-page anchors and the `#main-content` skip-link target in one rule, with no `scroll-margin` on each heading.
