@@ -60,7 +60,11 @@ function analyticsTag(): Plugin {
   return {
     name: 'analytics-tag',
     configResolved(config) {
-      measurementId = String(config.env.VITE_GA_MEASUREMENT_ID ?? '').trim()
+      measurementId = String(config.env.VITE_GA_MEASUREMENT_ID ?? '')
+      // analytics.ts reads the same raw value at runtime, so fail instead of trimming here.
+      if (measurementId !== measurementId.trim()) {
+        throw new Error('analytics-tag: VITE_GA_MEASUREMENT_ID has leading or trailing whitespace')
+      }
     },
     transformIndexHtml(html) {
       if (!GA_BLOCK.test(html)) throw new Error('analytics-tag: ga:start/ga:end block missing in index.html')
