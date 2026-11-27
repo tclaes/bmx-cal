@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handlePreflight, jsonResponse } from "../_shared/cors.ts";
 import { getAuthHeader, isAdmin } from "../_shared/auth.ts";
+import { AiServiceError, geminiError } from "../_shared/ai-errors.ts";
+import { geminiGenerateContentUrl, geminiHeaders } from "../_shared/gemini.ts";
 
 interface ExtractedEvent {
   title: string;
@@ -81,12 +83,10 @@ If the image is blurry, unclear, or does not contain event information, return a
 Return ONLY a valid JSON array of events. If no events found, return empty array [].`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+    geminiGenerateContentUrl(),
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: geminiHeaders(geminiApiKey),
       body: JSON.stringify({
         contents: [
           {
@@ -110,8 +110,7 @@ Return ONLY a valid JSON array of events. If no events found, return empty array
   );
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Gemini API error: ${error}`);
+    throw geminiError(response.status, await response.text());
   }
 
   const data = await response.json();
@@ -181,6 +180,10 @@ Deno.serve(async (req: Request) => {
         events,
       });
   } catch (error) {
+    if (error instanceof AiServiceError) {
+      console.error("Error processing image:", error.detail);
+      return jsonResponse({ error: error.message }, error.status);
+    }
     console.error("Error processing image:", error);
     return jsonResponse({
         error: error.message || "Failed to process image",
