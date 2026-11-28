@@ -2,7 +2,7 @@
 
 All edge functions are in `supabase/functions/` and deployed via the Supabase MCP `deploy_edge_function` tool or `supabase functions deploy`. Each function answers CORS preflight requests and includes CORS headers on all responses.
 
-Functions run on Supabase, not in the frontend build: a deploy takes effect for real users immediately, independent of publishing the frontend. Deploy only code that is merged to `master`.
+Functions run on Supabase, not in the frontend build: a deploy takes effect for real users immediately, independent of publishing the frontend. Deploy only code that is merged to `master`, which happens when a release or hotfix PR merges (merges into `development` are not deployed).
 
 ### Functions and who may call them
 
@@ -60,7 +60,7 @@ Functions deploy independently of git, so a bad deploy is undone by redeploying 
    node scripts/smoke-edge-functions.mjs https://<project-ref>.supabase.co/functions/v1
    ```
 
-4. Remove the scratch worktree with `git worktree remove ../bmx-cal-rollback`, then fix forward on a branch from `master` and redeploy only after the fix is merged.
+4. Remove the scratch worktree with `git worktree remove ../bmx-cal-rollback`, then fix forward on a `hotfix/<name>` branch from `master` (see "Hotfix" in `docs/releases.md`) and redeploy only after the fix is merged.
 
 `verify_jwt` is read from `supabase/config.toml` at the commit you deploy from, so a rollback also restores that commit's JWT settings. Compare it with the current file before redeploying a function whose setting changed.
 

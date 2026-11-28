@@ -30,19 +30,37 @@ If `/version.json` cannot be fetched or is not valid JSON (offline, or the SPA f
 
 The build (`vite.config.ts`, plugin `release-manifest`) writes `dist/version.json` and stamps the version into `dist/sw.js`. The service worker cache is therefore renamed on every release and old caches are deleted.
 
+### Release PR
+
+Every release reaches production through a pull request from `development` into `master`:
+
+1. Bump the version and write the notes, as described in the two sections below, on a branch `chore/release-<version>` from `development`. Open it against `development` and squash-merge it. `development` only accepts changes through a PR, so the bump cannot be pushed onto the release PR itself.
+2. Open the release PR: `gh pr create --base master --head development --title "Release 1.4.0"`.
+3. Wait for `Release check`, `Test` and `E2E (mocked Supabase)` to pass. `Release check` fails until the version is higher than master's.
+4. If the release needs migrations or edge functions, get them live **before** the frontend goes out, following "Release order" in `docs/deploy.md`: either they were already released and deployed in an earlier, backward-compatible release, or lock Netlify's auto publishing before the next step and deploy them right after merging.
+5. Merge with a **merge commit** (not squash), so `master` and `development` keep the same history. Netlify then deploys `master` (or holds the deploy if you locked publishing in step 4; publish it once the backend is live).
+
+### Hotfix
+
+For an urgent fix that cannot wait for the next release:
+
+1. Branch `hotfix/<name>` from `master`, fix it, and bump the patch version (usually with `minVersion`, see "Crucial bug fix" below).
+2. Open the PR into `master`. `Release check` accepts `hotfix/*` branches. Merge with a merge commit.
+3. Open a PR from `master` into `development` and merge it with a merge commit, so the fix and the new version are not lost. Nothing checks that this step happened: `Release check` validates the source branch, the repository and that the version goes up, but not whether the hotfix was merged back. A next release that bumps past the hotfix version (for example `1.2.0` after a `1.1.1` hotfix) still passes. Do this step right after the hotfix merges, and before opening the next release PR.
+
 ### Feature release (optional update)
 
 1. Bump `version` (minor, for example `1.3.0` → `1.4.0`) in `release.json` and `package.json`.
 2. Write `notes` in nl/fr/en.
 3. Leave `minVersion` unchanged.
-4. Merge and deploy.
+4. Merge the release PR and deploy.
 
 ### Crucial bug fix (mandatory update)
 
 1. Bump `version` (patch, for example `1.4.0` → `1.4.1`) in `release.json` and `package.json`.
 2. Set `minVersion` to the same version (`1.4.1`).
 3. Write `notes`.
-4. Merge and deploy. Everyone on an older version gets the blocking screen at their next check.
+4. Merge the release or hotfix PR and deploy. Everyone on an older version gets the blocking screen at their next check.
 
 ### Emergency: force an update without a new build
 

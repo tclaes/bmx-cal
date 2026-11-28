@@ -1,0 +1,43 @@
+name: Release check
+
+# Pull requests into master are releases (from development) or hotfixes (from hotfix/*),
+# and must raise the version in src/config/release.json. See docs/releases.md.
+
+on:
+  pull_request:
+    branches: [master]
+    # "edited" re-runs the check when the PR's base branch changes.
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  release-check:
+    name: Release check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - name: Check source branch and version bump
+        # Values go through env, never into the script text, so a crafted branch name
+        # cannot inject shell commands.
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          BASE_VERSION=$(git show "$BASE_SHA:src/config/release.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).version))')
+          HEAD_VERSION=$(node -p 'require("./src/config/release.json").version')
+          export BASE_VERSION HEAD_VERSION
+          node scripts/release-check.mjs
