@@ -3,9 +3,9 @@
   import { AuthService } from '@core/services';
   import { selectionService } from '@core/services';
   import { currentRoute, navigate } from '../router';
-  import { locale, t } from '../i18n';
-  import type { Locale } from '../i18n';
+  import { t } from '../i18n';
   import Logo from '@ui/Logo.svelte';
+  import LanguageSwitcher from './LanguageSwitcher.svelte';
   import { onMount } from 'svelte';
 
   let menuOpen = false;
@@ -28,8 +28,6 @@
       root.style.removeProperty('--header-height');
     };
   });
-
-  const locales: Locale[] = ['en', 'nl', 'fr'];
 
   function closeMenu() {
     menuOpen = false;
@@ -63,15 +61,10 @@
     navigate('/');
   }
 
-  function setLocale(l: Locale) {
-    locale.setLocale(l);
-  }
-
   $: user = $authStore.user;
   $: isAdmin = user?.role === 'admin';
   $: isTeamManager = isAdmin || (user?.managedTeams?.length ?? 0) > 0;
   $: route = $currentRoute;
-  $: currentLocale = $locale;
 </script>
 
 <svelte:window on:keydown={handleKeydown} on:resize={handleResize} />
@@ -132,19 +125,7 @@
         </li>
       {/if}
 
-      <li class="locale-switcher" aria-label="Language switcher">
-        {#each locales as l}
-          <button
-            class="locale-btn"
-            class:active={currentLocale === l}
-            on:click={() => setLocale(l)}
-            aria-pressed={currentLocale === l}
-            aria-label={l.toUpperCase()}
-          >
-            {l.toUpperCase()}
-          </button>
-        {/each}
-      </li>
+      <li class="nav-language"><LanguageSwitcher variant="nav" /></li>
     </ul>
 
     <button
@@ -211,19 +192,7 @@
         </li>
       {/if}
 
-      <li class="mobile-locale-switcher" aria-label="Language switcher">
-        {#each locales as l}
-          <button
-            class="locale-btn"
-            class:active={currentLocale === l}
-            on:click={() => setLocale(l)}
-            aria-pressed={currentLocale === l}
-            aria-label={l.toUpperCase()}
-          >
-            {l.toUpperCase()}
-          </button>
-        {/each}
-      </li>
+      <li class="mobile-language"><LanguageSwitcher variant="menu" /></li>
     </ul>
   {/if}
 </nav>
@@ -296,53 +265,6 @@
   .nav-link--signout:hover {
     color: var(--color-danger);
     background-color: var(--color-danger-light);
-  }
-
-  .locale-switcher {
-    display: flex;
-    align-items: center;
-    align-self: center;
-    margin-inline-start: var(--spacing-xs);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-    gap: 0;
-    padding: 0;
-  }
-
-  .locale-btn {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    letter-spacing: 0.04em;
-    color: var(--color-text-muted);
-    padding: var(--spacing-xxs) var(--spacing-xs);
-    border-radius: 0;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-inline-size: var(--touch-target-min);
-    min-block-size: var(--touch-target-min);
-    text-align: center;
-  }
-
-  /* Compact size for the desktop nav only; the mobile menu keeps the full touch target. */
-  .locale-switcher .locale-btn {
-    min-inline-size: 2rem;
-    min-block-size: 2rem;
-  }
-
-  .locale-btn:hover {
-    color: var(--color-text-primary);
-    background-color: var(--color-bg-secondary);
-  }
-
-  .locale-btn.active {
-    color: var(--color-text-on-accent);
-    background-color: var(--color-primary);
-    font-weight: var(--font-weight-bold);
   }
 
   .hamburger {
@@ -457,10 +379,13 @@
     background-color: var(--color-danger-light);
   }
 
-  .mobile-locale-switcher {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
+  /* .nav-links aligns its items to the bottom; the language select is centred instead. */
+  .nav-language {
+    align-self: center;
+    margin-inline-start: var(--spacing-xs);
+  }
+
+  .mobile-language {
     padding: var(--spacing-md) var(--spacing-sm) var(--spacing-sm);
     border-top: 1px solid var(--color-border);
     margin-top: var(--spacing-sm);

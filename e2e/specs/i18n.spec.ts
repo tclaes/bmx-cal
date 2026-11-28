@@ -6,7 +6,7 @@ test('selected locale persists across reloads', async ({ page, backend }) => {
   const title = page.getByRole('heading', { level: 1 });
   await expect(title).toHaveText('BMX Events Calendar');
 
-  await page.locator('.locale-switcher').getByRole('button', { name: 'NL' }).click();
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('nl');
   await expect(title).toHaveText('BMX Evenementenkalender');
 
   await page.reload();

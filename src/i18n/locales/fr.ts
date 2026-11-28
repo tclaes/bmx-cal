@@ -14,6 +14,7 @@ export const fr: Translations = {
     signOut: 'Se déconnecter',
     signIn: 'Se connecter',
     toggleMenu: 'Ouvrir le menu',
+    language: 'Langue',
   },
   common: {
     checking: 'Vérification...',

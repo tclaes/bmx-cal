@@ -12,6 +12,7 @@ export interface Translations {
     signOut: string;
     signIn: string;
     toggleMenu: string;
+    language: string;
   };
   common: {
     checking: string;

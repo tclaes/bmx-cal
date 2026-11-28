@@ -14,6 +14,7 @@ export const en: Translations = {
     signOut: 'Sign out',
     signIn: 'Sign in',
     toggleMenu: 'Toggle menu',
+    language: 'Language',
   },
   common: {
     checking: 'Checking...',

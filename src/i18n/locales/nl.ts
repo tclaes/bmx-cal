@@ -14,6 +14,7 @@ export const nl: Translations = {
     signOut: 'Afmelden',
     signIn: 'Aanmelden',
     toggleMenu: 'Menu openen',
+    language: 'Taal',
   },
   common: {
     checking: 'Controleren...',
