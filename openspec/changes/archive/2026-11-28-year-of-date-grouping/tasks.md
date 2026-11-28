@@ -11,7 +11,7 @@
 
 ## 3. Final checks
 
-- [x] 3.1 Run `npm run check`, `npm run sheriff`, `npm run stylelint`, `npm test`, `npm run build` and `npm run test:e2e:mock`. Verify all pass, including the admin dashboard's "lists upcoming events grouped by year" E2E test.
+- [x] 3.1 Run `npm run check`, `npm run sheriff`, `npm run stylelint`, `npm test`, `npm run build` and `npm run test:e2e:mock`. Verify all pass, including the admin dashboard's "lists upcoming events grouped by year" E2E test. Result: everything passed except one intermittent failure in the full mock E2E run, `a11y.spec.ts` › "/guide has no axe violations", which passed 3/3 when rerun on its own and is unrelated to this change (it does not touch the guide page).
 
 ## Workflow follow-up
 

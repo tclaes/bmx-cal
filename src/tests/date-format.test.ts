@@ -4,7 +4,9 @@ import { yearOf } from '@shared/utils';
 describe('yearOf', () => {
   const originalTz = process.env.TZ;
   afterEach(() => {
-    process.env.TZ = originalTz;
+    // Assigning undefined would store the string "undefined", so unset it instead.
+    if (originalTz === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTz;
   });
 
   it('reads the year from a date', () => {
@@ -20,8 +22,18 @@ describe('yearOf', () => {
     expect(yearOf('2026-01-01')).toBe(2026);
   });
 
-  it('rejects anything that is not an ISO date', () => {
-    expect(() => yearOf('01/01/2026')).toThrow('not an ISO date');
-    expect(() => yearOf('')).toThrow();
+  it('reads the year from a date-time with an offset', () => {
+    expect(yearOf('2026-03-29T10:00:00.000+02:00')).toBe(2026);
+  });
+
+  it.each(['01/01/2026', '', '2026-1-01', '2026-01-01junk', '2026-01-01T', '2026-13-01', '2026-02-30', '2025-02-29'])(
+    'rejects %j',
+    (value) => {
+      expect(() => yearOf(value)).toThrow('not an ISO date');
+    },
+  );
+
+  it('accepts a leap day', () => {
+    expect(yearOf('2028-02-29')).toBe(2028);
   });
 });

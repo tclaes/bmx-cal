@@ -48,7 +48,9 @@ describe('groupEventsByYear', () => {
 describe('groupEventsByYear in other time zones', () => {
   const originalTz = process.env.TZ;
   afterEach(() => {
-    process.env.TZ = originalTz;
+    // Assigning undefined would store the string "undefined", so unset it instead.
+    if (originalTz === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTz;
   });
 
   it('keeps a New Year\'s Day race in its own year behind UTC', () => {

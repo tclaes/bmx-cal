@@ -64,8 +64,17 @@ export function formatDayMonth(iso: string): string {
  * Reads the text instead of `new Date(iso).getFullYear()`, which parses a plain
  * date as midnight UTC and so gives the previous year behind UTC on 1 January.
  */
+// YYYY-MM-DD, optionally followed by an ISO time and offset (e.g. T23:30:00Z, T10:00+02:00).
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+
 export function yearOf(iso: string): number {
-  const match = /^(\d{4})-\d{2}-\d{2}/.exec(iso);
+  const match = ISO_DATE.exec(iso);
   if (!match) throw new Error(`"${iso}" is not an ISO date`);
-  return Number(match[1]);
+  const [year, month, day] = match.slice(1, 4).map(Number);
+  // Reject impossible dates such as 2026-02-30 or 2026-13-01 (checked in UTC, so no time zone is involved).
+  const check = new Date(Date.UTC(year, month - 1, day));
+  if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) {
+    throw new Error(`"${iso}" is not an ISO date`);
+  }
+  return year;
 }
