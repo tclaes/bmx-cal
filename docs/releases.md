@@ -48,6 +48,16 @@ For an urgent fix that cannot wait for the next release:
 2. Open the PR into `master`. `Release check` accepts `hotfix/*` branches. Merge with a merge commit.
 3. Open a PR from `master` into `development` and merge it with a merge commit, so the fix and the new version are not lost. Nothing checks that this step happened: `Release check` validates the source branch, the repository and that the version goes up, but not whether the hotfix was merged back. A next release that bumps past the hotfix version (for example `1.2.0` after a `1.1.1` hotfix) still passes. Do this step right after the hotfix merges, and before opening the next release PR.
 
+### What `Release check` protects, and what it doesn't
+
+`Release check` guards against **mistakes**: a feature PR aimed at `master`, a release without a version bump, or a fork branch that happens to be called `development` or `hotfix/*`. It does not stop someone who has write access and wants to get past it:
+
+- It runs on `pull_request`, so the workflow and `scripts/release-check.mjs` come from the PR itself. A PR could edit them to always pass.
+- Branch protection only requires a check **named** `Release check`, so a PR could also add its own workflow with a job of that name. Requiring a specific workflow ("Require workflows to pass") is only available for organizations and enterprise plans, not for this personal repository.
+- Admins can bypass branch protection (`enforce_admins` is off on purpose, for emergencies).
+
+That is acceptable here: only people with write access can push `hotfix/*` branches, and workflows from fork PRs only run after a maintainer approves them. Review every PR into `master` with that in mind, especially any change to `.github/workflows/` or `scripts/release-check.mjs`. If the repository moves to a GitHub organization, a required-workflow ruleset for `release-check.yml` closes these gaps.
+
 ### Feature release (optional update)
 
 1. Bump `version` (minor, for example `1.3.0` → `1.4.0`) in `release.json` and `package.json`.
