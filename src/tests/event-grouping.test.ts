@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { groupEventsByYear, getDefaultOpenYears } from '../features/admin/event-grouping';
 import type { EventWithType } from '../types';
 
@@ -42,6 +42,27 @@ describe('groupEventsByYear', () => {
     const e3 = makeEvent('3', '2026-11-20');
     const result = groupEventsByYear([e1, e2, e3]);
     expect(result.get(2026)).toEqual([e1, e2, e3]);
+  });
+});
+
+describe('groupEventsByYear in other time zones', () => {
+  const originalTz = process.env.TZ;
+  afterEach(() => {
+    // Assigning undefined would store the string "undefined", so unset it instead.
+    if (originalTz === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTz;
+  });
+
+  it('keeps a New Year\'s Day race in its own year behind UTC', () => {
+    process.env.TZ = 'America/New_York';
+    const newYear = makeEvent('1', '2026-01-01');
+    expect([...groupEventsByYear([newYear]).keys()]).toEqual([2026]);
+  });
+
+  it('keeps a New Year\'s Eve race in its own year ahead of UTC', () => {
+    process.env.TZ = 'Pacific/Auckland';
+    const newYearsEve = makeEvent('1', '2025-12-31');
+    expect([...groupEventsByYear([newYearsEve]).keys()]).toEqual([2025]);
   });
 });
 

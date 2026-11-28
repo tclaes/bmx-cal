@@ -3,6 +3,7 @@ import { eventsStore, filtersStore } from '@core/stores';
 import type { FiltersState } from '@core/stores';
 import type { EventWithDetails } from '@types';
 import { searchEvents } from './event-search';
+import { yearOf } from '@shared/utils';
 
 export function todayIso(now: Date = new Date()): string {
   const y = now.getFullYear();
@@ -67,7 +68,7 @@ export function groupPastByYear(past: EventWithDetails[]): PastYearGroup[] {
   const groups = new Map<number, EventWithDetails[]>();
   const newestFirst = [...past].sort((a, b) => b.date.localeCompare(a.date));
   for (const event of newestFirst) {
-    const year = Number(event.date.slice(0, 4));
+    const year = yearOf(event.date);
     const group = groups.get(year);
     if (group) group.push(event);
     else groups.set(year, [event]);
