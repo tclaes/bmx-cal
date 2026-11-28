@@ -58,3 +58,14 @@ export function formatWeekday(iso: string): string {
 export function formatDayMonth(iso: string): string {
   return localDate(iso).toLocaleDateString(currentLocale(), { day: 'numeric', month: 'short' }).replace('.', '');
 }
+
+/**
+ * The calendar year written in an ISO date (`YYYY-MM-DD`) or date-time string.
+ * Reads the text instead of `new Date(iso).getFullYear()`, which parses a plain
+ * date as midnight UTC and so gives the previous year behind UTC on 1 January.
+ */
+export function yearOf(iso: string): number {
+  const match = /^(\d{4})-\d{2}-\d{2}/.exec(iso);
+  if (!match) throw new Error(`"${iso}" is not an ISO date`);
+  return Number(match[1]);
+}
