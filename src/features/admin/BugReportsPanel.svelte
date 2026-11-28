@@ -72,9 +72,7 @@
         <div class="report-card" class:resolved={report.status === 'resolved'}>
           <div class="report-top">
             <div class="report-meta">
-              <Badge variant={STATUS_VARIANTS[report.status] ?? 'default'}>
-                {STATUS_LABELS[report.status] ?? report.status}
-              </Badge>
+              <Badge variant={STATUS_VARIANTS[report.status] ?? 'default'} label={STATUS_LABELS[report.status] ?? report.status} />
               <span class="report-date">{formatDateTime(report.created_at)}</span>
               {#if report.reporter_email}
                 <span class="report-email">{report.reporter_email}</span>
