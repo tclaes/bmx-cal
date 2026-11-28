@@ -26,5 +26,5 @@
 
 ## Workflow follow-up
 
-- Open the PR against `development`, and archive this change in it before merging.
+- Open the PR against `development`, and archive this change in it before merging (done).
 - #62 (extract the mobile menu) can then reuse `LanguageSwitcher variant="menu"`.
