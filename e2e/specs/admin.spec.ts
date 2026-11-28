@@ -216,7 +216,8 @@ test.describe('admin login', () => {
     await signIn(page, rider);
 
     await expect(page.getByText('Access denied. Admin privileges required.')).toBeVisible();
-    expect(mock.calls.map((c) => c.path)).toContain('/auth/v1/logout');
+    // The error shows before the sign-out request is sent, so wait for it.
+    await expect.poll(() => mock.calls.map((c) => c.path)).toContain('/auth/v1/logout');
     await page.goto('/admin');
     await expect(page.getByRole('heading', { name: 'Admin Login' })).toBeVisible();
   });
@@ -225,6 +226,9 @@ test.describe('admin login', () => {
     await backend({ accounts: [adminAccount, rider] });
 
     await signIn(page, adminAccount);
+    // Wait for the sign-in to finish (the Admin link appears) before leaving the page;
+    // the absence of the error alone is true immediately after the click.
+    await expect(page.getByRole('link', { name: 'Admin', exact: true }).first()).toBeVisible();
     await expect(page.getByText('Access denied. Admin privileges required.')).toHaveCount(0);
 
     await page.goto('/admin');
