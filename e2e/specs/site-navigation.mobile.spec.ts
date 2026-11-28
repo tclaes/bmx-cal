@@ -53,9 +53,10 @@ test('the open menu scrolls on a short screen so its last item is reachable', as
   await expect.poll(() => menu.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   expect(await page.evaluate(() => window.scrollY)).toBe(pageScrollBefore);
 
-  const french = menu.getByRole('button', { name: 'FR' });
-  await expect(french).toBeInViewport();
-  await french.click();
+  // The language select is the menu's last item: reachable after scrolling the menu.
+  const language = menu.getByRole('combobox', { name: 'Language' });
+  await expect(language).toBeInViewport();
+  await language.selectOption('fr');
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 });

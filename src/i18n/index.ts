@@ -11,9 +11,16 @@ const STORAGE_KEY = 'bmx-locale';
 
 const locales: Record<Locale, Translations> = { en, nl, fr };
 
+/** Every locale the app supports, in the order the language switch lists them. */
+export const SUPPORTED_LOCALES: readonly Locale[] = ['en', 'nl', 'fr'];
+
+export function isLocale(value: unknown): value is Locale {
+  return SUPPORTED_LOCALES.includes(value as Locale);
+}
+
 function detectLocale(): Locale {
-  const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-  if (stored && stored in locales) return stored;
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (isLocale(stored)) return stored;
 
   const browser = navigator.language.slice(0, 2).toLowerCase();
   if (browser === 'nl') return 'nl';

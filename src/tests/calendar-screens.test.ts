@@ -225,8 +225,10 @@ describe('Navigation', () => {
   it('shows an outlined sign-in link and a locale switcher for signed-out users', async () => {
     render(Navigation);
     expect(screen.getAllByRole('link', { name: 'Aanmelden' }).length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'NL' })).toHaveAttribute('aria-pressed', 'true');
-    await fireEvent.click(screen.getByRole('button', { name: 'FR' }));
-    expect(screen.getByRole('button', { name: 'FR' })).toHaveAttribute('aria-pressed', 'true');
+    const language = screen.getByRole('combobox', { name: 'Taal' }) as HTMLSelectElement;
+    expect(language.value).toBe('nl');
+    language.value = 'fr';
+    await fireEvent.change(language);
+    expect((screen.getByRole('combobox', { name: 'Langue' }) as HTMLSelectElement).value).toBe('fr');
   });
 });
