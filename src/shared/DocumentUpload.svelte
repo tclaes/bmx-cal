@@ -758,21 +758,18 @@
         <div class="confirm-events">
           {#each parsedEvents as event, i}
             <button class="confirm-event-row" on:click={() => jumpToEvent(i)}>
-              <div class="confirm-event-main">
-                <strong>{event.title}</strong>
+              <span class="confirm-event-main">
+                <strong class="confirm-event-title">{event.title}</strong>
                 <span class="confirm-event-date">{event.date}{#if event.end_date} – {event.end_date}{/if}</span>
-              </div>
-              <div class="confirm-event-details">
-                <span class="confirm-detail">
+                <span class="confirm-event-details">
                   <span class="confirm-detail-label">Type:</span> {getEventTypeName(event.event_type_id)}
-                </span>
-                <span class="confirm-detail">
+                  <span class="confirm-detail-sep" aria-hidden="true">·</span>
                   <span class="confirm-detail-label">Location:</span> {event.location || 'TBD'}
                   {#if event.location && unknownLocations.has(event.location.trim())}
                     ({getLocationResolutionSummary(event.location.trim())})
                   {/if}
                 </span>
-              </div>
+              </span>
               <span class="confirm-edit-hint">Edit</span>
             </button>
           {/each}
@@ -1163,14 +1160,17 @@
     overflow-y: auto;
   }
 
+  /* A <button>: set font and colour explicitly, buttons don't inherit them. */
   .confirm-event-row {
     padding: var(--spacing-sm) var(--spacing-md);
+    font: inherit;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
     background-color: var(--color-bg-primary);
     border-radius: var(--border-radius-md);
-    font-size: var(--font-size-sm);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
     gap: var(--spacing-md);
     border: 1px solid transparent;
     cursor: pointer;
@@ -1194,12 +1194,18 @@
     font-size: var(--font-size-xs);
   }
 
+  .confirm-event-title {
+    color: var(--color-text-primary);
+  }
+
   .confirm-event-details {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxs);
-    text-align: right;
+    color: var(--color-text-secondary);
     font-size: var(--font-size-xs);
+  }
+
+  .confirm-detail-sep {
+    color: var(--color-text-muted);
+    margin-inline: var(--spacing-xxs);
   }
 
   .confirm-detail-label {
@@ -1223,14 +1229,6 @@
     .create-fields,
     .event-card-dates {
       grid-template-columns: 1fr;
-    }
-
-    .confirm-event-row {
-      flex-direction: column;
-    }
-
-    .confirm-event-details {
-      text-align: left;
     }
 
     .editor-actions {

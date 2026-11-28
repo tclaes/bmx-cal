@@ -119,6 +119,62 @@ test.describe('importing events from a file', () => {
     await expect(page.getByRole('button', { name: 'Review & Confirm' })).toBeVisible();
   });
 
+  test('the Confirm Import rows are readable and list details under the title', async ({ page, backend }) => {
+    await backend({ user: admin, tables: { events: [], event_types: [race], locations: [genkLocation] } });
+    await page.goto('/admin');
+
+    await uploadCsv(page, csv([`First Cup,${futureDate(30)},Genk,Race`, `Second Cup,${futureDate(31)},Genk,Race`]));
+    await page.getByRole('button', { name: 'Next Event' }).click();
+    await page.getByRole('button', { name: 'Review & Confirm' }).click();
+    await expect(page.getByRole('heading', { name: 'Confirm Import' })).toBeVisible();
+
+    const rows = page.locator('.confirm-event-row');
+    await expect(rows).toHaveCount(2);
+
+    // Every text node in a row must reach WCAG AA (4.5:1) against the row background.
+    const lowest = await rows.evaluateAll((els) => {
+      const rgb = (c: string) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const lum = ([r, g, b]: number[]) =>
+        [r, g, b]
+          .map((v) => v / 255)
+          .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+          .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+      const ratio = (a: string, b: string) => {
+        const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((p, q) => q - p);
+        return (x + 0.05) / (y + 0.05);
+      };
+      const results: { text: string; ratio: number }[] = [];
+      for (const row of els) {
+        const bg = getComputedStyle(row).backgroundColor;
+        const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const text = node.textContent?.trim();
+          if (text) results.push({ text, ratio: ratio(getComputedStyle(node.parentElement!).color, bg) });
+        }
+      }
+      return results.sort((a, b) => a.ratio - b.ratio)[0];
+    });
+    expect(lowest.ratio, `lowest contrast: "${lowest.text}"`).toBeGreaterThanOrEqual(4.5);
+
+    // Title first, then the date, then one type/location line; Edit at the right edge.
+    const first = rows.first();
+    const box = async (text: string | RegExp) => (await first.getByText(text).first().boundingBox())!;
+    const [row, title, date, details, edit] = await Promise.all([
+      first.boundingBox().then((b) => b!),
+      box('First Cup'),
+      box(futureDate(30)),
+      box(/Type:.*Location:/),
+      box('Edit'),
+    ]);
+    expect(date.y).toBeGreaterThanOrEqual(title.y + title.height - 1);
+    expect(details.y).toBeGreaterThanOrEqual(date.y + date.height - 1);
+    expect(row.x + row.width - (edit.x + edit.width)).toBeLessThanOrEqual(32);
+    await expect(first.getByText(/Type:.*Location:/)).toContainText('Genk');
+
+    await rows.nth(1).click();
+    await expect(page.getByText('Event 2 of 2')).toBeVisible();
+  });
+
   test('a file without events is rejected', async ({ page, backend }) => {
     const mock = await backend({ user: admin, tables: { event_types: [race] } });
     await page.goto('/admin');
