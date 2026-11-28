@@ -85,7 +85,7 @@ The page SHALL offer export of the currently listed races to an iCal file, and S
 - **THEN** the account call-to-action is not shown
 
 ### Requirement: Save race to my calendar
-The hero and each row SHALL offer a save control (star) that adds or removes the race from the user's selection using the existing selection behaviour: kept on the device for signed-out users and synced to the account for signed-in users.
+The hero and each row SHALL offer a save control (star) that adds or removes the race from the user's selection using the existing selection behaviour: kept on the device for signed-out users and synced to the account for signed-in users. If the account rejects the change, the star SHALL keep its previous state and a translated error SHALL be shown above the list without hiding it.
 
 #### Scenario: Save
 - **WHEN** a user taps the star on a race that is not saved
@@ -98,6 +98,10 @@ The hero and each row SHALL offer a save control (star) that adds or removes the
 #### Scenario: Star does not open the detail page
 - **WHEN** the user taps the star on a row
 - **THEN** the selection changes and the race detail page is not opened
+
+#### Scenario: Save rejected
+- **WHEN** a signed-in user taps the star and the account rejects the change
+- **THEN** the star keeps its previous state and a translated error is shown above the list, which stays visible
 
 ### Requirement: Localised text
 All text on the page SHALL come from the nl, fr and en locale files and SHALL follow the selected language, including dates and registration messages.
