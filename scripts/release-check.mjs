@@ -5,12 +5,14 @@
 // and must raise `version` in src/config/release.json above the version on master.
 //
 // Usage (CI passes these as environment variables, never interpolated into the shell):
-//   HEAD_REF=development BASE_VERSION=1.0.0 HEAD_VERSION=1.1.0 node scripts/release-check.mjs
+//   HEAD_REF=development HEAD_REPO=owner/repo BASE_REPO=owner/repo \
+//   BASE_VERSION=1.0.0 HEAD_VERSION=1.1.0 node scripts/release-check.mjs
 
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
-const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
+// Each part is limited to nine digits so Number() stays exact.
+const SEMVER = /^(\d{1,9})\.(\d{1,9})\.(\d{1,9})$/;
 
 /** @param {string} version */
 function parse(version) {
@@ -30,19 +32,28 @@ export function compareVersions(a, b) {
   return x[0] - y[0] || x[1] - y[1] || x[2] - y[2];
 }
 
-/** @param {string} headRef */
-export function isAllowedSource(headRef) {
+/**
+ * A release or hotfix must come from a branch in this repository, not from a fork
+ * that happens to use the same branch name.
+ * @param {string} headRef
+ * @param {string} [headRepo] full name of the PR's head repository
+ * @param {string} [baseRepo] full name of this repository
+ */
+export function isAllowedSource(headRef, headRepo, baseRepo) {
+  if (headRepo !== undefined && headRepo !== baseRepo) return false;
   return headRef === 'development' || /^hotfix\/.+/.test(headRef ?? '');
 }
 
 /**
- * @param {{ headRef: string, baseVersion: string, headVersion: string }} input
+ * @param {{ headRef: string, baseVersion: string, headVersion: string, headRepo?: string, baseRepo?: string }} input
  * @returns {string[]} problems; empty when the PR may be released
  */
-export function checkRelease({ headRef, baseVersion, headVersion }) {
+export function checkRelease({ headRef, baseVersion, headVersion, headRepo, baseRepo }) {
   const problems = [];
 
-  if (!isAllowedSource(headRef)) {
+  if (headRepo !== undefined && headRepo !== baseRepo) {
+    problems.push(`Pull requests into master must come from a branch in ${baseRepo}, not from ${headRepo}.`);
+  } else if (!isAllowedSource(headRef)) {
     problems.push(
       `Pull requests into master must come from "development" or a "hotfix/<name>" branch, not "${headRef}". Target "development" instead.`,
     );
@@ -64,8 +75,19 @@ export function checkRelease({ headRef, baseVersion, headVersion }) {
 const isMain = Boolean(process.argv[1]) && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 
 if (isMain) {
-  const { HEAD_REF = '', BASE_VERSION = '', HEAD_VERSION = '' } = process.env;
-  const problems = checkRelease({ headRef: HEAD_REF, baseVersion: BASE_VERSION, headVersion: HEAD_VERSION });
+  const { HEAD_REF = '', BASE_VERSION = '', HEAD_VERSION = '', HEAD_REPO = '', BASE_REPO = '' } = process.env;
+  // Missing repository names would otherwise compare equal ('' === '') and pass.
+  const missing = ['HEAD_REPO', 'BASE_REPO'].filter((name) => !process.env[name]);
+  const problems =
+    missing.length > 0
+      ? [`Missing ${missing.join(' and ')}: the release check needs both repository names.`]
+      : checkRelease({
+          headRef: HEAD_REF,
+          baseVersion: BASE_VERSION,
+          headVersion: HEAD_VERSION,
+          headRepo: HEAD_REPO,
+          baseRepo: BASE_REPO,
+        });
 
   if (problems.length === 0) {
     console.log(`Release check passed: ${HEAD_REF} raises the version ${BASE_VERSION} -> ${HEAD_VERSION}.`);

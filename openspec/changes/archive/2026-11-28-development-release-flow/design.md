@@ -70,10 +70,10 @@ The head branch must be `development` or match `hotfix/` followed by a non-empty
 
 ## Risks / Trade-offs
 
-- [Between this change and the first release, `master` requires a `Release check` that `master` itself can't run yet. A hotfix branched from `master` would have no `release-check.yml` and could never get the check] → Do the first release (`1.1.0`) right after this change merges into `development`. If a hotfix is needed before then, branch it from `development`.
+- [Between this change and the first release, `master` requires a `Release check` that `master` itself can't run yet. A hotfix branched from `master` would have no `release-check.yml` and could never get the check] → Do the first release (`1.1.0`) right after this change merges into `development`. Hotfixes always branch from `master`, never from `development`, which would bring unreleased work along. If one is needed before the first release, finish that release first.
 - [The docs and AGENTS.md on `master` still say "PRs go to `master`" until the first release] → `development` is the default branch, so new checkouts and `gh pr create` already use it. The first release follows immediately.
 - [Admins can still push straight to `master` (`enforce_admins: false`)] → Kept deliberately for emergencies. The docs say not to.
-- [Forgetting the hotfix back-merge] → The next release PR would then try to lower or repeat the version and fail the check, which surfaces the miss.
+- [Forgetting the hotfix back-merge] → Nothing catches it automatically: `Release check` does not verify the back-merge, so a next release that bumps past the hotfix version still passes, and `development` would still lack the fix. The docs make the back-merge an explicit step right after the hotfix merges.
 
 ## Migration Plan
 
