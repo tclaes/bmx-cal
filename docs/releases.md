@@ -56,7 +56,7 @@ For an urgent fix that cannot wait for the next release:
 - Branch protection only requires a check **named** `Release check`, so a PR could also add its own workflow with a job of that name. Requiring a specific workflow ("Require workflows to pass") is only available for organizations and enterprise plans, not for this personal repository.
 - Admins can bypass branch protection (`enforce_admins` is off on purpose, for emergencies).
 
-That is acceptable here: only people with write access can push `hotfix/*` branches, and workflows from fork PRs only run after a maintainer approves them. Review every PR into `master` with that in mind, especially any change to `.github/workflows/` or `scripts/release-check.mjs`. If the repository moves to a GitHub organization, a required-workflow ruleset for `release-check.yml` closes these gaps.
+That is acceptable here: only people with write access can push `hotfix/*` branches, and workflows from fork PRs only run after a maintainer approves them. That last part depends on the repository's Actions setting "Approval for running fork pull request workflows from contributors", which is set to **all external contributors** (`gh api repos/tclaes/bmx-cal/actions/permissions/fork-pr-contributor-approval --jq '.approval_policy'` prints `all_external_contributors`). GitHub's default only asks first-time contributors, so keep this setting if you change Actions permissions. Review every PR into `master` with that in mind, especially any change to `.github/workflows/` or `scripts/release-check.mjs`. If the repository moves to a GitHub organization, a required-workflow ruleset for `release-check.yml` closes these gaps.
 
 ### Feature release (optional update)
 
